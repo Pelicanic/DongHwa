@@ -1,19 +1,27 @@
+# GIT으로 협업하기
+
 1. **GitBash가 설치되어 있다는 가정하에 설명입니다.**
 2. **해당 설명은 CLI로 작업하는 방법입니다.**
+3. 맨 아래에 GUI툴 추천이 있습니다. CLI에 익숙해지면 GUI를 사용하는것도 쉽게 이해할수 있습니다!
+
 
 <br>
 
 ## Git Clone : 처음 프로젝트 파일을 받을때 최초 1회만
 
+<br>
+
 1. Copy url to clipboard를 클릭합니다.
 ![](https://i.imgur.com/qiwRK1p.png)
 
 <br>
+
 2. Terminal(Git Bash)를 실행시켜 원하는 경로로 이동합니다.
 ![](https://i.imgur.com/Ovhcr6v.png)
 
 
 <br>
+
 
 3. git clone <저장소 주소>를 입력하면 해당 경로에 git 폴더(DongHwa)가 생성됩니다.
 ![](https://i.imgur.com/GFwb0cC.png)
@@ -139,4 +147,29 @@ git push origin choi
 git branch -d choi
 ```
 ![](https://i.imgur.com/P4JyxaP.png)
+
+
+
+<br>
+
+
+
+## GUI Tools
+CLI 보단 GUI 방식으로 작업하는게 직관적이고 충돌을 관리하기에 용이합니다.
+
+SourceTree Mac 및 Windows 용으로 사용할 수 있는 무료 git GUI tool 사용하기 쉽고 직관적인 UI로 git 브랜치, 태그, 커밋, 병합 등을 관리할 수 있습니다. 일반적인 git 작업뿐만 아니라, Git-flow 작업도 지원합니다.
+
+맥OS 및 윈도우용 다운로드 링크: https://www.sourcetreeapp.com/
+
+GitHub Desktop 맥OS 및 윈도우용으로 사용할 수 있는 git GUI tool git 커밋, 브랜치, 병합 등의 작업을 직관적인 UI로 관리할 수 있습니다. GitHub 계정과 연동하여, 원격 저장소를 쉽게 관리할 수 있습니다.
+
+맥OS 및 윈도우용 다운로드 링크: https://desktop.github.com/
+
+Fork Mac 및 Windows 용으로 사용할 수 있는 git GUI tool 강력한 UI와 기능으로 git 작업을 보다 쉽고 빠르게 수행할 수 있습니다. Git-flow를 지원하며, 코드 검토 및 충돌 해결 기능도 제공합니다.
+
+맥OS 및 윈도우용 다운로드 링크: https://git-fork.com/
+
+Git GUI Mac, Windows, Linux 용으로 사용할 수 있는 무료 git GUI tool git 작업을 쉽게 수행할 수 있는 UI를 제공합니다. 다양한 git 명령어를 지원하며, 코드 검토 및 충돌 해결 기능도 제공합니다.
+
+맥OS, 윈도우 및 리눅스용 다운로드 링크: https://git-scm.com/downloads/guis
 
