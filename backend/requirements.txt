@@ -1,0 +1,28 @@
+# --- 과학/머신러닝 라이브러리 ---
+numpy==1.23.5
+torch==2.0.1
+torchvision==0.15.2
+torchaudio==2.0.2
+transformers==4.31.0
+sentence-transformers==2.2.2
+
+# --- 벡터 DB ---
+chromadb==0.3.21
+
+# --- LangChain 및 OpenAI 연동 ---
+langchain==0.0.303
+openai==0.27.8
+
+# --- 웹 프레임워크 및 서버 ---
+fastapi==0.95.2
+uvicorn==0.22.0
+python-multipart==0.0.6  # 파일 업로드 지원
+aiofiles==23.1.0        # 비동기 파일 처리 (선택)
+
+# --- 데이터 검증 및 유틸리티 ---
+pydantic==1.10.11
+packaging==23.1
+ydata-profiling==4.5.1
+
+# --- 이미지 처리 ---
+pillow==9.5.0
