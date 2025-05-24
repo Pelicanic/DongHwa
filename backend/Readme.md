@@ -67,6 +67,7 @@ DongHwa/
 
 <br>
 
+
 ## Step 1: Next.js 기초 개념 잡기
 
 ### Next.js란?
@@ -81,6 +82,7 @@ DongHwa/
 - React는 **라이브러리**라서 단독으로는 라우팅, SSR 등을 직접 구현 해야함.
 - Next.js는 **React + 여러 편의 기능**을 제공하는 **프레임워크**.
 
+<br>
 
 ## Step 2: Next.js 프로젝트 만들기
 
@@ -88,6 +90,7 @@ DongHwa/
 👉 [공식 사이트](https://nodejs.org)에서 최신 LTS 버전 설치
 
 <br>
+
 
 2️.  **Next.js 프로젝트 생성**
 
@@ -99,6 +102,7 @@ npm run dev
 ```
 
 <br>
+
 
 3. app/page.tsx 수정
 * app/page.tsx는 루트경로(/) 페이지를 의미함
@@ -118,6 +122,7 @@ export default function Home() {
 
 <br>
 
+
 4. 실행
 ``` bash
 npm run dev
@@ -127,9 +132,11 @@ http://localhost:3000
 
 <br>
 
+
 ## Step 3: 백엔드 기초 토대 만들기
 
 <br>
+
 1. backend 폴더 생성 및 환경 세팅
 ```bash
 # DongHwa 레포 루트에서
@@ -140,12 +147,10 @@ cd backend
 # conda 환경 생성 및 활성화
 conda create -n p39_donghwa python=3.9
 conda activate p39_donghwa
-
-
-
 ```
 
 <br>
+
 
 #### 왜 Python 3.9를 고려하는지?
 
@@ -154,10 +159,12 @@ conda activate p39_donghwa
 - **FastAPI, Pydantic, Hugging Face Transformers 등 주요 라이브러리**는 Python 3.9에서 안정적으로 작동
 
 <br>
+
 2. 라이브러리 설치
 * 추후 추가나 삭제 될 수 있음
 * **requirements.txt 로 생성해두었습니다.**
-* pip install -r requirements.txt 로 설치 
+* pip install -r requirements.txt 로 설치
+
 ``` bash
 # --- 과학/머신러닝 라이브러리 ---
 numpy==1.23.5
