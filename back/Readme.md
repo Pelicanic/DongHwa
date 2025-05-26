@@ -169,12 +169,23 @@ conda activate p311_donghwa
 * pip install -r requirements.txt 로 설치
 
 ``` bash
-# --- 웹 프레임워크 ---
-Django>=4.2
+# === 웹 프레임워크 (Web Framework) ===
+# Django 백엔드 서버, API, CORS 설정
+django>=4.2
 djangorestframework>=3.14
 django-cors-headers>=4.0
 
-# --- 과학/머신러닝 라이브러리 ---
+# === 생성형 AI 및 LangChain ===
+# LangChain 코어 및 LLM, 벡터DB, 음성모델 연동 라이브러리
+langchain>=0.1.0
+langgraph>=0.0.50
+langchain-google-genai>=1.0.0  # Gemini 연동을 위한 공식 통합 패키지
+langchain-community>=0.0.30     # ChromaDB 등 커뮤니티 연동 기능 포함
+google-generativeai>=0.5.0
+openai-whisper>=1.1.0
+
+# === 과학/머신러닝 라이브러리 ===
+# 딥러닝(PyTorch) 및 자연어 처리(Transformers)
 numpy>=1.23.5
 torch>=2.0.1
 torchvision>=0.15.2
@@ -182,154 +193,29 @@ torchaudio>=2.0.2
 transformers>=4.31.0
 sentence-transformers>=2.2.2
 
-# --- 벡터 DB ---
-chromadb>=0.3.21
+# === 벡터 데이터베이스 ===
+# 로컬 벡터 저장 및 검색용
+chromadb>=0.4.24
 
-# --- LangChain 및 OpenAI 연동 ---
-langchain>=0.0.303
-openai>=0.27.8
-
-# --- 데이터 검증 및 유틸리티 ---
-pydantic>=1.10.11   # Django에서는 꼭 필요하진 않음
+# === 데이터 검증 및 유틸리티 ===
+# LangChain 등에서 내부적으로 사용하며, API 데이터 구조 정의에 유용
+pydantic>=1.10.11
 packaging>=23.1
-ydata-profiling>=4.5.1
-
-# --- 이미지 처리 ---
-pillow>=9.5.0
-
-# --- TTS/STT 및 음성 처리 ---
-pyaudio>=0.2.13
-websockets>=11.0
 python-dotenv>=1.0.0
-```
 
-
-<br>
-
-3. backend/app/main.py 생성 후 FastAPI 기본 코드 작성
-``` python
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware 
-
-app = FastAPI(title="DongHwa Backend API")
-
-# CORS 설정 (Next.js 프론트엔드와 통신을 위한 설정)
-app.add_middleware(
-	CORSMiddleware,
-	allow_origins=["http://localhost:3000"], # Next.js 개발 서버 주소
-	allow_credentials=True,
-	allow_methods=["*"],
-	allow_headers=["*"],
-
-)
-@app.get("/")
-```
-
-
-<br>
-
-4. 실행
-``` bash
-python -m uvicorn app.main:app --reload
-```
-
-
-<br>
-
-#### 서로의 기능
-1. **FastAPI**:
-    - Python 기반 백엔드 프레임워크
-    - API 서버를 구축하는 데 사용
-    - Python 코드로 작성된 서버 로직을 실행
-    - 주로 데이터 처리, API 엔드포인트 제공, 데이터베이스 연동 등의 역할을 수행
-2. **Next.js**:
-    - JavaScript/TypeScript 기반 프론트엔드 프레임워크
-    - React 기반으로 웹 애플리케이션을 개발
-    - 클라이언트 사이드 렌더링(CSR)과 서버 사이드 렌더링(SSR)을 지원
-    - 사용자 인터페이스를 구축하는 데 사용
-
-두 프레임워크는 서로 다른 역할을 수행하며, 일반적으로 다음과 같이 통신합니다.
-- Next.js 프론트엔드는 FastAPI 백엔드의 API 엔드포인트를 호출하여 데이터를 요청하고 응답을 받음
-- CORS 설정을 통해 두 서버가 서로 통신할 수 있도록 허용
-
-
-<br>
-
-
-
-## Step 3: 백엔드 기초 토대 만들기
-
-<br>
-
-### 1. backend 폴더 생성 및 환경 세팅
-
-```
-bash
-
-
-복사편집
-# DongHwa 레포 루트에서
-cd DongHwa
-mkdir backend
-cd backend
-
-# conda 환경 생성 및 활성화 (Python 3.11)
-conda create -n donghwa_env python=3.11 -y
-conda activate donghwa_env
-```
-
-<br>
-
-### 2. 라이브러리 설치
-
-- 추후 추가 및 변경 가능
-- `requirements.txt`로 관리 권장
-
-```
-bash
-
-
-복사편집
-pip install django djangorestframework django-cors-headers
-pip install numpy torch torchvision torchaudio transformers sentence-transformers
-pip install chromadb langchain openai
-pip install pillow
-```
-
-*`requirements.txt` 예시:*
-
-```
-txt
-
-
-복사편집
-Django>=4.2
-djangorestframework>=3.14
-django-cors-headers>=4.0
-
-numpy>=1.23.5
-torch>=2.0.1
-torchvision>=0.15.2
-torchaudio>=2.0.2
-transformers>=4.31.0
-sentence-transformers>=2.2.2
-
-chromadb>=0.3.21
-langchain>=0.0.303
-openai>=0.27.8
-
+# === 이미지 및 음성 처리 ===
+# 이미지 처리 및 TTS(텍스트->음성)
 pillow>=9.5.0
+gTTS>=2.5.0
 ```
 
+
 <br>
+
 
 ### 3. Django 프로젝트 및 앱 생성
 
-```
-bash
-
-
-복사편집
+``` bash
 django-admin startproject backend_project .
 python manage.py startapp api
 ```
@@ -340,11 +226,9 @@ python manage.py startapp api
 
 - `INSTALLED_APPS`에 추가
 
-```
-python
+``` python
 
 
-복사편집
 INSTALLED_APPS = [
     ...,
     'rest_framework',
@@ -355,11 +239,7 @@ INSTALLED_APPS = [
 
 - CORS 설정 추가 (Next.js 개발 서버 허용)
 
-```
-python
-
-
-복사편집
+```python
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     ...,
@@ -374,11 +254,7 @@ CORS_ALLOWED_ORIGINS = [
 
 ### 5. 기본 API 뷰 작성 (`api/views.py`)
 
-```
-python
-
-
-복사편집
+```python
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -391,11 +267,7 @@ def hello(request):
 
 ### 6. URL 연결 (`api/urls.py`)
 
-```
-python
-
-
-복사편집
+```python
 from django.urls import path
 from .views import hello
 
@@ -406,11 +278,7 @@ urlpatterns = [
 
 - `backend_project/urls.py`에 포함
 
-```
-python
-
-
-복사편집
+```python
 from django.contrib import admin
 from django.urls import path, include
 
@@ -424,11 +292,7 @@ urlpatterns = [
 
 ### 7. 서버 실행
 
-```
-bash
-
-
-복사편집
+```bash
 python manage.py runserver
 ```
 
