@@ -2,42 +2,54 @@
 ## 전체 아키텍처 설계
 
 - **프론트엔드**:
+  
     - Next.js (React 기반) + Tailwind CSS (or MUI)
-    - LangChain과 KoBERT 결과를 보여주는 UI
-- **백엔드 (API)**:
-    - FastAPI or Flask (Python 기반)
-    - LangChain, KoBERT 분류 모델, 벡터 DB 연동   
-- **데이터베이스**:
-    - 유저 정보/동화 데이터 → RDB (예: PostgreSQL, Supabase)    
+    - LangChain과 KoBERT 를 이용해 결과를 사용자에게 보여주는 UI
+    
+    **백엔드 (API)**:
+    
+    - Python 3.11 + 기반 Django REST Framework
+    - LangChain, KoBERT 분류 모델, 벡터 DB 연동
+    - 음성 처리 및 생성형 AI 엔진 포함
+    
+    **데이터베이스**:
+    
+    - 유저 정보 및 동화 데이터 → 관계형 DB (예: PostgreSQL, Supabase)
     - LangChain용 벡터 DB (예: Pinecone, Weaviate, Chroma)
+
+
+
+<br>
+
+
 
 
 ## 폴더/레포 초기 구조
 ``` ruby
 DongHwa/
-├── frontend/               # Next.js App Router 기반 프론트엔드
-│   ├── app/                # App Router: 페이지/라우트 정의
-│   │   ├── page.tsx        # 루트(/) 페이지
-│   │   ├── about/          # /about 페이지
+├── frontend/               # Next.js 프론트엔드 (React 기반)
+│   ├── app/                # 페이지 및 라우트 정의 (App Router)
+│   │   ├── page.tsx        # 루트 페이지
+│   │   ├── about/
 │   │   │   └── page.tsx
 │   │   └── layout.tsx      # 공통 레이아웃 (헤더/푸터)
-│   ├── components/         # 재사용 컴포넌트 (Button, Header 등)
+│   ├── components/         # 재사용 컴포넌트
 │   ├── public/             # 정적 파일 (이미지 등)
-│   ├── styles/             # CSS/SCSS 모듈 혹은 Tailwind 적용
+│   ├── styles/             # 스타일 (CSS, Tailwind 등)
 │   ├── package.json
 │   └── next.config.js
-├── backend/                # Python 백엔드 (FastAPI)
-│   ├── app/
-│   │   ├── main.py
-│   │   ├── ml_model.py
-│   │   ├── langchain_flow.py
-│   │   └── db.py
-│   └── requirements.txt
-├── data/                   # 데이터 샘플, ERD, 학습 데이터
+├── backend/                # Python 3.11, Django 기반 백엔드
+│   ├── manage.py           # Django 관리 스크립트
+│   ├── donghwa_project/    # Django 프로젝트 설정 (settings.py 등)
+│   └── api/                # 주요 앱 (API, ML 모델, 음성 처리 등)
+│       ├── views.py
+│       ├── urls.py
+│       ├── models.py
+│       └── serializers.py  # 필요시 추가
+├── data/                   # 데이터 샘플, 학습 데이터, ERD 등
 ├── docs/                   # 문서 (회의록, 설계서 등)
 ├── README.md
 └── .gitignore
-
 ```
 
 
@@ -55,9 +67,9 @@ DongHwa/
    - 결과 받아서 UI에 출력
    |
    ▼
-[Python 백엔드 (backend/FastAPI)]
-   - 요청 처리 (ex: LangChain, KoBERT)
-   - DB 연동 (PostgreSQL, 벡터DB 등)
+[Python 백엔드 (backend/Django REST Framework)]
+   - 요청 처리 (ex: LangChain, KoBERT, 음성처리)
+   - DB 연동 (PostgreSQL, 벡터 DB 등)
    - 응답 반환 (JSON, 이미지 등)
    |
    ▼
@@ -75,7 +87,7 @@ DongHwa/
 - **서버 사이드 렌더링 (SSR), 정적 사이트 생성 (SSG)** 지원
 - **라우팅, 코드 스플리팅, API 라우트 등** 기본 제공
 - **풀스택 개발까지 가능 (백엔드 + 프론트)**
-    
+  
 
 ### React와 차이점?
 
@@ -145,18 +157,9 @@ mkdir backend
 cd backend
 
 # conda 환경 생성 및 활성화
-conda create -n p39_donghwa python=3.9
-conda activate p39_donghwa
+conda create -n p311_donghwa python=3.11
+conda activate p311_donghwa
 ```
-
-<br>
-
-
-#### 왜 Python 3.9를 고려하는지?
-
-- **KoBERT 및 LangChain, Transformers 라이브러리의 호환성**:  
-    일부 라이브러리(특히 KoBERT 관련)는 최신 Python(3.11, 3.12)에서 아직 완벽히 안정적이지 않을 수있음
-- **FastAPI, Pydantic, Hugging Face Transformers 등 주요 라이브러리**는 Python 3.9에서 안정적으로 작동
 
 <br>
 
@@ -166,41 +169,38 @@ conda activate p39_donghwa
 * pip install -r requirements.txt 로 설치
 
 ``` bash
+# --- 웹 프레임워크 ---
+Django>=4.2
+djangorestframework>=3.14
+django-cors-headers>=4.0
+
 # --- 과학/머신러닝 라이브러리 ---
-numpy==1.23.5
-torch==2.0.1
-torchvision==0.15.2
-torchaudio==2.0.2
-transformers==4.31.0          # NLP 모델 라이브러리
-sentence-transformers==2.2.2  # 문장 임베딩 지원
+numpy>=1.23.5
+torch>=2.0.1
+torchvision>=0.15.2
+torchaudio>=2.0.2
+transformers>=4.31.0
+sentence-transformers>=2.2.2
 
 # --- 벡터 DB ---
-chromadb==0.3.21               # 벡터 데이터베이스
+chromadb>=0.3.21
 
 # --- LangChain 및 OpenAI 연동 ---
-langchain==0.0.303             # LangChain 코어 (0.3.61 이상 권장)
-openai==0.27.8                 # OpenAI API 연동
-
-# --- 웹 프레임워크 및 서버 ---
-fastapi==0.95.2
-uvicorn==0.22.0
-python-multipart==0.0.6        # 파일 업로드 지원
-aiofiles==23.1.0               # 비동기 파일 처리
+langchain>=0.0.303
+openai>=0.27.8
 
 # --- 데이터 검증 및 유틸리티 ---
-pydantic==1.10.11              # 데이터 검증 및 모델링 (2.x 최신 버전 고려 가능)
-packaging==23.1                # 패키지 관리 (24.x 최신 버전 권장)
-ydata-profiling==4.5.1         # 데이터 프로파일링 도구
+pydantic>=1.10.11   # Django에서는 꼭 필요하진 않음
+packaging>=23.1
+ydata-profiling>=4.5.1
 
 # --- 이미지 처리 ---
-pillow==9.5.0                  # 이미지 처리 라이브러리
+pillow>=9.5.0
 
-
-# TTS, STT 테스트용 (필요시 추가)
-# google-cloud-texttospeech, clova-sdk, whisper 설치는 별도 고려
-
-# (필요하다면 추가) LangGraph 연동 라이브러리 등은 별도 명시
-
+# --- TTS/STT 및 음성 처리 ---
+pyaudio>=0.2.13
+websockets>=11.0
+python-dotenv>=1.0.0
 ```
 
 
@@ -254,6 +254,203 @@ python -m uvicorn app.main:app --reload
 
 
 <br>
+
+
+
+## Step 3: 백엔드 기초 토대 만들기
+
+<br>
+
+### 1. backend 폴더 생성 및 환경 세팅
+
+```
+bash
+
+
+복사편집
+# DongHwa 레포 루트에서
+cd DongHwa
+mkdir backend
+cd backend
+
+# conda 환경 생성 및 활성화 (Python 3.11)
+conda create -n donghwa_env python=3.11 -y
+conda activate donghwa_env
+```
+
+<br>
+
+### 2. 라이브러리 설치
+
+- 추후 추가 및 변경 가능
+- `requirements.txt`로 관리 권장
+
+```
+bash
+
+
+복사편집
+pip install django djangorestframework django-cors-headers
+pip install numpy torch torchvision torchaudio transformers sentence-transformers
+pip install chromadb langchain openai
+pip install pillow
+```
+
+*`requirements.txt` 예시:*
+
+```
+txt
+
+
+복사편집
+Django>=4.2
+djangorestframework>=3.14
+django-cors-headers>=4.0
+
+numpy>=1.23.5
+torch>=2.0.1
+torchvision>=0.15.2
+torchaudio>=2.0.2
+transformers>=4.31.0
+sentence-transformers>=2.2.2
+
+chromadb>=0.3.21
+langchain>=0.0.303
+openai>=0.27.8
+
+pillow>=9.5.0
+```
+
+<br>
+
+### 3. Django 프로젝트 및 앱 생성
+
+```
+bash
+
+
+복사편집
+django-admin startproject backend_project .
+python manage.py startapp api
+```
+
+<br>
+
+### 4. 기본 설정 변경 (`backend_project/settings.py`)
+
+- `INSTALLED_APPS`에 추가
+
+```
+python
+
+
+복사편집
+INSTALLED_APPS = [
+    ...,
+    'rest_framework',
+    'corsheaders',
+    'api',  # 우리가 만든 앱
+]
+```
+
+- CORS 설정 추가 (Next.js 개발 서버 허용)
+
+```
+python
+
+
+복사편집
+MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    ...,
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
+```
+
+<br>
+
+### 5. 기본 API 뷰 작성 (`api/views.py`)
+
+```
+python
+
+
+복사편집
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+@api_view(['GET'])
+def hello(request):
+    return Response({"message": "DongHwa Backend API is running."})
+```
+
+<br>
+
+### 6. URL 연결 (`api/urls.py`)
+
+```
+python
+
+
+복사편집
+from django.urls import path
+from .views import hello
+
+urlpatterns = [
+    path('', hello),
+]
+```
+
+- `backend_project/urls.py`에 포함
+
+```
+python
+
+
+복사편집
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('api.urls')),
+]
+```
+
+<br>
+
+### 7. 서버 실행
+
+```
+bash
+
+
+복사편집
+python manage.py runserver
+```
+
+<br>
+
+------
+
+## 서로의 역할
+
+1. **Django REST Framework (백엔드)**
+   - Python 기반 웹 프레임워크 Django 위에서 API 서버 구축
+   - LangChain, KoBERT 모델 연동 및 데이터베이스 처리
+   - 클라이언트 요청 처리 후 JSON 형태로 응답 전달
+2. **Next.js (프론트엔드)**
+   - React 기반 UI 개발
+   - 사용자 입력 받아 Django API 호출
+   - 받은 데이터로 UI 렌더링
+
+두 시스템은 API 요청/응답을 통해 상호작용하며, CORS 설정으로 안전하게 통신합니다.
+
+
+
 
 
 **추후 공부하는대로 업데이트 할게요!**
