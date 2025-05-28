@@ -1,38 +1,58 @@
-# === 웹 프레임워크 (Web Framework) ===
-# Django 백엔드 서버, API, CORS 설정
-django>=4.2
-djangorestframework>=3.14
-django-cors-headers>=4.0
+# ========================================
+# requirements.txt (2025년 5월 기준, langgraph 중심 호환)
+# Python 3.11 + Gemini 음성 시스템 포함 통합 버전
+# ========================================
 
-# === 생성형 AI 및 LangChain ===
-# LangChain 코어 및 LLM, 벡터DB, 음성모델 연동 라이브러리
-langchain>=0.1.0
-langgraph>=0.0.50
-langchain-google-genai>=1.0.0  # Gemini 연동을 위한 공식 통합 패키지
-langchain-community>=0.0.30     # ChromaDB 등 커뮤니티 연동 기능 포함
-google-generativeai>=0.5.0
-openai-whisper>=1.1.0
+# === [Django 기반 웹 백엔드] ===
+Django~=4.2.13
+djangorestframework~=3.15.1
+django-cors-headers==4.7.0
+gunicorn~=22.0.0
+python-dotenv~=1.0.1
 
-# === 과학/머신러닝 라이브러리 ===
-# 딥러닝(PyTorch) 및 자연어 처리(Transformers)
-numpy>=1.23.5
-torch>=2.0.1
-torchvision>=0.15.2
-torchaudio>=2.0.2
-transformers>=4.31.0
-sentence-transformers>=2.2.2
+# === [데이터베이스 드라이버: MySQL or MariaDB 중 택 1] ===
+mysqlclient~=2.2.4
+# mariadb~=1.1.9
 
-# === 벡터 데이터베이스 ===
-# 로컬 벡터 저장 및 검색용
-chromadb>=0.4.24
+# === [FastAPI 기반 서비스 지원] ===
+fastapi~=0.111.0
+uvicorn[standard]~=0.30.1
+httpx~=0.27.0
 
-# === 데이터 검증 및 유틸리티 ===
-# LangChain 등에서 내부적으로 사용하며, API 데이터 구조 정의에 유용
-pydantic>=1.10.11
-packaging>=23.1
-python-dotenv>=1.0.0
+# === [LangGraph + LangChain 0.2.x 호환] ===
+langchain~=0.2.17
+langchain-core~=0.2.43
+langgraph==0.2.1
+langchain-google-genai~=1.0.6
+google-generativeai~=0.7.1
+tiktoken~=0.7.0
 
-# === 이미지 및 음성 처리 ===
-# 이미지 처리 및 TTS(텍스트->음성)
-pillow>=9.5.0
-gTTS>=2.5.0
+# === [WebSocket + Gemini 음성 시스템용] ===
+websockets~=12.0
+
+# === [음성 처리 (STT / TTS)] ===
+openai-whisper==20231117
+gTTS~=2.5.1
+soundfile~=0.12.1
+ffmpeg-python~=0.2.0
+# pyaudio~=0.2.14
+# (설치 별도: macOS → brew install portaudio && pip install pyaudio)
+# (Windows → pip install pipwin && pipwin install pyaudio)
+
+# === [머신러닝 / KoBERT / 트랜스포머] ===
+torch==2.3.1
+torchaudio==2.3.1
+torchvision==0.18.1
+transformers~=4.41.2
+sentencepiece~=0.2.0
+scikit-learn~=1.5.0
+pandas~=2.2.2
+
+# === [벡터 검색 / RAG용] ===
+faiss-cpu~=1.7.4
+
+# === [기타 유틸리티] ===
+pydantic~=2.7.4
+Pillow~=10.3.0
+requests~=2.32.3
+packaging~=24.1
