@@ -8,8 +8,8 @@ import axios from 'axios' // 서버와의 통신을 위해 사용
 // AI 응답 메시지를 서버에서 받아오는 함수
 const getAIResponse = async (msg: string): Promise<string> => {
   try {
-    const res = await axios.post('http://localhost:8000/api/v1/chat/', { 
-    // const res = await axios.post('http://116.125.140.113:8720/api/v1/chat/', { 
+    const res = await axios.post('http://localhost:8721/api/v1/chat/', { 
+    // const res = await axios.post('http://116.125.140.113:8721/api/v1/chat/', { 
       msg: msg
     });
     return res.data?.aimsg || 'AI 응답이 없습니다.';

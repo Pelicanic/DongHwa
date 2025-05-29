@@ -60,13 +60,12 @@ MIDDLEWARE = [
 
 #CORS 관련 추가
 # CORS_ORIGIN_WHITELIST = ['http://127.0.0.1:3000', 'http://localhost:3000', 'http://127.0.0.1:8000', 'http://116.125.140.113:8000']
-CORS_ORIGIN_WHITELIST = ['http://127.0.0.1:3000', 'http://localhost:8720', 'http://localhost:3000', 'http://116.125.140.113:8720', 'http://127.0.0.1:8000', 'http://localhost:8000']
+CORS_ORIGIN_WHITELIST = ['http://127.0.0.1:3000', 'http://localhost:8720', 'http://localhost:3000', 'http://116.125.140.113:8720']
 CORS_ALLOW_ALL_ORIGINS = True
 
 # CORS 설정 추가 (Next.js 개발 서버 허용)
 CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:3000', 'http://localhost:8720', 'http://localhost:3000', 'http://116.125.140.113:8720', 'http://127.0.0.1:8000', 'http://localhost:8000'
-]
+    'http://127.0.0.1:3000', 'http://localhost:8720', 'http://localhost:3000', 'http://116.125.140.113:8720']
 
 #HTTP methods 추가
 CORS_ALLOW_METHODS = (
