@@ -9,6 +9,7 @@ env/
 venv/
 .venv/
 
+
 # 패키지, 배포 관련
 pip-wheel-metadata/
 *.egg-info/
