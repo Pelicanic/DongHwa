@@ -1,0 +1,82 @@
+
+# --- Python 기본 ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 가상환경
+env/
+venv/
+.venv/
+
+
+# 패키지, 배포 관련
+pip-wheel-metadata/
+*.egg-info/
+.eggs/
+
+# 테스트, 캐시
+.pytest_cache/
+.mypy_cache/
+.tox/
+.coverage
+htmlcov/
+
+# IDE 및 편집기
+.vscode/
+.idea/
+.ipynb_checkpoints/
+.ropeproject/
+
+# Jupyter 노트북
+.ipynb_checkpoints/
+
+# 환경설정 파일
+.env
+.env.*
+
+# 로그 및 임시파일
+*.log
+tmp/
+temp/
+
+# 데이터베이스 및 캐시
+*.sqlite3
+*.db
+
+# 머신러닝 모델 및 체크포인트
+*.h5
+*.ckpt
+*.pt
+*.pth
+saved_model/
+checkpoint
+events.out.tfevents.*
+
+# 이미지 임시파일 등
+*.png
+*.jpg
+*.jpeg
+
+# MacOS 특이 파일
+.DS_Store
+
+# Python Bytecode
+*.pyc
+
+# Python egg files
+*.egg
+*.egg-info/
+
+# 기타 캐시 폴더
+.cache/
+
+# TensorFlow
+tensorflow/
+
+# FastAPI, Flask 등 환경파일
+instance/
+
+# Docker 관련 (필요 시)
+Dockerfile
+docker-compose.yml
