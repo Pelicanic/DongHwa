@@ -23,9 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure--@mgq=c22g3z-c6)tlzkfc#&)*(-y(m)#=t5j(g_ohuopzpu*l'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['116.125.140.113', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -45,6 +46,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # CORS 설정 추가
+    'corsheaders.middleware.CorsMiddleware',
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -52,16 +56,44 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
-    # CORS 설정 추가
-    'corsheaders.middleware.CorsMiddleware'
-
 ]
+
+#CORS 관련 추가
+# CORS_ORIGIN_WHITELIST = ['http://127.0.0.1:3000', 'http://localhost:3000', 'http://127.0.0.1:8000', 'http://116.125.140.113:8000']
+CORS_ORIGIN_WHITELIST = ['http://127.0.0.1:3000', 'http://localhost:8720', 'http://localhost:3000', 'http://116.125.140.113:8720', 'http://127.0.0.1:8000', 'http://localhost:8000']
+CORS_ALLOW_ALL_ORIGINS = True
 
 # CORS 설정 추가 (Next.js 개발 서버 허용)
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
+    'http://127.0.0.1:3000', 'http://localhost:8720', 'http://localhost:3000', 'http://116.125.140.113:8720', 'http://127.0.0.1:8000', 'http://localhost:8000'
 ]
+
+#HTTP methods 추가
+CORS_ALLOW_METHODS = (
+"DELETE",
+"GET",
+"OPTIONS",
+"PATCH",
+"POST",
+"PUT",
+)
+
+#HTTP headers 추가
+CORS_ALLOW_HEADERS = (
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+)
+
+
+APPEND_SLASH = False
+
 
 ROOT_URLCONF = 'pelworld.urls'
 

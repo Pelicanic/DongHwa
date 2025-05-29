@@ -11,6 +11,10 @@ from rest_framework import status
 from api.services.chatbot_gemini_lib import vectordb_load, chat_query
 
 
+if vectordb_load('rain') == False:
+    print('VectorDB 로드 실패')
+    exit()
+
 # @csrf_exempt
 @api_view(['GET']) # csrf_exempt 자동 적용됨
 def index(request):
@@ -21,11 +25,6 @@ def index(request):
 # 예제 코드 : 챗봇
 @api_view(['GET', 'POST'])
 def chat_v1(request):
-
-    if vectordb_load('rain') == False:
-        print('VectorDB 로드 실패')
-        exit()
-
     try:
         msg = request.data.get('msg', '')
         if not msg:

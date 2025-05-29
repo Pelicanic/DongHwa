@@ -1,6 +1,5 @@
 # 라이브러리 불러오기
 import os
-
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_community.vectorstores import FAISS
@@ -8,12 +7,24 @@ from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.schema.runnable import RunnableMap
+from dotenv import load_dotenv
+
 
 # CSV
 from langchain_community.document_loaders.csv_loader import CSVLoader
 
-# GEMINI API KEY
+
+# .env가 있는 폴더 경로를 명시적으로 지정
+dotenv_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')  # 예: back/.env
+load_dotenv(dotenv_path)
+
+print(dotenv_path)
+
+# 환경변수 불러오기
 api_key = os.getenv("GOOGLE_API_KEY")
+if not api_key:
+    raise EnvironmentError("GOOGLE_API_KEY가 설정되지 않았습니다. .env 파일을 확인하세요.")
+
 os.environ["GOOGLE_API_KEY"] = api_key
 
 # 전역변수
