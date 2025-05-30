@@ -1,0 +1,175 @@
+
+## ERD
+![](https://i.imgur.com/G6psd6t.png)
+
+
+<br>
+
+## SQL DDL
+``` SQL
+USE pelicanic_db;
+
+-- 1-1 사용자 계정 정보
+CREATE TABLE `User` (
+	`user_id`	INT	NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	`login_id`	VARCHAR(50)	NULL,
+	`password_hash`	VARCHAR(255)	NOT NULL,
+	`nickname`	VARCHAR(50)	NOT NULL,
+	`email`	VARCHAR(100)	NULL,
+	`age_group`	VARCHAR(20)	NULL,
+	`interests`	VARCHAR(100)	NULL,
+	`created_at`	TIMESTAMP	NOT NULL,
+	`last_login`	VARCHAR(20)	NULL,
+	`profile_image_url`	VARCHAR(20)	NULL,
+    `provider` VARCHAR(20) NULL,
+    `provider_id` VARCHAR(50) NULL,
+    
+    UNIQUE KEY (`provider`, `provider_id`, `nickname`)  -- 중복 방지
+);
+
+-- 1-2 유저 팔로우/구독 관계
+CREATE TABLE `Follow` (
+    `follower_user_id` INT NOT NULL,
+    `followed_user_id` INT NOT NULL,
+    `followed_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    
+    -- 복합 기본키: 한 사용자가 동일한 사람을 여러 번 팔로우할 수 없게 함
+    PRIMARY KEY (`follower_user_id`, `followed_user_id`),
+    
+    -- 외래 키 제약조건 (User 테이블의 user_id를 참조)
+    FOREIGN KEY (`follower_user_id`) REFERENCES `User`(`user_id`) ON DELETE CASCADE,
+    FOREIGN KEY (`followed_user_id`) REFERENCES `User`(`user_id`) ON DELETE CASCADE
+);
+
+-- 1-3 사용자 선호 장르 
+CREATE TABLE `UserGenre` (
+    `user_id` INT NOT NULL,
+    `genre_id` INT NOT NULL,
+
+    -- 복합 기본 키 설정
+    PRIMARY KEY (`user_id`, `genre_id`),
+
+    -- 외래 키 제약
+    FOREIGN KEY (`user_id`) REFERENCES `User`(`user_id`) ON DELETE CASCADE,
+    FOREIGN KEY (`genre_id`) REFERENCES `Genre`(`genre_id`) ON DELETE CASCADE
+);
+
+-- 2-1 동화
+CREATE TABLE `Story` (
+	`story_id`	INT	NOT NULL,
+	`author_user_id`	INT	NOT NULL,
+	`title`	VARCHAR(200)	NULL,
+	`summary`	TEXT	NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`status`	VARCHAR(20)	NULL,
+    
+    -- 기본키
+    PRIMARY KEY (`story_id`),
+    
+    -- 외래키: 사용자와 연결
+    FOREIGN KEY (`author_user_id`) REFERENCES `User`(`user_id`) ON DELETE CASCADE
+);
+
+-- 2-2 문단버전
+CREATE TABLE `ParagraphVersion` (
+    `version_id` BIGINT NOT NULL AUTO_INCREMENT,
+    `paragraph_id` BIGINT NOT NULL,
+    `version_no` INT NOT NULL,
+    `content_text` TEXT NULL,
+    `generated_by` TEXT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`version_id`),
+    FOREIGN KEY (`paragraph_id`) REFERENCES `StoryParagraph`(`paragraph_id`) ON DELETE CASCADE,
+    UNIQUE KEY (`paragraph_id`, `version_no`)
+);
+
+-- 2-3 동화문단
+CREATE TABLE `StoryParagraph` (
+    `paragraph_id` BIGINT NOT NULL AUTO_INCREMENT,
+    `story_id` INT NOT NULL,
+    `paragraph_no` INT NOT NULL,
+    `content_text` TEXT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`paragraph_id`),
+    FOREIGN KEY (`story_id`) REFERENCES `Story`(`story_id`) ON DELETE CASCADE
+);
+
+-- 2-4 삽화
+CREATE TABLE `Illustration` (
+    `illustration_id` BIGINT NOT NULL AUTO_INCREMENT,
+    `paragraph_id` BIGINT NOT NULL,
+    `story_id` INT NOT NULL,
+    `image_url` VARCHAR(255) NULL,
+    `caption_text` TEXT NULL,
+    `labels` VARCHAR(255) NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`illustration_id`),
+
+    -- 외래 키 제약
+    FOREIGN KEY (`paragraph_id`) REFERENCES `StoryParagraph`(`paragraph_id`) ON DELETE CASCADE,
+    FOREIGN KEY (`story_id`) REFERENCES `Story`(`story_id`) ON DELETE CASCADE
+);
+
+-- 3-1 질의응답
+CREATE TABLE `ParagraphQA` (
+    `qa_id` BIGINT NOT NULL AUTO_INCREMENT,
+    `paragraph_id` BIGINT NOT NULL,
+    `story_id` INT NOT NULL,
+    `question_text` TEXT NOT NULL,
+    `answer_text` TEXT NOT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`qa_id`),
+
+    FOREIGN KEY (`paragraph_id`) REFERENCES `StoryParagraph`(`paragraph_id`) ON DELETE CASCADE,
+    FOREIGN KEY (`story_id`) REFERENCES `Story`(`story_id`) ON DELETE CASCADE
+);
+
+-- 4-1 좋아요
+CREATE TABLE `UserLike` (
+	`user_id`   INT	NOT NULL,
+	`story_id`	INT	NOT NULL,
+    `liked_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 복합 기본 키: 한 유저가 같은 동화를 두 번 좋아요하지 못하도록
+    PRIMARY KEY (`user_id`, `story_id`),
+
+    -- 외래 키 제약
+    FOREIGN KEY (`user_id`) REFERENCES `User`(`user_id`) ON DELETE CASCADE,
+    FOREIGN KEY (`story_id`) REFERENCES `Story`(`story_id`) ON DELETE CASCADE
+);
+
+-- 4-2 장르 정의
+CREATE TABLE `Genre` (
+	`genre_id`	INT	NOT NULL,
+	`genre_name`	VARCHAR(50)	NOT NULL,
+	`description`	VARCHAR(100)	NULL,
+    
+    PRIMARY KEY (`genre_id`),
+    UNIQUE KEY (`genre_name`)
+);
+
+-- 4-3 동화-장르
+CREATE TABLE `StoryGenre` (
+    `story_id` INT NOT NULL,
+    `genre_id` INT NOT NULL,
+
+    -- 복합 기본키
+    PRIMARY KEY (`story_id`, `genre_id`),
+
+    -- 외래 키 제약
+    FOREIGN KEY (`story_id`) REFERENCES `Story`(`story_id`) ON DELETE CASCADE,
+    FOREIGN KEY (`genre_id`) REFERENCES `Genre`(`genre_id`) ON DELETE CASCADE
+);
+```
+
+
+
+
+
+
