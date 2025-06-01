@@ -3,7 +3,7 @@ import '@/src/styles/globals.css';
 import {X } from 'lucide-react';
 
 
-const Dashboard: React.FC = () => {
+const Main: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -122,4 +122,4 @@ const Dashboard: React.FC = () => {
   );
 };
 
-export default Dashboard;
+export default Main;

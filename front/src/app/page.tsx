@@ -1,9 +1,9 @@
-import Dashboard from "@/src/app/dashboard/page"
+import Main from "@/src/app/user/main/page"
 
 // app/page.tsx
 export default function Home() {
   return (
-    <Dashboard />
+    <Main />
   );
 
 }
