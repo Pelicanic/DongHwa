@@ -1,0 +1,243 @@
+/* ==============================================
+  Tailwind CSS 기본 지시문 (필수)
+   ============================================== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==============================================
+  기본 리셋 및 설정
+   ============================================== */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==============================================
+  텍스트 자르기 유틸리티 (컴포넌트에서 사용됨)
+  line-clamp-2, line-clamp-3 클래스가 필요
+   ============================================== */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+/* ==============================================
+  스크롤바 커스터마이징 (사이드바용)
+   ============================================== */
+/* Webkit 브라우저 (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc; /* gray-50과 유사 */
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* gray-300과 유사 */
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* gray-400과 유사 */
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+/* ==============================================
+  포커스 접근성 개선
+   ============================================== */
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #3b82f6; /* blue-500 */
+  outline-offset: 2px;
+}
+
+/* ==============================================
+  모바일 최적화
+   ============================================== */
+/* 탭 하이라이트 제거 (모바일에서 버튼 클릭 시 파란색 하이라이트 제거) */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 모바일에서 텍스트 크기 자동 조정 방지 */
+html {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+/* ==============================================
+  성능 최적화
+   ============================================== */
+/* 애니메이션 성능 개선 - GPU 가속 활용 */
+.transition-transform,
+.transition-colors,
+.transition-shadow,
+.transition-all {
+  will-change: transform;
+}
+
+/* 사이드바 애니메이션 최적화 */
+.translate-x-0,
+.-translate-x-full {
+  transform: translate3d(var(--tw-translate-x), var(--tw-translate-y), 0) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+/* ==============================================
+  텍스트 선택 스타일
+   ============================================== */
+::selection {
+  background-color: #3b82f6; /* blue-500 */
+  color: white;
+}
+
+::-moz-selection {
+  background-color: #3b82f6; /* blue-500 */
+  color: white;
+}
+
+/* ==============================================
+  반응형 디자인 도우미
+   ============================================== */
+/* 화면 크기별 디버깅용 (개발 시에만 사용) */
+/*
+@media (min-width: 1024px) {
+  body::before {
+    content: "Desktop (lg+)";
+    position: fixed;
+    top: 0;
+    right: 0;
+    background: red;
+    color: white;
+    padding: 4px 8px;
+    font-size: 12px;
+    z-index: 9999;
+  }
+}
+
+@media (max-width: 1023px) {
+  body::before {
+    content: "Mobile/Tablet";
+    position: fixed;
+    top: 0;
+    right: 0;
+    background: blue;
+    color: white;
+    padding: 4px 8px;
+    font-size: 12px;
+    z-index: 9999;
+  }
+}
+*/
+
+/* ==============================================
+  컴포넌트별 커스텀 스타일
+   ============================================== */
+
+/* 사이드바 오버레이 애니메이션 */
+.sidebar-overlay {
+  backdrop-filter: blur(2px);
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* 카드 호버 효과 강화 */
+.story-card {
+  transition: all 0.2s ease-in-out;
+}
+
+.story-card:hover {
+  transform: translateY(-1px);
+}
+
+/* 검색 입력 필드 포커스 효과 */
+.search-input:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ==============================================
+  다크모드 지원 (선택사항)
+   ============================================== */
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+  
+  /* 다크모드에서 스크롤바 색상 조정 */
+  ::-webkit-scrollbar-track {
+    background: #1f2937;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #4b5563;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+  }
+}
+
+/* ==============================================
+  인쇄 스타일 (선택사항)
+   ============================================== */
+@media print {
+  .no-print,
+  .sidebar,
+  button {
+    display: none !important;
+  }
+  
+  .main-content {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+/* ==============================================
+  접근성 개선
+   ============================================== */
+/* 애니메이션을 선호하지 않는 사용자를 위한 설정 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
