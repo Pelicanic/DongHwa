@@ -18,9 +18,35 @@
         "name": "next"
       }
     ],
+    // "paths": {
+    //   "@/*": ["./*"]
+    // },
+    "baseUrl": ".",            // 기준 경로
     "paths": {
-      "@/*": ["./*"]
-    }
+            "@/*": ["src/*"],
+
+      // App 및 페이지 라우팅 관련
+      "@app/*": ["src/app/*"],
+
+      // 도메인 기반 feature 폴더
+      "@features/*": ["src/features/*"],
+      "@features/dashboard/*": ["src/features/dashboard/*"],
+      "@features/user/*": ["src/features/user/*"],
+
+      // 컴포넌트
+      "@components/*": ["src/app/(components)/*"],
+
+      // 상태 관리 관련
+      "@state/*": ["src/state/*"],
+
+      // 유틸 함수나 API 등
+      "@lib/*": ["src/lib/*"],
+
+      // 스타일
+      "@styles/*": ["src/styles/*"],
+
+    },
+    
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "tailwind.config.js"],
   "exclude": ["node_modules"]

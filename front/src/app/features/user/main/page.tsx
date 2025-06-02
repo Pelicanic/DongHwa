@@ -1,5 +1,5 @@
 
-import '@/src/styles/globals.css';
+import '@styles/globals.css';
 import {X } from 'lucide-react';
 
 

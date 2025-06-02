@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Home, Book, Tag, Users, CreditCard, Settings, X, Menu, Icon, LucideIcon } from 'lucide-react';
-import Image from "next/image";
+import { Search, Home, Book, Tag, Users, CreditCard, Settings, X, Menu, LucideIcon } from 'lucide-react';
+// import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -127,7 +127,7 @@ const Sidebar = () => {
                     />
 
                     <SidebarLink
-                        href="/user/myLibrary"
+                        href="/features/user/myLibrary"
                         icon={Book}
                         label="My Library"
                     />
