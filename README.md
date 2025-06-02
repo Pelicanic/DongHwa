@@ -1,36 +1,21 @@
 ## 📑 목차
 
-1. [Code Convention 개요 및 목적](#code-convention-%EA%B0%9C%EC%9A%94-%EB%B0%8F-%EB%AA%A9%EC%A0%81)
-
-2. [공통 규칙 (Python & JavaScript)](#%EA%B3%B5%ED%86%B5-%EA%B7%9C%EC%B9%99-python--javascript)
-    
-3. [🔙 백엔드 (Django, Python)](#-%EB%B0%B1%EC%97%94%EB%93%9C-django-python)
-    
-4. [💻 프론트엔드 (Next.js, TypeScript)](#-%ED%94%84%EB%A1%A0%ED%8A%B8%EC%97%94%EB%93%9C-nextjs-typescript)
-    
-5. [Git 사용 규칙 (Git Rule)](#git-%EC%82%AC%EC%9A%A9-%EA%B7%9C%EC%B9%99-git-rule)
-    
-    - [1. 브랜치 전략](#1-%EB%B8%8C%EB%9E%9C%EC%B9%98-%EC%A0%84%EB%9E%B5)
-        
-    - [2. 커밋 메시지 규칙](#2-%EC%BB%A4%EB%B0%8B-%EB%A9%94%EC%8B%9C%EC%A7%80-%EA%B7%9C%EC%B9%99)
-        
+1. [Code Convention 개요 및 목적](#code-convention)
+2. [공통 규칙 (Python & JavaScript)](#공통-python--javascript)
+3. [🔙 백엔드 (Django, Python)](#-%EB%B0%B1%EC%97%94%EB%93%9C-django-python-311)
+4. [💻 프론트엔드 (Next.js, TypeScript)](#-%ED%94%84%EB%A1%A0%ED%8A%B8%EC%97%94%EB%93%9C-nextjs-typescript)  
+5. [Git 사용 규칙 (Git Rule)](#git-%EC%82%AC%EC%9A%A9-%EA%B7%9C%EC%B9%99-git-rule) 
+    - [1. 브랜치 전략](#1-%EB%B8%8C%EB%9E%9C%EC%B9%98-%EC%A0%84%EB%9E%B5)  
+    - [2. 커밋 메시지 규칙](#2-%EC%BB%A4%EB%B0%8B-%EB%A9%94%EC%8B%9C%EC%A7%80-%EA%B7%9C%EC%B9%99)        
     - [3. Pull Request (PR) 규칙](#3-pull-request-pr-%EA%B7%9C%EC%B9%99)
-        
-    - [4. 커밋 단위 규칙](#4-%EC%BB%A4%EB%B0%8B-%EB%8B%A8%EC%9C%84-%EA%B7%9C%EC%B9%99)
-        
-6. [GIT 협업 절차 (CLI 기준)](#git-%ED%98%91%EC%97%85-%EC%A0%88%EC%B0%A8-cli-%EA%B8%B0%EC%A4%80)
-    
-    - [1. Git Clone](#1-git-clone)
-        
-    - [2. 브랜치 사용하기](#2-%EB%B8%8C%EB%9E%9C%EC%B9%98-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)
-        
-    - [3. Pull Request(PR)](#3-pull-requestpr)
-        
-    - [4. 원격 ↔ 로컬 동기화](#4-%EC%9B%90%EA%B2%A9--%EB%A1%9C%EC%BB%AC-%EB%8F%99%EA%B8%B0%ED%99%94)
-        
-    - [5. 로컬 브랜치 정리](#5-%EB%A1%9C%EC%BB%AC-%EB%B8%8C%EB%9E%9C%EC%B9%98-%EC%A0%95%EB%A6%AC)
-        
-7. [추천 GUI 툴](#%EC%B6%94%EC%B2%9C-gui-%ED%88%B4)
+    - [4. 커밋 단위 규칙](#4-%EC%BB%A4%EB%B0%8B-%EB%8B%A8%EC%9C%84-%EA%B7%9C%EC%B9%99)   
+6. [GIT 협업 절차 (CLI 기준)](#git으로-협업하기)
+    - [1. Git Clone](#1-git-clone)   
+    - [2. 브랜치 사용하기](#2-%EB%B8%8C%EB%9E%9C%EC%B9%98-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)  
+    - [3. Pull Request(PR)](#3-pull-requestpr) 
+    - [4. 원격 ↔ 로컬 동기화](#4-%EC%9B%90%EA%B2%A9--%EB%A1%9C%EC%BB%AC-%EB%8F%99%EA%B8%B0%ED%99%94) 
+    - [5. 로컬 브랜치 정리](#5-%EB%A1%9C%EC%BB%AC-%EB%B8%8C%EB%9E%9C%EC%B9%98-%EC%A0%95%EB%A6%AC)  
+7. [추천 GUI 툴](#5-gui-tools)
 
 
 ---
