@@ -91,7 +91,7 @@ const Sidebar = () => {
                         </div>
                         <div>
                             <span className="font-bold text-lg">Fel-World.AI</span>
-                            <div className="text-xs text-gray-500">For You</div>
+                            <div className="text-right text-xs text-gray-500">For You</div>
                         </div>
                     </div>
                 </div>
@@ -127,7 +127,7 @@ const Sidebar = () => {
                     />
 
                     <SidebarLink
-                        href="/features/user/myLibrary"
+                        href="/user/myLibrary"
                         icon={Book}
                         label="My Library"
                     />
