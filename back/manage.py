@@ -2,6 +2,8 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+from dotenv import load_dotenv
+load_dotenv()  # 기본적으로 .env가 프로젝트 루트 (back/)에 있다고 가정
 
 
 def main():

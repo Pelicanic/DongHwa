@@ -4,6 +4,14 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework import status
+from api.models import Story, User
+from django.db import connection
+from django.utils import timezone
+
+
+# Langgraph용
+from api.services.langgraph.story_flow import story_flow
+from api.models import User
 # from django.views.decorators.csrf import csrf_exempt
 
 # 라이브러리 불러오기
@@ -46,3 +54,71 @@ def chat_v1(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
+
+
+# LangGraph 실행 객체 초기화
+flow = story_flow()
+
+# 작성자 : 최준혁
+# 기능 : story_id 생성
+# 마지막 수정일 : 2025-06-03
+def get_next_story_id():
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT MAX(story_id) FROM Story")
+        row = cursor.fetchone()
+        return (row[0] or 0) + 1
+
+
+# 작성자 : 최준혁
+# 기능 : news 페이지에서 호출하는 LangGraph 기반 동화 생성 API
+# 마지막 수정일 : 2025-06-03
+@api_view(['POST'])
+def chatbot_story(request):
+    try:
+        user_id = request.data.get("user_id")
+        story_id = request.data.get("story_id")
+        paragraph_id = request.data.get("paragraph_id")
+        mode = request.data.get("mode", "create")
+        user_input = request.data.get("input")
+
+        user = User.objects.get(user_id=user_id)
+
+        # story_id가 없다면 새로 생성
+        if not story_id:
+            story_id = get_next_story_id()
+            Story.objects.create(
+                story_id=story_id,
+                author_user=user,
+                title="제목 없음",
+                created_at=timezone.now(),
+                updated_at=timezone.now(),
+                status="in_progress",
+                author_name=user.nickname,
+                age=user.age
+            )
+
+        # LangGraph 초기 상태
+        initial_state = {
+            "input": user_input,
+            "user_id": user_id,
+            "story_id": story_id,
+            "age": user.age,
+            "mode": mode
+        }
+        if mode == "edit" and paragraph_id:
+            initial_state["paragraph_id"] = paragraph_id
+
+        result = flow.invoke(initial_state)
+
+        return Response({
+            "story_id": story_id,
+            "paragraph": result.get("paragraph_text"),
+            "paragraph_no": result.get("paragraph_no"),
+            "version_no": result.get("version_no"),
+            "paragraph_id": result.get("paragraph_id")
+        })
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({"error": str(e)}, status=500)
