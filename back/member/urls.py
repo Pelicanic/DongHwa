@@ -1,8 +1,7 @@
-# member/urls.py
 from django.urls import path
-from . import views
+from .views import SignupView, VerifyEmailView
 
 urlpatterns = [
-    path('signup/', views.signup, name='signup'),
-    path('verify-email/', views.verify_email, name='verify_email'),
+    path('signup/', SignupView.as_view(), name='signup'),
+    path('verify-email/', VerifyEmailView.as_view(), name='verify-email'),
 ]

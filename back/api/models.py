@@ -121,6 +121,8 @@ class User(models.Model):
     profile_image_url = models.CharField(max_length=20, blank=True, null=True)
     provider = models.CharField(unique=True, max_length=20, blank=True, null=True)
     provider_id = models.CharField(unique=True, max_length=50, blank=True, null=True)
+    is_active = models.BooleanField(default=False) # 이메일 인증 여부
+    email_verification_token = models.CharField(max_length=64, null=True, blank=True) # 이메일 인증 토큰
 
     class Meta:
         managed = False
