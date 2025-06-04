@@ -1,7 +1,7 @@
 
 import '@/styles/globals.css';
 import {X } from 'lucide-react';
-
+import LinkButton from '@/(components)/Button/button';
 
 const Main: React.FC = () => {
 
@@ -17,16 +17,20 @@ const Main: React.FC = () => {
               들어간 준비가 되었나요?
             </h1>
             <p className="text-sm sm:text-base text-gray-600 mb-6 leading-relaxed">
-              Fel-World에서 상어 움직이는 물고, 스토리, 심화를 경험해 보세요!<br className="hidden sm:block" />
+              Pel-World에서 상어 움직이는 물고, 스토리, 심화를 경험해 보세요!<br className="hidden sm:block" />
               상상했던 모든 것이 현실이 되는 즐거움을 느껴보세요!
             </p>
             <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-              <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 sm:px-6 py-3 rounded-lg font-medium text-sm sm:text-base transition-colors">
-                동화 만들어 보기
-              </button>
-              <button className="border border-blue-500 text-blue-500 hover:bg-blue-50 px-4 sm:px-6 py-3 rounded-lg font-medium text-sm sm:text-base transition-colors">
-                동화 이어 만들기
-              </button>
+              <LinkButton 
+                text='동화 만들어 보기'
+                href="/tasks"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 sm:px-6 py-3 rounded-lg font-medium text-sm sm:text-base transition-colors"
+               />
+              <LinkButton 
+                text='동화 이어 만들기'
+                href="/"
+                className="border border-blue-500 text-blue-500 hover:bg-blue-50 px-4 sm:px-6 py-3 rounded-lg font-medium text-sm sm:text-base transition-colors"
+              />
             </div>
           </div>
 

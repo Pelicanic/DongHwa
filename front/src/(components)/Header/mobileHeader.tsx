@@ -21,7 +21,7 @@ const MobileHeader = ({ toggleSidebar }: MobileHeaderProps) => {
           <div className="w-8 h-8 bg-black rounded flex items-center justify-center">
             <X className="w-5 h-5 text-white" />
           </div>
-          <span className="font-bold text-lg">Fel-World.AI</span>
+          <span className="font-bold text-lg">Pel-World.AI</span>
         </div>
         <div className="w-10" /> {/* Placeholder for balance */}
       </div>

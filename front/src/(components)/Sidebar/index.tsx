@@ -2,6 +2,8 @@ import React from 'react';
 import { Search, Home, Book, Tag, Users, CreditCard, Settings, X, LucideIcon } from 'lucide-react';
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import LinkButton from '@/(components)/Button/button';
+
 
 interface SidebarLinkProps {
     href: string;
@@ -56,8 +58,8 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
               <X className="w-5 h-5 text-white" />
             </div>
             <div>
-              <span className="font-bold text-lg">Fel-World.AI</span>
-              <div className="text-xs text-gray-500">For You</div>
+              <span className="font-bold text-lg">Pel-World.AI</span>
+              <div className="text-right text-xs text-gray-500">For You</div>
             </div>
           </div>
         </div>
@@ -88,7 +90,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
         <nav className="flex-1 px-4 pb-4 overflow-y-auto">
           <div className="space-y-1">
             <SidebarLink href="/" icon={Home} label="Home" />
-            <SidebarLink href="/user/myLibrary" icon={Book} label="My Library" />
+            <SidebarLink href="/overview" icon={Book} label="My Library" />
             <SidebarLink href="/user/favoriteTag" icon={Tag} label="Favorite Tag" />
             <SidebarLink href="/user/friends" icon={Users} label="Friends" />
             <SidebarLink href="/user/mySubscription" icon={CreditCard} label="My Subscription" />
@@ -98,12 +100,16 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
 
         {/* Bottom buttons */}
         <div className="p-4 space-y-2 border-t bg-white">
-          <button className="w-full py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm font-medium">
-            Log In
-          </button>
-          <button className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium">
-            Sign Up Free
-          </button>
+          <LinkButton
+            className="w-full py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm font-medium"
+            text='Log In'
+            href="/user/login"
+          />
+          <LinkButton
+            className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+            text='Sign Up Free'
+            href="/user/signup"
+          />
         </div>
       </div>
     </aside>
