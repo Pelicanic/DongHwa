@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/styles/globals.css";
 import DashboardWrapper from "./dashboardWrapper";
+import AuroraBackground from "@/(components)/background/AuroraBackground"; // 💫 배경 import
+import BackgroundSlideshow from "@/(components)/background/BackgroundSlideshow";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,9 +30,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <DashboardWrapper>
-          {children}
-        </DashboardWrapper>
+        {/* 💫 전역 Aurora 배경 */}
+        <AuroraBackground />
+        <BackgroundSlideshow />
+        
+        {/* 💬 콘텐츠 z-10으로 표시 */}
+        <div className="relative z-10">
+          <DashboardWrapper>{children}</DashboardWrapper>
+        </div>
       </body>
     </html>
   );
