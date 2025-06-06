@@ -80,7 +80,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search for..."
+              placeholder="검색"
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
             />
           </div>
@@ -89,12 +89,12 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
         {/* Navigation */}
         <nav className="flex-1 px-4 pb-4 overflow-y-auto">
           <div className="space-y-1">
-            <SidebarLink href="/" icon={Home} label="Home" />
-            <SidebarLink href="/overview" icon={Book} label="My Library" />
-            <SidebarLink href="/user/favoriteTag" icon={Tag} label="Favorite Tag" />
-            <SidebarLink href="/user/friends" icon={Users} label="Friends" />
-            <SidebarLink href="/user/mySubscription" icon={CreditCard} label="My Subscription" />
-            <SidebarLink href="/user/setting" icon={Settings} label="Setting" />
+            <SidebarLink href="/" icon={Home} label="홈" />
+            <SidebarLink href="/overview" icon={Book} label="내 동화책" />
+            <SidebarLink href="/user/favoriteTag" icon={Tag} label="좋아하는 동화책" />
+            <SidebarLink href="/user/friends" icon={Users} label="친구" />
+            <SidebarLink href="/user/mySubscription" icon={CreditCard} label="구독" />
+            <SidebarLink href="/user/setting" icon={Settings} label="설정" />
           </div>
         </nav>
 
@@ -102,12 +102,12 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
         <div className="p-4 space-y-2 border-t bg-white">
           <LinkButton
             className="w-full py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm font-medium"
-            text='Log In'
+            text='로그인'
             href="/user/login"
           />
           <LinkButton
             className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
-            text='Sign Up Free'
+            text='회원가입'
             href="/user/signup"
           />
         </div>
