@@ -66,7 +66,7 @@ export default function GeminiStoryChatbot() {
   };
 
   return (
-    <main className="bg-gray-50 min-h-screen px-4 py-6">
+    <main className="bg-gray-50 min-h-screen px-4 py-6 ">
       <div className="container mx-auto max-w-4xl">
 
         {/* 헤더 */}

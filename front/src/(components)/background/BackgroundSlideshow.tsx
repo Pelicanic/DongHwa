@@ -1,5 +1,8 @@
 'use client';
 
+// 작성자 : 최준혁
+// 기능 : BackgroundSlideshow 컴포넌트
+// 마지막 수정일 : 2025-06-06
 import { useEffect, useState } from 'react';
 
 const backgrounds = [
