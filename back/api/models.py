@@ -119,7 +119,7 @@ class User(models.Model):
     age = models.IntegerField(blank=True, null=True)
     interests = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField()
-    last_login = models.CharField(max_length=20, blank=True, null=True)
+    last_login = models.DateTimeField(blank=True, null=True)
     profile_image_url = models.CharField(max_length=20, blank=True, null=True)
     provider = models.CharField(unique=True, max_length=20, blank=True, null=True)
     provider_id = models.CharField(unique=True, max_length=50, blank=True, null=True)

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 from decouple import config # 환경변수 사용을 위한 decouple 모듈 임포트
+from datetime import timedelta # JWT 토큰 만료 시간 설정을 위한 임포트
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure--@mgq=c22g3z-c6)tlzkfc#&)*(-y(m)#=t5j(g_ohuopzpu*l'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 # ALLOWED_HOSTS = ['*']
 ALLOWED_HOSTS = ['116.125.140.113', 'localhost', '127.0.0.1']
@@ -93,6 +94,18 @@ CORS_ALLOW_HEADERS = (
     "x-requested-with",
 )
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'member.authentication.CustomJWTAuthentication',
+    ),
+} # JWT 인증 설정
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,            # 새로 발급될 때 refresh도 함께 갱신
+    'BLACKLIST_AFTER_ROTATION': True,         # 이전 refresh 토큰은 폐기
+}# JWT 토큰 설정
 
 APPEND_SLASH = False
 
@@ -162,7 +175,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 
