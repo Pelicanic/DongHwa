@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+import { Typewriter } from 'react-simple-typewriter'
 
 let currentStoryId: number | null = null;
 
@@ -65,6 +66,8 @@ export default function GeminiStoryChatbot() {
     ]);
   };
 
+  const lastIdx = messages.length - 1;
+
   return (
     <main className="bg-gray-50 min-h-screen px-4 py-6 ">
       <div className="container mx-auto max-w-4xl">
@@ -97,7 +100,15 @@ export default function GeminiStoryChatbot() {
                 )}
                 <div className="flex-1 max-w-md">
                   <div className={`${msg.sender === 'user' ? 'bg-gray-800 text-white' : 'bg-blue-50 text-gray-800'} rounded-lg px-4 py-3`}>
-                    <p>{msg.text}</p>
+                    {msg.sender === 'ai' ? (
+                      <Typewriter
+                        words={[msg.text]}
+                        typeSpeed={90}
+                        cursor={idx === lastIdx}
+                      />
+                    ) : (
+                      msg.text
+                    )}
                   </div>
                   <span className="text-xs text-gray-500 mt-1 block text-right">
                     {new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
