@@ -103,7 +103,10 @@ def chatbot_story(request):
             "user_id": user_id,
             "story_id": story_id,
             "age": user.age,
-            "mode": mode
+            "mode": mode,
+            "theme": request.data.get("theme"),
+            "mood": request.data.get("mood"),
+            "mode": mode,
         }
         if mode == "edit" and paragraph_id:
             initial_state["paragraph_id"] = paragraph_id

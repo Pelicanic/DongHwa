@@ -7,9 +7,9 @@ let currentStoryId: number | null = null;
 
 // 작성자 : 최준혁
 // 기능 : LangGraph 기반 동화 생성 API 호출 함수 (user_id=760 테스트용)
-// 마지막 수정일 : 2025-06-03
+// 마지막 수정일 : 2025-06-08
 // 실제 동화 생성시에는 동화 생성 버튼, 혹은 채팅으로 '동화 생성' 등 트리거와 분기가 필요
-const getAIResponse = async (msg: string): Promise<string> => {
+const getAIResponse = async (msg: string, theme: string, mood: string): Promise<string> => {
   try {
     const user_id = 760;
 
@@ -18,6 +18,8 @@ const getAIResponse = async (msg: string): Promise<string> => {
       user_id,
       story_id: currentStoryId,  // 초기엔 null → 백엔드가 생성
       mode: 'create',
+      theme,
+      mood,
     });
 
     // story_id가 없다면 백에서 새로 내려온 걸 저장
@@ -32,22 +34,21 @@ const getAIResponse = async (msg: string): Promise<string> => {
   }
 };
 
-
 export default function GeminiStoryChatbot() {
   const [messages, setMessages] = useState([
-    { sender: 'ai', text: "안녕하세요! 🧒 재미나이와 함께 동화를 만들어봐요. 주제나 상황을 입력해보세요!" }
+    { sender: 'ai', text: "안녕하세요! 🧒 저와 함께 동화를 만들어봐요. 주제나 상황을 입력해보세요!" }
   ]);
   const [input, setInput] = useState('');
+  const [theme, setTheme] = useState('');
+  const [mood, setMood] = useState('');
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  // 메시지 추가될 때마다 자동 스크롤
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
 
-  // 메시지 전송 핸들러
   const handleSend = async () => {
     const trimmed = input.trim();
     if (!trimmed) return;
@@ -55,24 +56,58 @@ export default function GeminiStoryChatbot() {
     setMessages(prev => [...prev, { sender: 'user', text: trimmed }]);
     setInput('');
 
-    const aiResponse = await getAIResponse(trimmed);
+    const aiResponse = await getAIResponse(trimmed, theme, mood);
     setMessages(prev => [...prev, { sender: 'ai', text: aiResponse }]);
   };
 
   const handleClear = () => {
     setMessages([
-      { sender: 'ai', text: "안녕하세요! 🧒 재미나이와 함께 동화를 만들어봐요. 주제나 상황을 입력해보세요!" }
+      { sender: 'ai', text: "안녕하세요! 🧒 저와 함께 동화를 만들어봐요. 주제나 상황을 입력해보세요!" }
     ]);
   };
 
   return (
-    <main className="bg-gray-50 min-h-screen px-4 py-6">
+    <main className="bg-gray-50 min-h-screen px-4 py-6 ">
       <div className="container mx-auto max-w-4xl">
 
         {/* 헤더 */}
         <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">🧒 재미나이 동화 생성 챗봇</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">🧒 함께 만들어가는 나만의 동화책</h1>
           <p className="text-gray-600 text-sm mt-1">예: “작은 여우가 눈 오는 날 길을 잃었어”</p>
+        </div>
+
+        {/* 테마 & 분위기 선택 */}
+        <div className="flex space-x-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">테마</label>
+            <select
+              value={theme}
+              onChange={(e) => setTheme(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2"
+            >
+              <option value="">선택</option>
+              <option value="로맨스">로맨스</option>
+              <option value="판타지">판타지</option>
+              <option value="현대 판타지">현대 판타지</option>
+              <option value="고전">고전</option>
+              <option value="미스터리">미스터리</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">분위기</label>
+            <select
+              value={mood}
+              onChange={(e) => setMood(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2"
+            >
+              <option value="">선택</option>
+              <option value="밝은">밝은</option>
+              <option value="슬픈">슬픈</option>
+              <option value="따뜻한">따뜻한</option>
+              <option value="신비로운">신비로운</option>
+              <option value="무서운">무서운</option>
+            </select>
+          </div>
         </div>
 
         {/* 채팅 창 */}
@@ -80,7 +115,7 @@ export default function GeminiStoryChatbot() {
           <div className="flex items-center px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-green-500 rounded-full" />
-              <span className="text-sm font-medium text-gray-700">재미나이</span>
+              <span className="text-sm font-medium text-gray-700">대화중 ...</span>
             </div>
           </div>
 
