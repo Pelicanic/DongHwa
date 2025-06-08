@@ -47,6 +47,11 @@ const Main: React.FC = () => {
                   href="/"
                   className="border border-blue-500 text-blue-500 hover:bg-blue-50 px-4 sm:px-6 py-3 rounded-lg font-medium text-sm sm:text-base transition-colors"
                 />
+                <LinkButton
+                  text="동화 만들어 보기(준혁)"
+                  href="/news"
+                  className="bg-green-500 hover:bg-green-600 text-white px-4 sm:px-6 py-3 rounded-lg font-medium text-sm sm:text-base transition-colors"
+                />
               </div>
             </div>
 
