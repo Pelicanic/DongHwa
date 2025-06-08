@@ -58,7 +58,7 @@ const Main: React.FC = () => {
             </div>
 
             {/* 추천 카드 리스트 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 lg:gap-6">
               {/* Card 1 */}
               <div className="bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow">
                 <div className="w-full h-80 rounded-lg mb-4 overflow-hidden">

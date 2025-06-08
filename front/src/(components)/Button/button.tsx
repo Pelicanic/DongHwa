@@ -71,7 +71,7 @@ const LinkButton: React.FC<ButtonProps> = ({
     <button
       type="button"
       className={combinedClassName}
-      style={{...style, display: 'inline-block', textAlign: 'center'}}
+      style={style}
       onClick={onClick}
       id={id}
     >
