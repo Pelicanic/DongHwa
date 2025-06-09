@@ -1,3 +1,8 @@
+import React from 'react';
+import { Search, Home, Book, Tag, Users, CreditCard, Settings, X } from 'lucide-react';
+import LinkButton from '@/(components)/Button/button';
+import SidebarLink from '@/(components)/Button/sidebarlinkButton';
+
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -111,9 +116,9 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
             <div className="w-8 h-8 bg-black rounded flex items-center justify-center">
               <X className="w-5 h-5 text-white" />
             </div>
-            <div>
+            <div className='text-right w-1/2 ml-4'>
               <span className="font-bold text-lg">Pel-World.AI</span>
-              <div className="text-right text-xs text-gray-500">For You</div>
+              <div className=" text-xs text-gray-500">For You</div>
             </div>
           </div>
         </div>

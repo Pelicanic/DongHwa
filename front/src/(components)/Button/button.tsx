@@ -1,3 +1,7 @@
+// 작성자 : 최재우
+// 마지막 수정일 : 2025-06-04
+// 마지막 수정 내용 : 버튼 태그와 link 태그의 스타일을 통일하여 일관성 있는 디자인 적용
+
 import React from 'react';
 import Link from 'next/link';
 

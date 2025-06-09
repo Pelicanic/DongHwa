@@ -1,3 +1,7 @@
+// 작성자 : 최재우
+// 마지막 수정일 : 2025-06-03
+// 마지막 수정 내용 : 모바일 헤더 컴포넌트 작성
+
 import React from 'react';
 import { Menu, X } from 'lucide-react';
 

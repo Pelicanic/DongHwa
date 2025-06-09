@@ -2,6 +2,10 @@
 
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+
+// 작성자 : 최재우
+// 기능 : 타이핑효과를 위한 라이브러리
+// 마지막 수정일 : 2025-06-08
 import { Typewriter } from 'react-simple-typewriter'
 
 let currentStoryId: number | null = null;
@@ -100,6 +104,10 @@ export default function GeminiStoryChatbot() {
                 )}
                 <div className="flex-1 max-w-md">
                   <div className={`${msg.sender === 'user' ? 'bg-gray-800 text-white' : 'bg-blue-50 text-gray-800'} rounded-lg px-4 py-3`}>
+                    {/* 타이핑효과 구현 Start
+                    작성자 : 최재우
+                    기능 : 타이핑효과를 위한 라이브러리
+                    마지막 수정일 : 2025-06-08 */}
                     {msg.sender === 'ai' ? (
                       <Typewriter
                         words={[msg.text]}
@@ -109,6 +117,7 @@ export default function GeminiStoryChatbot() {
                     ) : (
                       msg.text
                     )}
+                    {/* 타이핑효과 구현 end */}
                   </div>
                   <span className="text-xs text-gray-500 mt-1 block text-right">
                     {new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
