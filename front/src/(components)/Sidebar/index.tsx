@@ -5,37 +5,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import {
-  Search, Home, Book, Tag, Users, CreditCard, Settings, X, LucideIcon
-} from 'lucide-react';
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import {Search, Home, Book, Tag, Users, CreditCard, Settings, X } from 'lucide-react';
 import LinkButton from '@/(components)/Button/button';
+import SidebarLink from '@/(components)/Button/sidebarlinkButton';
 
-interface SidebarLinkProps {
-  href: string;
-  icon: LucideIcon;
-  label: string;
-}
-
-const SidebarLink = ({ href, icon: Icon, label }: SidebarLinkProps) => {
-  const pathname = usePathname();
-  const isActive = pathname === href || (pathname === "/" && href === "/");
-
-  return (
-    <Link href={href}>
-      <div
-        className={`
-          flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors
-          ${isActive ? "bg-blue-200 text-gray-700" : ""}
-        `}
-      >
-        <Icon className="w-5 h-5" />
-        <span className="text-sm font-medium">{label}</span>
-      </div>
-    </Link>
-  );
-};
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -111,11 +84,11 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
       <div className="flex flex-col h-full">
         {/* 로고 */}
         <div className="p-4 border-b hidden lg:block">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center">
             <div className="w-8 h-8 bg-black rounded flex items-center justify-center">
               <X className="w-5 h-5 text-white" />
             </div>
-            <div className='text-right w-1/2 ml-4'>
+            <div className='text-right w-1/2 ml-6'>
               <span className="font-bold text-lg">Pel-World.AI</span>
               <div className=" text-xs text-gray-500">For You</div>
             </div>

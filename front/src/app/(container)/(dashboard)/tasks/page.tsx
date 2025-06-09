@@ -111,7 +111,7 @@ export default function GeminiStoryChatbot() {
                     {msg.sender === 'ai' ? (
                       <Typewriter
                         words={[msg.text]}
-                        typeSpeed={90}
+                        typeSpeed={43}
                         cursor={idx === lastIdx}
                       />
                     ) : (
