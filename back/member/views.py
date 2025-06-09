@@ -188,9 +188,7 @@ class LogoutView(APIView):
         })
 
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from member.authentication import CustomJWTAuthentication
+
 
 class LoginStatusView(APIView):
     authentication_classes = [CustomJWTAuthentication]
