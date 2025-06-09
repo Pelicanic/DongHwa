@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Sidebar from '@/(components)/Sidebar/index';
 import Navbar from '@/(components)/Navbar/index';
@@ -16,6 +16,10 @@ const DashboardWrapper: React.FC<DashboardWrapperProps> = ({ children }) => {
 
   const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
   const closeSidebar = () => setIsSidebarOpen(false);
+
+  useEffect(() => {
+    // Close sidebar when navigating to a new page
+  }, [isSidebarOpen]);
 
   return (
     <div className="relative min-h-screen bg-gray-50">
