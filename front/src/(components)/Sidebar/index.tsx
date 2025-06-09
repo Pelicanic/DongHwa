@@ -1,8 +1,7 @@
-import React from 'react';
-import { Search, Home, Book, Tag, Users, CreditCard, Settings, X } from 'lucide-react';
-import LinkButton from '@/(components)/Button/button';
-import SidebarLink from '@/(components)/Button/sidebarlinkButton';
-
+// 작성자 : 최재우
+// 마지막 수정일 : 2025-06-03
+// 마지막 수정 내용 : LinkButton 컴포넌트를 통한 페이지 이동 기능 적용
+// SidebarLink에 대한 컴포넌트 분리
 'use client';
 
 import React, { useEffect, useState } from 'react';
