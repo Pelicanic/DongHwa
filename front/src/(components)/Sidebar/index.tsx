@@ -1,38 +1,36 @@
-import React from 'react';
-import { Search, Home, Book, Tag, Users, CreditCard, Settings, X, LucideIcon } from 'lucide-react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import {
+  Search, Home, Book, Tag, Users, CreditCard, Settings, X, LucideIcon
+} from 'lucide-react';
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LinkButton from '@/(components)/Button/button';
 
-
 interface SidebarLinkProps {
-    href: string;
-    icon: LucideIcon;
-    label: string;
+  href: string;
+  icon: LucideIcon;
+  label: string;
 }
 
-const SidebarLink = ({
-    href,
-    icon: Icon,
-    label,
-}: SidebarLinkProps) => {
-    const pathname = usePathname();
-    const isActive =
-        pathname === href || (pathname === "/" && href === "/");
+const SidebarLink = ({ href, icon: Icon, label }: SidebarLinkProps) => {
+  const pathname = usePathname();
+  const isActive = pathname === href || (pathname === "/" && href === "/");
 
-    return (
-        <Link href={href}>
-            <div
-                className={`
-                    flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors
-                    ${isActive ? "bg-blue-200 text-gray-700" : ""}
-                `}
-            >
-                <Icon className="w-5 h-5" />
-                <span className="text-sm font-medium">{label}</span>
-            </div>
-        </Link>
-    );
+  return (
+    <Link href={href}>
+      <div
+        className={`
+          flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors
+          ${isActive ? "bg-blue-200 text-gray-700" : ""}
+        `}
+      >
+        <Icon className="w-5 h-5" />
+        <span className="text-sm font-medium">{label}</span>
+      </div>
+    </Link>
+  );
 };
 
 interface SidebarProps {
@@ -41,6 +39,62 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const checkLoginStatus = async () => {
+    const access = localStorage.getItem('access');
+    const refresh = localStorage.getItem('refresh');
+
+    if (!access) return setIsLoggedIn(false);
+
+    try {
+      const res = await fetch('http://localhost:8721/member/status/', {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${access}` }
+      });
+
+      if (res.ok) {
+        setIsLoggedIn(true);
+      } else if (refresh) {
+        const refreshRes = await fetch('http://localhost:8721/member/token/refresh/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh })
+        });
+
+        const data = await refreshRes.json();
+        if (refreshRes.ok && data.access) {
+          localStorage.setItem('access', data.access);
+          setIsLoggedIn(true);
+        } else {
+          localStorage.removeItem('access');
+          localStorage.removeItem('refresh');
+          setIsLoggedIn(false);
+        }
+      }
+    } catch {
+      setIsLoggedIn(false);
+    }
+  };
+
+  useEffect(() => {
+    checkLoginStatus();
+
+    const handleLoginEvent = () => checkLoginStatus();
+    window.addEventListener("login", handleLoginEvent);
+
+    return () => {
+      window.removeEventListener("login", handleLoginEvent);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('access');
+    localStorage.removeItem('refresh');
+    setIsLoggedIn(false);
+    window.location.reload();
+  };
+
   return (
     <aside
       className={`
@@ -51,7 +105,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
       `}
     >
       <div className="flex flex-col h-full">
-        {/* Logo - Hidden on mobile (shown in header instead) */}
+        {/* 로고 */}
         <div className="p-4 border-b hidden lg:block">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-black rounded flex items-center justify-center">
@@ -64,7 +118,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
           </div>
         </div>
 
-        {/* Mobile close button */}
+        {/* 닫기 버튼 */}
         <div className="p-4 border-b lg:hidden flex justify-end">
           <button
             onClick={toggleSidebar}
@@ -74,19 +128,19 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
           </button>
         </div>
 
-        {/* Search */}
+        {/* 검색 */}
         <div className="p-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="검색"
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
             />
           </div>
         </div>
 
-        {/* Navigation */}
+        {/* 메뉴 */}
         <nav className="flex-1 px-4 pb-4 overflow-y-auto">
           <div className="space-y-1">
             <SidebarLink href="/" icon={Home} label="홈" />
@@ -98,18 +152,29 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
           </div>
         </nav>
 
-        {/* Bottom buttons */}
+        {/* 로그인 / 로그아웃 버튼 */}
         <div className="p-4 space-y-2 border-t bg-white">
-          <LinkButton
-            className="w-full py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm font-medium"
-            text='로그인'
-            href="/user/login"
-          />
-          <LinkButton
-            className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
-            text='회원가입'
-            href="/user/signup"
-          />
+          {isLoggedIn ? (
+            <button
+              className="w-full py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium"
+              onClick={handleLogout}
+            >
+              로그아웃
+            </button>
+          ) : (
+            <>
+              <LinkButton
+                className="w-full py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium"
+                text='로그인'
+                href="/user/login"
+              />
+              <LinkButton
+                className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm font-medium"
+                text='회원가입'
+                href="/user/signup"
+              />
+            </>
+          )}
         </div>
       </div>
     </aside>
