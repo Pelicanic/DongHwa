@@ -12,6 +12,7 @@ from api.services.langgraph.nodes import (
     image_prompt_check,             # 이미지 판단
     generate_image,                 # 이미지 생성
     retrieve_context,               # 컨텍스트 벡터 처리
+    # image_prompt_router,            # 이미지 필요 판단 
     # index_to_vector_db,             # 컨텍스트 벡터 처리
     # check_continue_or_end,          # 루프 제어
     # check_continue_or_end_router,   # 루프 제어
@@ -56,7 +57,6 @@ def mode_router(state: StoryState) -> str:
 # 기능 : LangGraph 플로우 정의 함수
 #       각 노드를 순서대로 등록하고, 조건에 따라 분기되도록 그래프 구성
 # 마지막 수정일 : 2025-06-08 (ver. 현재 구현 기준)
-
 def story_flow():
     graph = StateGraph(StoryState)
 
@@ -95,7 +95,8 @@ def story_flow():
 
     # ✅ 이미지 필요 판단 후 분기
     graph.add_edge("GenerateParagraph", "ImagePromptCheck")
-    # graph.add_conditional_edges("ImagePromptCheck", image_prompt_router)
+
+    # graph.add_conditional_edges("ImagePromptCheck", image_prompt_router) # 25-06-09
 
     # ✅ 이미지 생성 이후 저장 분기
     graph.add_edge("GenerateImage", "SaveParagraph")

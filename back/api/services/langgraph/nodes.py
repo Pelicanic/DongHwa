@@ -208,18 +208,18 @@ def image_prompt_check(state: dict) -> dict:
     paragraph = state.get("paragraph_text", "")
 
     prompt = (
+        # 프롬프트를 강화하거나, 프론트에서 이미지 태그 트리거를(버튼?) 주거나
         "다음 문단은 동화의 일부입니다. 이 문단이 시작적인 이미지로 표현하기에 적합하다면  'yes', "
         "그렇지 않다면 'no'만 출력해주세요. 다른 설명은 필요하지 않습니다. \n\n"
         f"문단 : {paragraph}"
     )
 
-    if debug:
-        print(f"[ImagePromptCheck] prompt: {prompt}")
-
     try:
         response = model.generate_content(prompt)
         output = response.text.strip()
         generate_image = "yes" in output
+        if debug:
+            print(f"[ImagePromptCheck] output: {output}")
     except Exception as e:
         print(f"[ImagePromptCheck Error] {e}")
         generate_image = False
