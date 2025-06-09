@@ -166,6 +166,9 @@ class LoginView(APIView):
 
         tokens = get_tokens_for_user(user)
 
+        print(f"로그인 성공: {user.login_id} (ID: {user.user_id}) ")
+        print(f"발급된 토큰: {tokens['access']}")
+
         return Response({
             "success": True,
             "message": "로그인 성공! 토큰이 발급되었습니다.",
@@ -188,9 +191,7 @@ class LogoutView(APIView):
         })
 
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from member.authentication import CustomJWTAuthentication
+
 
 class LoginStatusView(APIView):
     authentication_classes = [CustomJWTAuthentication]
