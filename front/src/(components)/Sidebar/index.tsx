@@ -1,39 +1,12 @@
+// 작성자 : 최재우
+// 마지막 수정일 : 2025-06-03
+// 마지막 수정 내용 : LinkButton 컴포넌트를 통한 페이지 이동 기능 적용
+// SidebarLink에 대한 컴포넌트 분리
+
 import React from 'react';
-import { Search, Home, Book, Tag, Users, CreditCard, Settings, X, LucideIcon } from 'lucide-react';
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Search, Home, Book, Tag, Users, CreditCard, Settings, X } from 'lucide-react';
 import LinkButton from '@/(components)/Button/button';
-
-
-interface SidebarLinkProps {
-    href: string;
-    icon: LucideIcon;
-    label: string;
-}
-
-const SidebarLink = ({
-    href,
-    icon: Icon,
-    label,
-}: SidebarLinkProps) => {
-    const pathname = usePathname();
-    const isActive =
-        pathname === href || (pathname === "/" && href === "/");
-
-    return (
-        <Link href={href}>
-            <div
-                className={`
-                    flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors
-                    ${isActive ? "bg-blue-200 text-gray-700" : ""}
-                `}
-            >
-                <Icon className="w-5 h-5" />
-                <span className="text-sm font-medium">{label}</span>
-            </div>
-        </Link>
-    );
-};
+import SidebarLink from '@/(components)/Button/sidebarlinkButton';
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -57,9 +30,9 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
             <div className="w-8 h-8 bg-black rounded flex items-center justify-center">
               <X className="w-5 h-5 text-white" />
             </div>
-            <div>
+            <div className='text-right w-1/2 ml-4'>
               <span className="font-bold text-lg">Pel-World.AI</span>
-              <div className="text-right text-xs text-gray-500">For You</div>
+              <div className=" text-xs text-gray-500">For You</div>
             </div>
           </div>
         </div>

@@ -1,3 +1,9 @@
+// 작성자 : 최재우
+// 마지막 수정일 : 2025-06-08
+// 마지막 수정 내용 : 
+// 화면 크기에 따른 반응형 디자인 수정
+// {/* 추천 카드 리스트 */} 의 div에 클래스 추가 / lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4
+
 'use client';
 
 import { useEffect, useState } from 'react';
