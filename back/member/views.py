@@ -192,6 +192,7 @@ class LogoutView(APIView):
 
 
 
+
 class LoginStatusView(APIView):
     authentication_classes = [CustomJWTAuthentication]
 
