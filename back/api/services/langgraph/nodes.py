@@ -3,11 +3,15 @@
 # 작성일 : 2025-06-03
 import google.generativeai as genai
 import os
+import re
+
+from typing import Tuple, List
 
 from api.models import Paragraphqa, Storyparagraph, Paragraphversion
 from django.utils import timezone
 from api.services.vector_utils import search_similar_paragraphs
 from api.services.vector_utils import index_paragraphs_to_faiss
+from api.services.vector_utils import get_latest_paragraphs
 
 
 debug = True
@@ -35,45 +39,124 @@ def generate_paragraph(state: dict) -> dict:
 
     # Gemini에게 프롬프트 전송
     prompt = (
-        "아래 사용자의 요청을 바탕으로 사용자의 연령에 따라 친근한 말투를 사용하며 동화의 문장을 만들어줘.\n"
-        "- 추임새를 넣지 말아줘. 어휴, 얘야, 아! 등의 추임새와 이모지 사용을 자제해줘.\n"
-        "- 대화 내용 자체가 한 권의 동화책이 될 예정이기 때문에 덧붙이는 말 없이 이전 대화와 연결이 잘 되게 해줘.\n"
-        "- 대화 상호작용을 통해 동화의 문단을 만들고, 사용자의 요청에 따라 동화의 내용을 수정해줘.\n"
-        "- 사용자의 연령에 따라 문장의 길이와 복잡도를 조절해줘.\n"
-        f"- 사용자의 연령은 {user_age}세.\n"
-        f"- 대분류는 '{theme}', 분위기는 '{mood}'야.\n"
-        f"- 앞서 생성된 이야기를 이어가야 해. 현재 문맥은 다음과 같아:\n{context}\n"
-        "- 문장은 짧고 이해하기 쉽게 써줘.\n"
-        "- 총 3~5문장 정도가 적당해.\n"
-        "- 너무 무겁거나 복잡한 표현은 피하고, 동심을 담아줘.\n\n"
-        f"새로운 입력: {user_input}"
-    )
+        "당신은 아이를 위한 동화 작가입니다.\n"
 
-    if debug:
-        print(f"[GenerateParagraph] prompt: {prompt}")
+        "아래 사용자의 요청을 바탕으로 이야기를 이어가는 문장을 만들어주세요.\n\n"
+        "프롬프트 입력에 대해서 응답하지 말고, 아래의 형식에 따라 답변을 작성해주세요.\n\n"
+
+        "[중요]\n"
+        "[진행상태]의 '기'는 이야기를 시작하는 상황을 소개하고, 주인공이나 배경, 문제 등을 자연스럽게 제시해주세요."
+        "[진행상태]의 '기'의 [문장]은 이야기를 시작하는 장면이어야 합니다."
+        "[진행상태]의 '기'의 [질문]은 '다음에 어떤 일이 일어날까?'처럼 궁금증을 유도하세요."
+        "[진행상태]의 '기'의 [행동]은 아이가 이야기의 방향을 처음 선택할 수 있도록 기본적인 탐색 또는 선택지여야 합니다."
+
+        "[진행상태]의 '승'은 이야기가 본격적으로 전개되어야 하며, 주인공이 무언가를 시도하거나 문제에 다가가는 흐름을 그려주세요."
+        "[진행상태]의 '승'의 [문장]은 흥미롭게 긴장감을 높이고, 행동의 결과를 암시해주세요."
+        "[진행상태]의 '승'의 [질문]은 '이제 무엇을 할까?','무엇을 선택할까?'처럼 주인공의 다음 행동을 묻는 형식이 좋아요."
+        "[진행상태]의 '승'의 [행동]은 상황에 적극적으로 반응하는 선택지로 구성해주세요."
+
+        "[진행상태]의 '전'은 위기나 갈등의 절정을 표현해야 합니다."
+        "[진행상태]의 '전'의 [문장]은 갈등이 심화되거나 큰 전환점이 되는 장면을 담아주세요."
+        "[진행상태]의 '전'의 [질문]은 아이가 직접 다음 결정을 내릴 수 있도록 방향성을 주는 질문이어야 합니다."
+        "[진행상태]의 '전'의 [행동]은 극복을 위한 전략적인 선택지가 되어야 해요."
+
+        "[진행상태]의 '결'은 이야기를 마무리해야 하며, 질문 없이 동화처럼 아름답고 부드럽게 끝내주세요."
+        "[진행상태]의 '결'은 [문장]만 작성하고, [질문]과 [행동]은 포함하지 마세요."
+        "[진행상태]의 '결'은 아이가 만족할 수 있도록 교훈, 감동, 따뜻함을 느낄 수 있는 결말이어야 합니다."
+
+        "[출력 형식]\n"
+        "이야기를 할때 ~어, ~했어 등 아이에게 동화를 읽어주는듯한 일관된 말투를 사용해서 이야기를 진행해주세요."
+        "1. 동화 이야기의 다음 '문장'을 3~5문장 이내로 작성해주세요.\n"
+        "2. 위 이야기에 이어, 아이에게 다음 전개를 물어보는 '질문' 1개를 작성해주세요. (이름을 묻지 마세요)\n"
+        "3. 아이가 선택할 수 있도록, 이야기와 연결되는 '행동' 제안 반드시 '3'가지를 각각 한 문장으로 제시해주세요.\n"
+        "4. 행동 제안은 아이가 다음 이야기를 진행하기 위해 선택하는 옵션으로, 청유형이 아닌 ~해요, ~어요 처럼 선택지로 제시해주세요.\n"
+        "각 파트 사이에는 구분자(예: [문장], [질문], [행동])를 넣어서 구분해주세요. 문장은 단순히 이어서 자연스럽게 쓰되 구분이 명확하게 보이게 해주세요.\n\n"
+
+        "[작성 조건]\n"
+        f"- 사용자의 연령은 {user_age}세이며, 연령에 맞게 쉽고 친근한 문장을 써주세요.\n"
+        f"- 테마는 '{theme}', 분위기는 '{mood}'입니다.\n"
+        f"- 앞선 이야기의 흐름은 다음과 같습니다:\n{context}\n"
+        "- 대화 전체가 한 권의 동화책처럼 자연스럽게 연결되어야 하며, 덧붙이는 설명이나 이모지는 넣지 마세요.\n"
+        "- 추임새(예: 얘야, 아! 등)는 넣지 마세요.\n"
+        "- 오로지 한국어만 사용해주세요. 외국어 사용 금지!"
+        "- 이야기 주인공과 아이는 다르니, 행동 제안 시 아이에게만 말해 주세요.\n\n"
+
+    # "[진행상태]\n"
+    # "결\n"
+
+    f"새로운 입력: {user_input}"
+)
+
 
     response = model.generate_content(prompt)
-    generated_paragraph = response.text.strip()
+    full_text = response.text.strip()
+
+
+    paragraph, question, choices = extract_choice(full_text)
+
+    if debug:
+        print(f"[GenerateParagraph] input: {user_input}")
+        print(f"[GenerateParagraph] context: {context}")
+        print(f"[GenerateParagraph] mood: {prompt}")
+        print(f"[GenerateParagraph] paragraph: {paragraph}")
+        print(f"[GenerateParagraph] question: {question}")
+        print(f"[GenerateParagraph] choices: {choices}")
+
 
     return {
         "input": user_input,
-        "paragraph_text": generated_paragraph,
+        "paragraph_text": paragraph,
+        "question": question,
+        "choices": choices,  
         "mood": mood,
         "context": context
     }
 
 
 # 작성자 : 최준혁
+# 기능 : Gemini의 응답을 파싱하여 문장, 질문, 선택지로 분리
+# 마지막 수정일 : 2025-06-10
+def extract_choice(text: str) -> Tuple[str, str, List[str]]:
+    paragraph = ""
+    question = ""
+    choices = []
+
+    # 각 태그를 찾는 정규표현식
+    paragraph_match = re.search(r"\[문장\](.*?)(?=\[질문\]|\[행동\]|\Z)", text, re.DOTALL)
+    question_match = re.search(r"\[질문\](.*?)(?=\[행동\]|\Z)", text, re.DOTALL)
+    choices_match = re.findall(r"\d+\.\s*(.+)", text)
+
+    # 추출 및 공백 정리
+    if paragraph_match:
+        paragraph = paragraph_match.group(1).strip()
+
+    if question_match:
+        question = question_match.group(1).strip()
+
+    choices = [choice.strip() for choice in choices_match]
+
+    return paragraph, question, choices
+
+
+
+# 작성자 : 최준혁
 # 기능 : 벡터 DB에서 관련 문맥을 조회하여 상태에 context로 추가
+# 마지막 수정일 : 2025-06-10
 def retrieve_context(state: dict) -> dict:
     query = state.get("input", "")
     story_id = state.get("story_id")
 
+    retrieved_context = ""
+
     try:
+        # 우선 벡터 검색 시도
         retrieved_context = search_similar_paragraphs(story_id, query, top_k=3)
+        if not retrieved_context:
+            print("[RetrieveContext] 벡터 검색 결과 없음. 최근 문단 사용.")
+            retrieved_context = get_latest_paragraphs(story_id, top_k=3)
     except Exception as e:
         print(f"[RetrieveContext Error] {e}")
-        retrieved_context = ""
+        retrieved_context = get_latest_paragraphs(story_id, top_k=3)
 
     if not retrieved_context:
         retrieved_context = "이전에 생성된 문맥이 없습니다."
@@ -86,7 +169,6 @@ def retrieve_context(state: dict) -> dict:
         "context": retrieved_context
     }
 
-
 # 작성자 : 최준혁
 # 기능 : 생성된 패러그래프를 StroyParagraph 테이블에 저장
 #       동일한 내용을 ParagraphVersion 테이블에 v1로 저장
@@ -94,6 +176,7 @@ def retrieve_context(state: dict) -> dict:
 def save_paragraph(state: dict) -> dict:
     story_id = state.get("story_id")
     paragraph_text = state.get("paragraph_text")
+    # paragraph_text = state.get("paragraph_text")
 
     # 단락 번호 계산 : 현재 story_id에서 가장 높은 번호 + 1
     last_para = Storyparagraph.objects.filter(story_id=story_id).order_by("-paragraph_no").first()

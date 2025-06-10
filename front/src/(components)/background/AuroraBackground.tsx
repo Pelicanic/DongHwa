@@ -1,5 +1,8 @@
 'use client';
 
+// 작성자 : 최준혁
+// 기능 : AuroraBackground 컴포넌트
+// 마지막 수정일 : 2025-06-06
 const AuroraBackground = () => {
   return (
     <div className="fixed inset-0 z-0 overflow-hidden">
