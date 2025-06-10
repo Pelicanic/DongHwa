@@ -80,6 +80,7 @@ class Story(models.Model):
     status = models.CharField(max_length=20, blank=True, null=True)
     author_name = models.CharField(max_length=100, blank=True, null=True)
     age = models.IntegerField(blank=True, null=True)
+    cover_img = models.CharField(max_length=255, blank=True, null=True)
     
     
     class Meta:

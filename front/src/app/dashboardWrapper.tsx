@@ -1,16 +1,13 @@
 'use client';
 
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Sidebar from '@/(components)/Sidebar/index';
 import Navbar from '@/(components)/Navbar/index';
 import MobileHeader from '@/(components)/Header/mobileHeader';
 
-interface DashboardWrapperProps {
-    children: React.ReactNode
-}
 
-const DashboardWrapper: React.FC<DashboardWrapperProps> = ({ children }) => {
+const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -21,6 +18,11 @@ const DashboardWrapper: React.FC<DashboardWrapperProps> = ({ children }) => {
     // Close sidebar when navigating to a new page
   }, [isSidebarOpen]);
 
+  useEffect(() => {
+    // Close sidebar when the pathname changes
+    closeSidebar();
+  }, [pathname]);
+  
   return (
     <div className="relative min-h-screen bg-gray-50">
       {/* Mobile Header */}
@@ -53,6 +55,12 @@ const DashboardWrapper: React.FC<DashboardWrapperProps> = ({ children }) => {
         />
       )}
     </div>
+  );
+};
+
+const DashboardWrapper = ({ children }: { children: React.ReactNode }) => {
+  return (
+      <DashboardLayout>{children}</DashboardLayout>
   );
 };
 

@@ -30,30 +30,55 @@ def index(request):
 
 
 
-# 예제 코드 : 챗봇
-@api_view(['GET', 'POST'])
-def chat_v1(request):
-    try:
-        msg = request.data.get('msg', '')
-        if not msg:
-            return Response(
-                {"code": -1, "msg": "메시지가 비어 있습니다."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+# # 예제 코드 : 챗봇
+# @api_view(['GET', 'POST'])
+# def chat_v1(request):
+#     try:
+#         msg = request.data.get('msg', '')
+#         if not msg:
+#             return Response(
+#                 {"code": -1, "msg": "메시지가 비어 있습니다."},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
 
-        alresult = chat_query(msg)
+#         alresult = chat_query(msg)
 
-        return Response(
-            {"code": 1, "aimsg": alresult},
-            status=status.HTTP_200_OK
-        )
+#         return Response(
+#             {"code": 1, "aimsg": alresult},
+#             status=status.HTTP_200_OK
+#         )
 
-    except Exception as e:
-        return Response(
-            {"code": -1, "msg": f"오류가 발생했습니다: {str(e)}"},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+#     except Exception as e:
+#         return Response(
+#             {"code": -1, "msg": f"오류가 발생했습니다: {str(e)}"},
+#             status=status.HTTP_500_INTERNAL_SERVER_ERROR
+#         )
 
+
+@api_view(['POST'])
+def list_story(request):
+    user_id = request.data.get("user_id")
+    if not user_id:
+        return Response({"error": "user_id is required"}, status=400)
+
+    user = User.objects.get(user_id=user_id)
+    stories = Story.objects.filter(author_user=user).order_by('-created_at')[:4]
+
+    story_list = []
+    for story in stories:
+        story_list.append({
+            "story_id": story.story_id,
+            "author_user": story.author_user.user_id,
+            "title": story.title,
+            "summary": story.summary,
+            "created_at": story.created_at,
+            "updated_at": story.updated_at,
+            "status": story.status,
+            "author_name": story.author_name,
+            "age": story.age,
+            "cover_img": story.cover_img,
+        })
+    return Response({"stories": story_list})
 
 
 # LangGraph 실행 객체 초기화
