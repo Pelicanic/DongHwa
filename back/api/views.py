@@ -113,6 +113,7 @@ def chatbot_story(request):
 
         result = flow.invoke(initial_state)
 
+
         return Response({
             "story_id": story_id,
             "paragraph": result.get("paragraph_text"),
