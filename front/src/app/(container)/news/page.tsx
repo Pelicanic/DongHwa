@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+import React from "react";
+import HTMLFlipBook from "react-pageflip";
 
 let currentStoryId: number | null = null;
 
@@ -34,6 +36,7 @@ const getAIResponse = async (msg: string, theme: string, mood: string): Promise<
   }
 };
 
+
 export default function GeminiStoryChatbot() {
   const [messages, setMessages] = useState([
     { sender: 'ai', text: "안녕하세요! 🧒 저와 함께 동화를 만들어봐요. 주제나 상황을 입력해보세요!" }
@@ -65,7 +68,7 @@ export default function GeminiStoryChatbot() {
       { sender: 'ai', text: "안녕하세요! 🧒 저와 함께 동화를 만들어봐요. 주제나 상황을 입력해보세요!" }
     ]);
   };
-
+  
   return (
     <main className="bg-gray-50 min-h-screen px-4 py-6 ">
       <div className="container mx-auto max-w-4xl">

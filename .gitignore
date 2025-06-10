@@ -53,11 +53,6 @@ saved_model/
 checkpoint
 events.out.tfevents.*
 
-# 이미지 임시파일 등
-*.png
-*.jpg
-*.jpeg
-
 # MacOS 특이 파일
 .DS_Store
 

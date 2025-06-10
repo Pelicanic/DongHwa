@@ -2,6 +2,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_core.documents import Document
 import os
+from api.models import Storyparagraph
 
 VECTORDB_ROOT = './vectordb/'
 embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-exp-03-07")
@@ -42,4 +43,21 @@ def search_similar_paragraphs(story_id: int, query: str, top_k: int = 3) -> str:
         return context
     except Exception as e:
         print(f"[VectorStore] 검색 실패: {e}")
+        return ""
+
+
+# 작성자: 최준혁
+# 기능: 최신 문단 기준으로 최근 3개 불러오기 (벡터 검색 대체 or 보완)
+# 마지막 수정일: 2025-06-10
+def get_latest_paragraphs(story_id: int, top_k: int = 3) -> str:
+    try:
+        paragraphs = (
+            Storyparagraph.objects
+            .filter(story_id=story_id)
+            .order_by("-paragraph_no")[:top_k]
+        )
+        latest_texts = [p.content_text for p in reversed(paragraphs)]  # 가장 오래된 것부터
+        return "\n".join(latest_texts)
+    except Exception as e:
+        print(f"[RetrieveContext] 최신 문단 불러오기 실패: {e}")
         return ""
