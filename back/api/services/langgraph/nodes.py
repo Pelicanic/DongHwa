@@ -31,6 +31,7 @@ model = genai.GenerativeModel("gemini-2.0-flash")
 # 기능 : 사용자 입력을 받아 동화 패러그래프를 생성하는 노드
 # 마지막 수정일 : 2025-06-03
 def generate_paragraph(state: dict) -> dict:
+    # user_id = state.get("user_id")
     user_input = state.get("input")
     user_age = state.get("age")
     theme = state.get("theme")
@@ -81,8 +82,8 @@ def generate_paragraph(state: dict) -> dict:
         "- 오로지 한국어만 사용해주세요. 외국어 사용 금지!"
         "- 이야기 주인공과 아이는 다르니, 행동 제안 시 아이에게만 말해 주세요.\n\n"
 
-    # "[진행상태]\n"
-    # "결\n"
+        # "[진행상태]\n"
+        # "결\n"
 
     f"새로운 입력: {user_input}"
 )
