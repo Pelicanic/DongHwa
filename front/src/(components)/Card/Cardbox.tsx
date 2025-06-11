@@ -4,17 +4,10 @@
 
 import React from 'react'
 import Image from 'next/image';
-
-interface ApiStoryResponse {
-  story_id: string | number;
-  title: string;
-  summary: string;
-  author_name: string;
-  cover_img?: string;
-}
+import {StoryDTO} from '@/lib/type/story';
 
 interface MainCardProps {
-  posts: ApiStoryResponse[];
+  posts: StoryDTO[];
 }
 
 const MainCard: React.FC<MainCardProps> = ({ posts }) => {
@@ -31,7 +24,7 @@ const MainCard: React.FC<MainCardProps> = ({ posts }) => {
                 <div className="w-full h-80 rounded-lg mb-4 overflow-hidden">
                   <Image
                     src={post.cover_img ? `/images/${post.cover_img}` : '/images/bg3.jpg'}
-                    alt={post.title}
+                    alt={post.title ? post.title : "제목 없음"}
                     width={400} // 실제 이미지 비율에 맞게 조정
                     height={320}
                     className="w-full h-full object-cover"
