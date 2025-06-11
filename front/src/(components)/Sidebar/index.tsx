@@ -68,6 +68,9 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
   const handleLogout = () => {
     localStorage.removeItem('access');
     localStorage.removeItem('refresh');
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('nickname');
+    localStorage.removeItem('age');
     setIsLoggedIn(false);
     window.location.reload();
   };

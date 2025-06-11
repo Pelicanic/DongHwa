@@ -23,6 +23,7 @@ const Login: React.FC = () => {
       const data = await res.json();
 
       if (data.success) {
+        localStorage.setItem("user_id", data.data.user_id.toString());
         localStorage.setItem('access', data.data.access);
         localStorage.setItem('refresh', data.data.refresh);
         localStorage.setItem('nickname', data.data.nickname); //닉네임 저장

@@ -68,14 +68,14 @@ def story_flow():
     # ✅ 기본 문단 생성
     graph.add_node("GenerateParagraph", generate_paragraph)
 
-    # ✅ 이미지 생성 판단 및 생성
-    graph.add_node("ImagePromptCheck", image_prompt_check)
-    graph.add_node("GenerateImage", generate_image)
-
     # ✅ 패러그래프 저장
     graph.add_node("SaveParagraph", save_paragraph)
     graph.add_node("UpdateParagraphVersion", update_paragraph_version)
     graph.add_node("SaveQA", save_qa)
+
+    # ✅ 이미지 생성 판단 및 생성
+    # graph.add_node("ImagePromptCheck", image_prompt_check)
+    graph.add_node("GenerateImage", generate_image)
 
     # 💤 컨텍스트 벡터 검색 및 저장 (미구현)
     # graph.add_node("IndexToVectorDB", index_to_vector_db)
@@ -93,19 +93,23 @@ def story_flow():
     # ✅ 생성 or 수정 분기
     graph.add_conditional_edges("GenerateParagraph", mode_router)
 
-    # ✅ 이미지 필요 판단 후 분기
-    graph.add_edge("GenerateParagraph", "ImagePromptCheck")
-
-    # graph.add_conditional_edges("ImagePromptCheck", image_prompt_router) # 25-06-09
-
-    # ✅ 이미지 생성 이후 저장 분기
-    graph.add_edge("GenerateImage", "SaveParagraph")
-    graph.add_edge("GenerateImage", "UpdateParagraphVersion")
+    # ✅ 저장
+    graph.add_edge("GenerateParagraph", "SaveParagraph")
+    # graph.add_edge("GenerateParagraph", "UpdateParagraphVersion")
 
     # ✅ 저장 후 QA 기록
     graph.add_edge("SaveParagraph", "SaveQA")
     graph.add_edge("UpdateParagraphVersion", "SaveQA")
 
+    # ✅ 이미지 생성 판단
+    graph.add_edge("SaveQA", "GenerateImage")
+    # graph.add_conditional_edges("GenerateImage", mode_router)
+
+    # ✅ 이미지 생성 이후 저장 분기
+    # graph.add_edge("GenerateImage", "SaveParagraph")
+    # graph.add_edge("GenerateImage", "UpdateParagraphVersion")
+
+    # ✅ 저장 후 QA 기록
     # 저장 후 QA -> context 처리
     # graph.add_edge("SaveQA", "RetrieveContext")
     # graph.add_edge("RetrieveContext", "GenerateParagraph")
@@ -118,6 +122,7 @@ def story_flow():
 
     # ✅ 임시 종료점 (컨텍스트, 반복 흐름 미사용 시)
     graph.set_finish_point("SaveQA")
+    # graph.set_finish_point("GenerateImage")
 
     return graph.compile()
 

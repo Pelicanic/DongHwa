@@ -3,40 +3,14 @@
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import React from "react";
-import HTMLFlipBook from "react-pageflip";
 
 let currentStoryId: number | null = null;
+let user_id: number | null = null;
 
 // 작성자 : 최준혁
 // 기능 : LangGraph 기반 동화 생성 API 호출 함수 (user_id=760 테스트용)
 // 마지막 수정일 : 2025-06-08
 // 실제 동화 생성시에는 동화 생성 버튼, 혹은 채팅으로 '동화 생성' 등 트리거와 분기가 필요
-const getAIResponse = async (msg: string, theme: string, mood: string): Promise<string> => {
-  try {
-    const user_id = 760;
-
-    const res = await axios.post('http://localhost:8721/api/v1/chat/story/', {
-      input: msg,
-      user_id,
-      story_id: currentStoryId,  // 초기엔 null → 백엔드가 생성
-      mode: 'create',
-      theme,
-      mood,
-    });
-
-    // story_id가 없다면 백에서 새로 내려온 걸 저장
-    if (!currentStoryId && res.data?.story_id) {
-      currentStoryId = res.data.story_id;
-    }
-
-    return res.data?.paragraph || '동화를 생성할 수 없습니다.';
-  } catch (error) {
-    console.error('LangGraph 요청 실패:', error);
-    return '서버에 연결할 수 없습니다.';
-  }
-};
-
-
 export default function GeminiStoryChatbot() {
   const [messages, setMessages] = useState([
     { sender: 'ai', text: "안녕하세요! 🧒 저와 함께 동화를 만들어봐요. 주제나 상황을 입력해보세요!" }
@@ -44,30 +18,77 @@ export default function GeminiStoryChatbot() {
   const [input, setInput] = useState('');
   const [theme, setTheme] = useState('');
   const [mood, setMood] = useState('');
+  const [userId, setUserId] = useState<number | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
+  // ✅ 유저 ID 불러오기
+  useEffect(() => {
+    const storedId = localStorage.getItem("user_id");
+    if (storedId) {
+      setUserId(parseInt(storedId, 10));
+    }
+  }, []);
+
+  // ✅ 메시지 변경 시 자동 스크롤
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
 
+  console.log("전송할 user_id:", userId);
+  
+  // ✅ LangGraph 요청 함수
+  const getAIResponse = async (
+    msg: string,
+    theme: string,
+    mood: string,
+    userId: number
+  ): Promise<string> => {
+    try {
+      const res = await axios.post('http://localhost:8721/api/v1/chat/story/', {
+        input: msg,
+        user_id: userId,
+        story_id: currentStoryId,
+        mode: 'create',
+        theme,
+        mood,
+      });
+
+      if (!currentStoryId && res.data?.story_id) {
+        currentStoryId = res.data.story_id;
+      }
+
+      return res.data?.paragraph || '동화를 생성할 수 없습니다.';
+    } catch (error) {
+      console.error('LangGraph 요청 실패:', error);
+      return '서버에 연결할 수 없습니다.';
+    }
+  };
+
+  // ✅ 사용자 입력 처리
   const handleSend = async () => {
     const trimmed = input.trim();
-    if (!trimmed) return;
+    if (!trimmed || !userId) {
+      alert("로그인 후 사용해주세요.");
+      return;
+    }
 
     setMessages(prev => [...prev, { sender: 'user', text: trimmed }]);
     setInput('');
 
-    const aiResponse = await getAIResponse(trimmed, theme, mood);
+    const aiResponse = await getAIResponse(trimmed, theme, mood, userId);
     setMessages(prev => [...prev, { sender: 'ai', text: aiResponse }]);
   };
 
+  // ✅ 대화 초기화
   const handleClear = () => {
     setMessages([
       { sender: 'ai', text: "안녕하세요! 🧒 저와 함께 동화를 만들어봐요. 주제나 상황을 입력해보세요!" }
     ]);
+    currentStoryId = null;
   };
+
   
   return (
     <main className="bg-gray-50 min-h-screen px-4 py-6 ">
