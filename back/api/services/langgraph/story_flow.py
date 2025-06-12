@@ -18,7 +18,6 @@ from api.services.langgraph.nodes import (
     # check_continue_or_end_router,   # 루프 제어
 )
 
-
 # 작성자 : 최준혁
 # 기능 : 상태를 정의하는 클래스
 #       LangGraph 실행 중 상태(state)에 저장/전달되는 키와 타입을 명시
