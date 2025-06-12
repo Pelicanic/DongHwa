@@ -8,6 +8,10 @@ VECTORDB_ROOT = './vectordb/'
 embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-exp-03-07")
 
 
+# ------------------------------------------------------------------------
+# Vector DB관련 함수
+# ------------------------------------------------------------------------
+
 # 작성자 : 최준혁
 # 기능 : DB에 저장된 문단을 받아 벡터화 및 저장
 # 마지막 수정일 : 2025-06-08
@@ -30,7 +34,7 @@ def index_paragraphs_to_faiss(story_id: int, paragraphs: list[str]):
 # 작성자 : 최준혁
 # 기능 : 저장된 벡터 DB에서 문맥 검색
 # 마지막 수정일 : 2025-06-08
-def search_similar_paragraphs(story_id: int, query: str, top_k: int = 3) -> str:
+def search_similar_paragraphs(story_id: int, query: str, top_k: int = 6) -> str:
     story_path = os.path.join(VECTORDB_ROOT, f"story_{story_id}")
     if not os.path.exists(os.path.join(story_path, "index.faiss")):
         print(f"[VectorStore] 경로 없음: {story_path}")
@@ -49,7 +53,7 @@ def search_similar_paragraphs(story_id: int, query: str, top_k: int = 3) -> str:
 # 작성자: 최준혁
 # 기능: 최신 문단 기준으로 최근 3개 불러오기 (벡터 검색 대체 or 보완)
 # 마지막 수정일: 2025-06-10
-def get_latest_paragraphs(story_id: int, top_k: int = 3) -> str:
+def get_latest_paragraphs(story_id: int, top_k: int = 6) -> str:
     try:
         paragraphs = (
             Storyparagraph.objects

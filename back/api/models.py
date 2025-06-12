@@ -75,6 +75,7 @@ class Story(models.Model):
     author_user = models.ForeignKey('User', models.DO_NOTHING)
     title = models.CharField(max_length=200, blank=True, null=True)
     summary = models.TextField(blank=True, null=True)
+    summary_4step = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
     status = models.CharField(max_length=20, blank=True, null=True)
