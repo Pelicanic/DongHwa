@@ -82,6 +82,7 @@ class Story(models.Model):
     author_name = models.CharField(max_length=100, blank=True, null=True)
     age = models.IntegerField(blank=True, null=True)
     cover_img = models.CharField(max_length=255, blank=True, null=True)
+    characters = models.TextField(blank=True, null=True)
     
     
     class Meta:
