@@ -1,3 +1,4 @@
+# member/views.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -10,6 +11,7 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 
 from member.authentication import CustomJWTAuthentication
 from api.models import User
@@ -165,6 +167,10 @@ class LoginView(APIView):
             }, status=403)
 
         tokens = get_tokens_for_user(user)
+
+        # last_login 업데이트 추가
+        user.last_login = timezone.now()
+        user.save(update_fields=["last_login"])
 
         print(f"로그인 성공: {user.login_id} (ID: {user.user_id}) ")
         print(f"발급된 토큰: {tokens['access']}")

@@ -1,3 +1,4 @@
+# member/urls.py
 from django.urls import path
 from .views import SignupView, VerifyEmailView, LoginView, LogoutView, LoginStatusView
 from rest_framework_simplejwt.views import TokenRefreshView
