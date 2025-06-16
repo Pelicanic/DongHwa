@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 from decouple import config # 환경변수 사용을 위한 decouple 모듈 임포트
 from datetime import timedelta # JWT 토큰 만료 시간 설정을 위한 임포트
+import os
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'member',
+    'tts',
 ]
 
 MIDDLEWARE = [
@@ -200,3 +202,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # EMAIL_USE_TLS = True
 # EMAIL_HOST_USER = 'your_email'
 # EMAIL_HOST_PASSWORD = 'your_password'
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
