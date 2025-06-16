@@ -1,11 +1,5 @@
-import os
+# tts/utils/clova_tts.py
 import requests
-from dotenv import load_dotenv
-
-# API 키 로드
-load_dotenv(dotenv_path="C:/ai_exam/voice_practice/clogen_v2/.env")
-CSS_API_CLIENT_ID = os.getenv("CSS_API_CLIENT_ID")
-CSS_API_CLIENT_SECRET = os.getenv("CSS_API_CLIENT_SECRET")
 
 def synthesize_clova_tts(
     text,
@@ -15,13 +9,18 @@ def synthesize_clova_tts(
     pitch=0,
     speed=0,
     volume=0,
-    output_path="output.wav"
+    output_path="output.wav",
+    client_id=None,
+    client_secret=None
 ):
+    """
+    Clova TTS API를 호출하여 음성 합성 결과를 output_path로 저장합니다.
+    """
     url = "https://naveropenapi.apigw.ntruss.com/tts-premium/v1/tts"
 
     headers = {
-        "X-NCP-APIGW-API-KEY-ID": CSS_API_CLIENT_ID,
-        "X-NCP-APIGW-API-KEY": CSS_API_CLIENT_SECRET
+        "X-NCP-APIGW-API-KEY-ID": client_id,
+        "X-NCP-APIGW-API-KEY": client_secret
     }
 
     data = {

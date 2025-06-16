@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     # 'tts',
 ]
 
+
+
 MIDDLEWARE = [
     # CORS 설정 추가
     'corsheaders.middleware.CorsMiddleware',
@@ -100,7 +102,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'member.authentication.CustomJWTAuthentication',
     ),
-} # JWT 인증 설정
+    'UNAUTHENTICATED_USER': None,  # 인증 실패 시 AnonymousUser 대신 None 반환
+} 
+# JWT 인증 설정
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
