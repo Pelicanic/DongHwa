@@ -10,8 +10,7 @@ from typing import List
 
 from api.models import Story
 from .character_utils import (
-    extract_new_characters, get_character_description, filter_significant_characters,
-    get_similar_name, is_duplicate_character, renumber_characters
+    extract_and_describe, get_similar_name, is_duplicate_character
 )
 from .parsing_utils import is_choice_only
 
@@ -64,10 +63,14 @@ def detect_and_update_story(state: dict) -> dict:
     theme = state.get("theme", "")
     paragraph_no = state.get("paragraph_no", 1)
 
-    story = Story.objects.filter(story_id=story_id).first()
+    # 캐시된 Story 객체 사용
+    story = state.get("story")
     if not story:
-        print(f"[DetectUpdate] story_id {story_id} not found.")
-        return state
+        # 캐시가 없으면 직접 조회 (예비대비)
+        story = Story.objects.filter(story_id=story_id).first()
+        if not story:
+            print(f"[DetectUpdate] story_id {story_id} not found.")
+            return state
 
     if is_choice_only(user_input):
         print("[DetectUpdate] 선택지 입력만 포함된 것으로 판단 → 캐릭터 및 요약 업데이트 스킵")
@@ -83,20 +86,30 @@ def detect_and_update_story(state: dict) -> dict:
     if prev_char_map:
         protagonist_name = list(prev_char_map.keys())[0]
 
-    raw_names = extract_new_characters(paragraph_text + "\n" + user_input, list(prev_char_map.keys()))
-    current_names = filter_significant_characters(paragraph_text, raw_names, user_input)
-
-    if not current_names:
+    # 통합 캐릭터 추출 (성능 최적화: 3회 API 호출 → 1회 API 호출)
+    unified_result = extract_and_describe(
+        text=paragraph_text + "\n" + user_input,
+        user_input=user_input,
+        known_names=list(prev_char_map.keys()),
+        age=age
+    )
+    
+    new_characters_data = unified_result.get("new_characters", [])
+    
+    if not new_characters_data:
         if debug:
             print("[DetectUpdate] No valid new characters found.")
         return {**state, "characters": list(prev_char_map.values())}
 
     if debug:
-        print(f"[DetectUpdate] New characters detected: {current_names}")
+        print(f"[DetectUpdate] New characters detected: {[char['name'] for char in new_characters_data]}")
 
     updated_characters = []
 
-    for name in current_names:
+    for char_data in new_characters_data:
+        name = char_data["name"]
+        description = char_data["description"]
+        
         if name in prev_char_map:
             updated_characters.append(prev_char_map[name])
         else:
@@ -104,10 +117,13 @@ def detect_and_update_story(state: dict) -> dict:
             if similar_name:
                 updated_characters.append(prev_char_map[similar_name])
             else:
-                desc = get_character_description(name, paragraph_text, user_input, age, list(prev_char_map.values()))
-                if desc and not is_duplicate_character(name, desc, list(prev_char_map.values())):
-                    prev_char_map[name] = desc
-                    updated_characters.append(desc)
+                # 번호 추가하여 형식 맞춤
+                next_number = len(prev_char_map) + len(updated_characters) + 1
+                formatted_desc = f"{next_number}. {name} : {description}"
+                
+                if not is_duplicate_character(name, formatted_desc, list(prev_char_map.values())):
+                    prev_char_map[name] = formatted_desc
+                    updated_characters.append(formatted_desc)
                 else:
                     if debug:
                         print(f"[중복 제거됨] '{name}'은 유사한 기존 캐릭터로 간주되어 추가되지 않음.")
@@ -143,7 +159,7 @@ def detect_and_update_story(state: dict) -> dict:
             f"[Mood]: {mood}\n"
             f"[Theme]: {theme}\n"
             f"[User Input]: {user_input}\n"
-            f"[Visible Characters]: {', '.join(current_names)}\n\n"
+            f"[Visible Characters]: {', '.join([char['name'] for char in new_characters_data])}\n\n"
             "Output 4 numbered lines only."
             "**Write in Korean only. Do NOT use English.**"
         )

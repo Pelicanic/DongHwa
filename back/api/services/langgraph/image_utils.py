@@ -7,7 +7,7 @@ import google.generativeai as genai
 import os
 from api.models import Illustration
 from django.utils import timezone
-from api.services.langgraph.node_img import generate_image_LC
+from api.services.langgraph.node_img import generate_image_unified
 
 # ------------------------------------------------------------------------------------------
 # 초기화 및 설정
@@ -24,14 +24,15 @@ model = genai.GenerativeModel("gemini-2.0-flash")
 # ------------------------------------------------------------------------------------------
 
 # 작성자 : 최재우
-# 기능 : 이미지 생성 노드
-# 마지막 수정일 : 2025-06-13
+# 기능 : 이미지 생성 노드 (성능 최적화: 2회 API 호출 → 1회 API 호출)
+# 마지막 수정일 : 2025-06-16
 def generate_image(state: dict) -> dict:
-    imageLC = generate_image_LC(
+    # 통합 이미지 생성 함수 사용 (성능 최적화)
+    imageLC = generate_image_unified(
         story_id=state.get("story_id"),
         paragraph_id=state.get("paragraph_id"),
         data=state.get("data", ""),
-        check= "illustration" ,
+        check="illustration",
     )
 
 

@@ -1,5 +1,3 @@
-# back/tts/main.py
-
 import os
 import time
 from .utils.text_processor import split_text_into_sentences

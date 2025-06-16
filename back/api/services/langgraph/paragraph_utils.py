@@ -5,7 +5,7 @@
 
 from api.models import Storyparagraph, Paragraphversion, Paragraphqa
 from django.utils import timezone
-from api.services.vector_utils import index_paragraphs_to_faiss
+from api.services.relational_utils import index_paragraphs_to_db
 
 # ------------------------------------------------------------------------------------------
 # 초기화 및 설정
@@ -54,9 +54,10 @@ def save_paragraph(state: dict) -> dict:
     )
     
     try:
-        index_paragraphs_to_faiss(story_id, [paragraph_text])
+        index_paragraphs_to_db(story_id, [paragraph_text])
     except Exception as e:
-        print(f"[VectorStore] 벡터 저장 실패: {e}")
+        if debug:
+            print(f"[RelationalDB] 인덱싱 실패: {e}")
 
     return {
         **state,
@@ -119,10 +120,13 @@ def update_paragraph_version(state: dict) -> dict:
 # ------------------------------------------------------------------------------------------
 
 # 작성자: 최준혁
-# 기능: 사용자 입력과 패러그래프를 ParagraphQA에 저장
-# 마지막 수정일: 2025-06-03
+# 기능: 사용자 입력과 패러그래프를 ParagraphQA에 저장 (대량 데이터 대비 bulk_create 지원)
+# 마지막 수정일: 2025-06-16
 def save_qa(state: dict) -> dict:
-
+    """
+    개별 QA 저장 함수
+    향후 대량 QA 생성 시 bulk_save_qa() 함수 사용 권장
+    """
     Paragraphqa.objects.create(
         paragraph_id=state.get("paragraph_id"),
         story_id=state.get("story_id"),
@@ -151,3 +155,45 @@ def save_qa(state: dict) -> dict:
         "paragraph_text": state["paragraph_text"],
         "input": state["input"]
     }
+
+
+# 작성자: 최준혁
+# 기능: 대량 QA 일괄 저장 함수 (향후 확장용)
+# 마지막 수정일: 2025-06-16
+def bulk_save_qa(qa_list: list[dict]) -> int:
+    """
+    여러 QA를 일괄 저장하는 함수 (성능 최적화용)
+    
+    Args:
+        qa_list: [{
+            "paragraph_id": int,
+            "story_id": int, 
+            "question_text": str,
+            "answer_text": str,
+            "ai_question": str
+        }, ...]
+    
+    Returns:
+        int: 생성된 QA 개수
+    """
+    if not qa_list:
+        return 0
+        
+    qa_objects = [
+        Paragraphqa(
+            paragraph_id=qa["paragraph_id"],
+            story_id=qa["story_id"],
+            question_text=qa["question_text"],
+            answer_text=qa["answer_text"],
+            created_at=timezone.now(),
+            ai_question=qa.get("ai_question", "")
+        )
+        for qa in qa_list
+    ]
+    
+    result = Paragraphqa.objects.bulk_create(qa_objects)
+    
+    if debug:
+        print(f"[BulkSaveQA] {len(result)}개 QA 일괄 저장 완료")
+    
+    return len(result)
