@@ -552,9 +552,6 @@ def get_character_description(name: str, context: str, user_input: str, age: int
 # 작성자 : 최준혁
 # 기능 : 사용자 입력을 통해 Story 테이블의 characters와 summary_4step을 수정하는 메인 함수
 # 마지막 수정일 : 2025-06-15 (리팩토링: 현재 문단 등장 인물 기반, 고정 인물 강제 포함)
-# 작성자 : 최준혁
-# 기능 : 사용자 입력을 통해 Story 테이블의 characters와 summary_4step을 수정하는 메인 함수
-# 마지막 수정일 : 2025-06-15 (리팩토링: 현재 문단 등장 인물 기반, 고정 인물 강제 포함 + 중복 판단 개선)
 def detect_and_update_story(state: dict) -> dict:
     if state.get("paragraph_no", 1) == 1:
         print("[DetectUpdate] 첫 문단이므로 스킵")
@@ -598,31 +595,28 @@ def detect_and_update_story(state: dict) -> dict:
     if debug:
         print(f"[DetectUpdate] New characters detected: {current_names}")
 
-    updated_characters = []
+    # 기존 인물은 유지, 새로운 인물만 누적 추가
+    new_entries = []
 
     for name in current_names:
         if name in prev_char_map:
-            updated_characters.append(prev_char_map[name])
+            continue  # 이미 존재하는 인물은 건너뜀 (갱신 금지)
         else:
-            similar_name = get_similar_name(name, list(prev_char_map.keys()))
-            if similar_name:
-                updated_characters.append(prev_char_map[similar_name])
+            desc = get_character_description(name, paragraph_text, user_input, age, list(prev_char_map.values()))
+            if desc and not is_duplicate_character(name, desc, list(prev_char_map.values())):
+                prev_char_map[name] = desc
+                new_entries.append(desc)
             else:
-                desc = get_character_description(name, paragraph_text, user_input, age, list(prev_char_map.values()))
-                if desc and not is_duplicate_character(name, desc, list(prev_char_map.values())):
-                    prev_char_map[name] = desc
-                    updated_characters.append(desc)
-                else:
-                    if debug:
-                        print(f"[중복 제거됨] '{name}'은 유사한 기존 캐릭터로 간주되어 추가되지 않음.")
+                if debug:
+                    print(f"[중복 제거됨] '{name}'은 유사한 기존 캐릭터로 간주되어 추가되지 않음.")
 
-    if protagonist_name and protagonist_name not in [re.split(r"[:：]", line)[0].split(".", 1)[-1].strip() for line in updated_characters]:
-        if protagonist_name in prev_char_map:
-            updated_characters.insert(0, prev_char_map[protagonist_name])
+    # 최종 캐릭터 리스트는 기존 + 신규 (순서 유지)
+    all_character_lines = prev_character_lines + new_entries
 
+    # 번호 다시 매기기
     renumbered_characters = []
     seen_names = set()
-    for line in updated_characters:
+    for line in all_character_lines:
         name = re.split(r"[:：]", line)[0].split(".", 1)[-1].strip()
         if name not in seen_names:
             seen_names.add(name)
@@ -686,6 +680,7 @@ def detect_and_update_story(state: dict) -> dict:
         new_state["story_plan"] = new_summary
 
     return new_state
+
 
 
 

@@ -76,6 +76,7 @@ def update_paragraph_version(state: dict) -> dict:
     paragraph_id = state.get("paragraph_id")
     new_text = state.get("paragraph_text")
     user_id = state.get("user_id")
+    question = state.get("question")
 
     # 현재 버전 번호 조회
     last_version = Paragraphversion.objects.filter(paragraph_id=paragraph_id).order_by('-version_no').first()
@@ -108,7 +109,8 @@ def update_paragraph_version(state: dict) -> dict:
     return {
         "paragraph_id": paragraph_id,
         "paragraph_text": new_text,
-        "version_no": next_version
+        "version_no": next_version,
+        "question": question
     }
  
 
@@ -126,7 +128,8 @@ def save_qa(state: dict) -> dict:
         story_id=state.get("story_id"),
         question_text=state.get("input"),
         answer_text=state.get("paragraph_text"),
-        created_at=timezone.now()
+        created_at=timezone.now(),
+        ai_question=state.get("question")
     )
 
     if debug:
@@ -136,7 +139,12 @@ def save_qa(state: dict) -> dict:
         print(f"Paragraph ID : {state['paragraph_id']}")
         print(f"Question     : {state['input']}")
         print(f"Answer Text  :\n{state['paragraph_text']}")
+        print(f"Question     : {state['question']}")
         print("-"*40 + "\n")
+    
+        print("\n--- [SaveQA] State 확인 ---")
+        for k, v in state.items():
+            print(f"{k}: {v}")
 
     return {
         "paragraph_id": state["paragraph_id"],
