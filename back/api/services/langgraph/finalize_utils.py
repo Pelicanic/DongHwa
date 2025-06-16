@@ -108,15 +108,19 @@ def finalize_story_output(state: dict) -> dict:
             for i in range(0, len(sentences), chunk_size)
         ][:10]  # 정확히 10개 자르기
 
-    # 7. Story에 저장
-    story = Story.objects.filter(story_id=story_id).first()
+    # 7. Story에 저장 - 캐시된 Story 객체 사용
+    story = state.get("story")
+    if not story:
+        # 캐시가 없으면 직접 조회 (예비대비)
+        story = Story.objects.filter(story_id=story_id).first()
+        
     if story:
         story.title = title
         story.summary = summary
         story.status = "completed"
         story.save()
 
-    # 8. 기존 문단 이후 번호 기준으로 이어서 저장
+    # 8. 기존 문단 이후 번호 기준으로 이어서 일괄 저장 (bulk_create 사용)
     last_para = (
         Storyparagraph.objects
         .filter(story_id=story_id)
@@ -125,14 +129,20 @@ def finalize_story_output(state: dict) -> dict:
     )
     next_para_no = (last_para.paragraph_no + 1) if last_para else 1
 
-    for i, para in enumerate(new_paragraphs):
-        Storyparagraph.objects.create(
+    # bulk_create를 위한 객체 리스트 생성
+    paragraphs_to_create = [
+        Storyparagraph(
             story_id=story.story_id,
             paragraph_no=next_para_no + i,
             content_text=para.strip(),
             created_at=timezone.now(),
             updated_at=timezone.now()
         )
+        for i, para in enumerate(new_paragraphs)
+    ]
+    
+    # 일괄 저장 (기존 10회 개별 저장 → 1회 일괄 저장)
+    Storyparagraph.objects.bulk_create(paragraphs_to_create)
 
     print("\n" + "-" * 40)
     print("[FinalizeStory] 저장 완료")

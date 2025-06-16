@@ -23,7 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('member/', include('member.urls')),
-    path("api/tts/", include("tts.urls")),
+    # path("api/tts/", include("tts.urls")),
 ]
 
 # 개발환경에서 media 파일 서비스 허용

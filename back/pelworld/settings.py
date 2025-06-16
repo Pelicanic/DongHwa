@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'member',
-    'tts',
+    # 'tts',
 ]
 
 MIDDLEWARE = [

@@ -12,6 +12,142 @@ from typing import List
 from .parsing_utils import normalize_name
 
 # ------------------------------------------------------------------------------------------
+# 통합 캐릭터 처리 (성능 최적화: 3개 함수 → 1개 함수)
+# ------------------------------------------------------------------------------------------
+
+# 작성자: 최준혁
+# 기능: 기존 3개 함수(extract_new_characters, filter_significant_characters, get_character_description)를 
+#       하나로 통합하여 Gemini API 호출을 1회로 축소 (성능 최적화)
+# 마지막 수정일: 2025-06-16
+def extract_and_describe(text: str, user_input: str, known_names: list[str], age: int) -> dict:
+    """
+    기존 3개 함수를 통합한 성능 최적화 함수
+    - extract_new_characters: 새 인물 추출
+    - filter_significant_characters: 의미있는 인물 필터링
+    - get_character_description: 인물 프로필 생성
+    
+    Args:
+        text: 문단 내용
+        user_input: 사용자 입력
+        known_names: 기존 알려진 인물 이름들
+        age: 사용자 나이
+        
+    Returns:
+        dict: {
+            "new_characters": [
+                {"name": str, "description": str}, ...
+            ]
+        }
+    """
+    system_instruction = (
+        f"You are a professional Korean children's story writer for kids aged {age}.\n"
+        "Your task is to analyze a story paragraph and extract ONLY new, meaningful characters.\n\n"
+        
+        "Character Extraction Rules:\n"
+        "1. ONLY extract characters who actively appear, speak, or perform actions\n"
+        "2. EXCLUDE abstract concepts, metaphors, locations, or symbolic entities\n"
+        "3. EXCLUDE meaningless sounds or animal noises (e.g., 'neigh', 'woof')\n"
+        "4. ONLY include characters who are PERSONIFIED and visibly present\n"
+        "5. Filter to characters who have MEANINGFUL impact on the story\n\n"
+        
+        "Character Description Rules:\n"
+        "1. Include: gender, hair/fur color, eye color, age, species (human/animal/etc)\n"
+        "2. Be specific and child-appropriate, avoid vague terms like 'unknown'\n"
+        "3. For animals: use Korean nickname-style names (루루, 봉치, 포코)\n"
+        "4. For humans: use proper Korean names (민준, 수아)\n"
+        "5. Each character must have a unique name\n\n"
+        
+        f"Known Characters (DO NOT include): {', '.join(known_names)}\n\n"
+        
+        "Output ONLY valid JSON format. No explanations."
+    )
+
+    user_request = (
+        f"[Story Paragraph]\n{text}\n\n"
+        f"[User Input]\n{user_input}\n\n"
+        
+        "Analyze the text and extract new meaningful characters with descriptions.\n\n"
+        
+        "Output format (JSON only):\n"
+        '{\n'
+        '  "new_characters": [\n'
+        '    {"name": "봉치", "description": "수컷, 갈색 털, 검은 눈동자, 3세, 강아지"},\n'
+        '    {"name": "포코", "description": "수컷, 파란 털, 초록 눈, 4세, 고양이"}\n'
+        '  ]\n'
+        '}\n\n'
+        
+        "Rules:\n"
+        "- Return empty array if no meaningful new characters found\n"
+        "- Each description format: 'gender, hair/fur color, eye color, age, species'\n"
+        "- Use Korean only, no English\n"
+        "- Must be valid JSON"
+    )
+
+    contents = [
+        {'role': 'user', 'parts': [{'text': system_instruction}]},
+        {'role': 'model', 'parts': [{'text': 'Understood. I will extract meaningful new characters and provide descriptions in JSON format.'}]},
+        {'role': 'user', 'parts': [{'text': user_request}]}
+    ]
+
+    try:
+        response = model.generate_content(contents)
+        response_text = response.text.strip()
+        
+        if debug:
+            print("\n" + "-" * 40)
+            print("[ExtractAndDescribe] DEBUG LOG")
+            print("-" * 40)
+            print(f"Known Names: {known_names}")
+            print(f"Raw Response Text:\n{response_text}")
+            print("-" * 40 + "\n")
+
+        # JSON 추출 및 파싱
+        import json
+        
+        # JSON 부분만 추출
+        if "```json" in response_text:
+            json_start = response_text.find("```json") + 7
+            json_end = response_text.find("```", json_start)
+            json_content = response_text[json_start:json_end].strip()
+        elif "{" in response_text and "}" in response_text:
+            start = response_text.find("{")
+            end = response_text.rfind("}") + 1
+            json_content = response_text[start:end]
+        else:
+            if debug:
+                print("[ExtractAndDescribe] No JSON found in response")
+            return {"new_characters": []}
+            
+        result = json.loads(json_content)
+        characters = result.get("new_characters", [])
+        
+        # 유효성 검사 및 필터링
+        filtered_characters = []
+        for char in characters:
+            name = char.get("name", "").strip()
+            desc = char.get("description", "").strip()
+            
+            # 한글 이름 및 중복 검사
+            if (
+                re.fullmatch(r"[가-힣]{2,6}", name) and 
+                name not in known_names and 
+                not is_similar_name(name, known_names) and
+                desc
+            ):
+                filtered_characters.append({"name": name, "description": desc})
+        
+        if debug:
+            print(f"[ExtractAndDescribe] Filtered Result: {filtered_characters}")
+            
+        return {"new_characters": filtered_characters}
+        
+    except Exception as e:
+        if debug:
+            print(f"[ExtractAndDescribe] Error: {e}")
+        return {"new_characters": []}
+
+
+# ------------------------------------------------------------------------------------------
 # 초기화 및 설정
 # ------------------------------------------------------------------------------------------
 
@@ -78,12 +214,16 @@ def get_similar_name(name: str, known_names: list[str], threshold: float = 0.8) 
 
 
 # ------------------------------------------------------------------------------------------
-# 인물 추출 및 필터링
+# 인물 추출 및 필터링 (레거시 - 호환성용)
 # ------------------------------------------------------------------------------------------
+
+# 레거시 경고: 아래 함수들은 성능상 이유로 비추천
+# 대신 extract_and_describe() 사용 권장
 
 # 작성자: 최준혁
 # 기능: 문단에서 등장하는 인물들 중 '스토리 전개에 의미 있는 영향을 준 인물'만 골라서 이름만 리스트로 출력하는 함수
 # 마지막 수정일: 2025-06-15
+# 레거시: extract_and_describe() 사용 권장
 def filter_significant_characters(paragraph: str, candidates: list[str], user_input: str = "") -> list[str]:
     prompt = (
         "다음은 동화의 한 문단입니다. 이 문단에서 등장하는 인물들 중 "
@@ -103,6 +243,7 @@ def filter_significant_characters(paragraph: str, candidates: list[str], user_in
 # 작성자: 최준혁
 # 기능: 문단에서 새롭게 등장한 인물 이름을 추출하는 함수
 # 마지막 수정일: 2025-06-12
+# 레거시: extract_and_describe() 사용 권장
 def extract_new_characters(text: str, known_names: list[str]) -> list[str]:
     system_instruction = (
         "You are a smart assistant helping identify characters in a Korean children's story.\n"
@@ -163,12 +304,13 @@ def extract_new_characters(text: str, known_names: list[str]) -> list[str]:
 
 
 # ------------------------------------------------------------------------------------------
-# 인물 프로필 생성
+# 인물 프로필 생성 (레거시 - 호환성용)
 # ------------------------------------------------------------------------------------------
 
 # 작성자: 최준혁
 # 기능: 사용자의 입력으로 새롭게 추가되는 등장인물의 특징을 추정하는 함수
 # 마지막 수정일: 2025-06-13
+# 레거시: extract_and_describe() 사용 권장
 def get_character_description(name: str, context: str, user_input: str, age: int, known_characters: list[str]) -> str:
     def extract_name_from_line(line):
         parts = line.split(":", 1)

@@ -50,22 +50,27 @@ def finalize_router(state: dict) -> str:
 
 
 # 작성자: 최준혁
-# 기능: 시작 노드, 입력된 state를 그대로 반환
-# 마지막 수정일: 2025-06-12
+# 기능: 시작 노드, Story 객체 캐싱으로 DB 중복 조회 방지
+# 마지막 수정일: 2025-06-16
 def passthrough_start(state: dict) -> dict:    
     story_id = state.get("story_id")
     if not story_id:
         return state
 
     try:
+        # Story 객체를 한 번만 조회하여 state에 저장 (캐싱)
+        from api.models import Story
         story = Story.objects.get(story_id=story_id)
+        
+        # 기존 summary_4step이 있으면 state에 주입
+        cached_state = {**state, "story": story}  # Story 객체 캐싱
+        
         if story.summary_4step:
             print("[Start] DB 요약을 state에 주입합니다.")
-            return {
-                **state,
-                "story_plan": story.summary_4step.strip().splitlines()
-            }
-    except Story.DoesNotExist:
-        print(f"[Start] story_id={story_id}가 존재하지 않음")
-
-    return state
+            cached_state["story_plan"] = story.summary_4step.strip().splitlines()
+            
+        return cached_state
+        
+    except Exception as e:
+        print(f"[Start] Story 객체 로드 실패: {e}")
+        return state
