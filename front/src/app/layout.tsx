@@ -31,8 +31,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {/* 💫 전역 Aurora 배경 */}
-        <AuroraBackground />
-        <BackgroundSlideshow />
+        {/* <AuroraBackground /> */}
+        {/* <BackgroundSlideshow /> */}
         
         {/* 💬 콘텐츠 z-10으로 표시 */}
         <div className="relative z-10">

@@ -7,12 +7,12 @@ import re
 
 from typing import Tuple, List
 from api.models import Story
-from api.models import Paragraphqa, Storyparagraph, Paragraphversion
+from api.models import Paragraphqa, Storyparagraph, Paragraphversion, Illustration
 from django.utils import timezone
 from api.services.vector_utils import search_similar_paragraphs
 from api.services.vector_utils import index_paragraphs_to_faiss
 from api.services.vector_utils import get_latest_paragraphs
-
+from api.services.langgraph.node_img import generate_image_LC
 # ------------------------------------------------------------------------------------------
 # 디버깅
 # ------------------------------------------------------------------------------------------
@@ -480,38 +480,36 @@ def image_prompt_check(state: dict) -> dict:
     }
 
 
-# 작성자 : 최준혁
-# 기능 : 이미지 생성 더미 노드
-# 마지막 수정일 : 2025-06-08
+# 작성자 : 최재우
+# 기능 : 이미지 생성 노드
+# 마지막 수정일 : 2025-06-13
 def generate_image(state: dict) -> dict:
-    theme = state.get("theme", "판타지 (SF/이세계)")
-    mood = state.get("mood", "신비로운")
-    image_url = state.get("image_url", "")
-    caption_text = state.get("caption", "")
+    imageLC = generate_image_LC(
+        story_id=state.get("story_id"),
+        paragraph_id=state.get("paragraph_id"),
+        data=state.get("data", ""),
+        check= "illustration" ,
+    )
 
-    labels = find_labels_by_theme_and_mood(theme, mood)
+
+    Illustration.objects.create(
+        story_id=state.get("story_id"),
+        paragraph_id=state.get("paragraph_id"),
+        image_url= "test.png",
+        caption_text=imageLC.get("caption_text"),
+        labels=imageLC.get("labels"),
+        created_at=timezone.now()
+    )
 
     # 디버깅용
     if debug:
-        print(f"5. [GenerateImage] 이미지 URL: {image_url}, caption: {caption_text}")
-        print(f"[GenerateParagraph] theme: {theme}, mood: {mood}")
-
-
+        print(f"5. [GenerateImage] 이미지 : caption: {imageLC.get('caption_text')}, labels: {imageLC.get('labels')}")
 
     return {
-        "image_url": f"https://dummyimage.com/600x400/000/fff&text=Image",
-        "caption": f"{theme} 테마의 {mood} 분위기를 담은 이미지",
-        "labels": labels
+        "image_url": "test.png",
+        "caption_text": imageLC.get('caption_text'),
+        "labels": imageLC.get('labels')
     }
     
 
-
-# 작성자 : 최준혁
-# 기능 : 테마와 분위기에 따른 이미지 라벨을 찾는 함수
-# 마지막 수정일 : 2025-06-08
-def find_labels_by_theme_and_mood(theme: str, mood: str) -> list:
-    for (key_theme, key_mood), labels in THEME_MOOD_LABELS.items():
-        if key_theme == theme and key_mood == mood:
-            return labels
-    return ["기본", "이미지", "라벨"]
 

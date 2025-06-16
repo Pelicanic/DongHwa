@@ -14,7 +14,7 @@ from api.services.langgraph.nodes import (
     generate_image,                 # 이미지 생성
     # check_continue_or_end,          # 이야기 종료 판단
 )
-# from api.services.langgraph.node_img import generate_image
+# from api.services.langgraph.node_img import generate_image_LC
 
 # ------------------------------------------------------------------------
 # 상태 정의
