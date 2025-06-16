@@ -26,13 +26,22 @@ def generate_story_audio(request):
         story = Story.objects.get(story_id=story_id)
     except Story.DoesNotExist:
         return Response({"error": "해당 스토리를 찾을 수 없습니다."}, status=404)
+    
+    # character 목록을 가져옵니다.
+    character_list = story.characters
 
     if story.author_user.user_id != user.user_id:
         return Response({"error": "본인의 스토리만 음성 생성이 가능합니다."}, status=403)
 
-    paragraphs = Storyparagraph.objects.filter(story=story).order_by("paragraph_no")
+    # 11번부터 20번까지의 문단만 불러오도록 필터 조건을 추가합니다.
+    paragraphs = Storyparagraph.objects.filter(
+        story=story,
+        paragraph_no__gte=11,  # 11번 이상
+        paragraph_no__lte=20   # 20번 이하
+    ).order_by("paragraph_no")
+
     if not paragraphs.exists():
-        return Response({"error": "이 스토리는 아직 문단이 없습니다."}, status=400)
+        return Response({"error": "해당 스토리에서 11번부터 20번까지의 문단을 찾을 수 없습니다."}, status=400)
 
     file_name = f"tts_user{user.user_id}_story{story.story_id}.mp3"
     output_path = os.path.join(settings.MEDIA_ROOT, "tts", file_name)
@@ -56,7 +65,8 @@ def generate_story_audio(request):
             save_path=output_path,
             gemini_api_key=gemini_tts_key,
             clova_client_id=clova_id,
-            clova_client_secret=clova_secret
+            clova_client_secret=clova_secret,
+            character_list=character_list
         )
     except Exception as e:
         print(f"‼️ TTS 처리 중 예외 발생: {e}")
