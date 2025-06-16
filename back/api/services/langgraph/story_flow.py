@@ -13,18 +13,15 @@ from .paragraph_utils import save_paragraph, update_paragraph_version, save_qa
 from .image_utils import generate_image
 from .finalize_utils import finalize_story_output
 from .routers import (
-    summary_router, mode_router, check_continue_or_end_router,
-    image_prompt_router, finalize_router, passthrough_start
+    summary_router, mode_router, finalize_router, passthrough_start
 )
+# from api.services.langgraph.image_utils import generate_image_LC
 
 
+# 작성자: 최준혁
+# 기능: LangGraph 실행 중 상태(state)에 저장/전달되는 키와 타입을 명시하는 클래스
+# 마지막 수정일: 2025-06-15 (리팩토링 완료)
 class StoryState(TypedDict, total=False):
-    """
-    상태를 정의하는 클래스
-    LangGraph 실행 중 상태(state)에 저장/전달되는 키와 타입을 명시
-    작성자: 최준혁
-    마지막 수정일: 2025-06-08
-    """
     story_plan: Annotated[list[str], "static"]# 기승전결 요약
     input: str                                # 사용자 입력 문장
     user_id: Annotated[int, "static"]         # 사용자 ID (고정값으로 반복 허용)
@@ -41,15 +38,13 @@ class StoryState(TypedDict, total=False):
     image_url: str                            # 이미지 URL
     continue_story: bool                      # 계속 생성할지 여부
     context: str                              # 벡터 DB에서 불러온 문맥 (RetrieveContext)
+    question: str                             # 챗봇 질문
 
 
+# 작성자: 최준혁
+# 기능: LangGraph 플로우 정의 함수
+# 마지막 수정일: 2025-06-15 (리팩토링 완료)
 def story_flow():
-    """
-    LangGraph 플로우 정의 함수
-    각 노드를 순서대로 등록하고, 조건에 따라 분기되도록 그래프 구성
-    작성자: 최준혁
-    마지막 수정일: 2025-06-15 (리팩토링 완료)
-    """
     graph = StateGraph(StoryState)
 
     # 노드 등록

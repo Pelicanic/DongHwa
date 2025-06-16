@@ -5,6 +5,8 @@ import json
 from api.models import Storyparagraph,Story
 from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.runnables import RunnableSequence  # 중요
+
 
 debug = True
 
