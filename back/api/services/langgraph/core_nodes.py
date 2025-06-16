@@ -12,6 +12,7 @@ from django.utils import timezone
 from api.services.relational_utils import search_similar_paragraphs_by_keywords, get_latest_paragraphs
 from .parsing_utils import extract_choice
 from .summary_utils import get_story_stage
+from .substage_prompts import get_substage_instruction
 
 # ------------------------------------------------------------------------------------------
 # 초기화 및 설정
@@ -26,6 +27,7 @@ model = genai.GenerativeModel("gemini-2.0-flash")
 # ------------------------------------------------------------------------------------------
 # 기승전결 생성
 # ------------------------------------------------------------------------------------------
+
 
 # 작성자: 최준혁
 # 기능: 주제/분위기 기반 4단계 요약 생성 + DB 저장
@@ -48,8 +50,8 @@ def generate_story_plan(state: dict) -> dict:
         "The rabbit or turtle can have reversed personalities.\n"
         "Follow the user's paragraph and implied traits instead of assuming standard roles.\n"
         "Do not give human names to animal or non-human characters. "
-        "For animal or non-human characters (e.g. rabbits, turtles, goblins), use imaginative or nickname-style Korean names such as 루루, 뭉치, 아롱이, 포코.\n"
-        "Do NOT use human names (e.g. 민준, 수아, 보람) for animals or fantasy creatures.\n"
+        "For animal or non-human characters (e.g. rabbits, turtles, goblins), use imaginative or nickname-style Korean names.\n"
+        "Do NOT use human names for animals or fantasy creatures.\n"
         "Only give human names to human characters."
         "Keep character names consistent across all 4 stages.\n"
         "All output must be in Korean."
@@ -191,28 +193,93 @@ def retrieve_context(state: dict) -> dict:
     }
 
 # 작성자: 최준혁
+# 기능: 문단 번호에 따른 이야기 단계 반환
+# 마지막 수정일: 2025-06-16
+def get_story_substage(paragraph_no: int) -> str:
+    if paragraph_no == 10:
+        return "에필로그"
+    elif paragraph_no >= 9:
+        return "결2"
+    elif paragraph_no >= 8:
+        return "결1"
+    elif paragraph_no >= 7:
+        return "전2"
+    elif paragraph_no >= 6:
+        return "전1"
+    elif paragraph_no >= 5:
+        return "승3"
+    elif paragraph_no >= 4:
+        return "승2"
+    elif paragraph_no >= 3:
+        return "승1"
+    elif paragraph_no == 2:
+        return "기2"
+    else:
+        return "기1"
+
+
+# 작성자: 최준혁
 # 기능: 문단 번호에 따른 힌트 제공
 # 마지막 수정일: 2025-06-11
-def get_paragraph_hint(paragraph_no: int) -> str:
-    """문단 번호에 따른 힌트 제공"""
-    if paragraph_no >= 9:
+def get_paragraph_hint(substage: str) -> str:
+    if substage == "기1":
         return (
-            "- This is the final part of the story. You MUST wrap things up within the next 1–2 paragraphs.\n"
-            "- Do not start new events or characters.\n"
-            "- Keep the emotional arc consistent and conclude any remaining threads.\n"
+            "- This is the very beginning. Introduce the main character and their peaceful routine.\n"
+            "- No strange events or surprises yet. Stay light and warm.\n"
         )
-    elif paragraph_no >= 7:
+    elif substage == "기2":
         return (
-            "- Only a few paragraphs left before the end. Begin guiding the story toward its conclusion.\n"
-            "- Avoid introducing new subplots.\n"
+            "- Introduce a small oddity or event that slightly disrupts the routine.\n"
+            "- Hint at curiosity or change without fully shifting the tone.\n"
+        )
+    elif substage == "승1":
+        return (
+            "- The disruption becomes clearer. A minor conflict or question arises.\n"
+            "- Start shifting from calm to a slightly tense or mysterious tone.\n"
+        )
+    elif substage == "승2":
+        return (
+            "- The character begins to respond to the problem. Active decisions start here.\n"
+            "- It’s okay to introduce a helper if needed.\n"
+        )
+    elif substage == "승3":
+        return (
+            "- The challenge intensifies. Emotional tension increases.\n"
+            "- Highlight internal or external obstacles.\n"
+        )
+    elif substage == "전1":
+        return (
+            "- The crisis peaks. Everything should feel urgent, risky, or highly emotional.\n"
+            "- No new characters or places.\n"
+        )
+    elif substage == "전2":
+        return (
+            "- This is the turning point. The character must make a decision or change emotionally.\n"
+            "- Focus on personal growth or key realization.\n"
+        )
+    elif substage == "결1":
+        return (
+            "- Begin resolving the conflict. Emotional tone should soften.\n"
+            "- Guide toward a peaceful resolution.\n"
+        )
+    elif substage == "결2":
+        return (
+            "- Final emotional closure. Highlight reflections or lessons learned.\n"
+            "- Prepare for the story’s end.\n"
+        )
+    elif substage == "에필로그":
+        return (
+            "- Write only [문장] that calmly closes the story.\n"
+            "- No [질문] or [행동]. Use peaceful, conclusive tone.\n"
         )
     return ""
+
 
 # 작성자: 최준혁
 # 기능: 마지막 문단 강제 종료 지침
 # 마지막 수정일: 2025-06-15
 def get_force_final_ending_instruction(stage: str, paragraph_no: int) -> str:
-    if stage == "결" and paragraph_no == 10:
+    if stage == "에필로그" and paragraph_no == 10:
         return (
             "\n\nFinal Ending Instruction:\n"
             "- This is the final paragraph of the story.\n"
@@ -248,22 +315,25 @@ def generate_paragraph(state: dict) -> dict:
     last_para = Storyparagraph.objects.filter(story_id=state.get("story_id")).order_by("-paragraph_no").first()
     paragraph_no = (last_para.paragraph_no + 1) if last_para else 1
 
-    story_stage = get_story_stage(paragraph_no)
+    story_substage = get_story_substage(paragraph_no)
+    print(story_substage)
 
-    stage_to_index = {"기": 0, "승": 1, "전": 2, "결": 3}
-    plan_summary = story_plan[stage_to_index[story_stage]] if len(story_plan) > stage_to_index[story_stage] else ""
+    stage_map = {
+        "기1": 0, "기2": 0, "승1": 1, "승2": 1, "승3": 1, "전1": 2, "전2": 2, "결1": 3, "결2": 3, "에필로그": 3
+    }
+    plan_summary = story_plan[stage_map.get(story_substage, 0)] if story_plan else ""
 
-    paragraph_hint = get_paragraph_hint(paragraph_no)
-    force_final_ending_instruction = get_force_final_ending_instruction(story_stage, paragraph_no)
+    paragraph_hint = get_paragraph_hint(story_substage)
+    substage_instruction = get_substage_instruction(story_substage)
+    force_final_ending_instruction = get_force_final_ending_instruction(story_substage, paragraph_no)
 
     system_instruction = (
         "You are a professional Korean children's story writer.\n"
         "Your tone should be warm, gentle, and immersive, like reading a picture book to a child.\n"
-        "Use simple, age-appropriate language for a child aged "
-        f"{user_age}.\n"
+        f"Use simple, age-appropriate language for a child aged {user_age}.\n"
         "- NEVER use emojis, markdown, or sound effects (e.g., '아!', '얘야').\n"
         "- DO NOT repeat the stage summary or previously told story.\n"
-        "- DO NOT give human names to animal or fantasy characters (use names like 루루, 뭉치, 포코).\n"
+        "- DO NOT give human names to animal or fantasy characters.\n"
         "- Do NOT assign the same name to more than one character, even if they are different species.\n"
         "- Each character must have a unique name.\n"
         "- Maintain a consistent naming convention throughout the story.\n"
@@ -271,8 +341,7 @@ def generate_paragraph(state: dict) -> dict:
     )
 
     user_request = (
-        f"Child's New Input:\n"
-        f"\"{user_input}\"\n\n"
+        f"Child's New Input:\n\"{user_input}\"\n\n"
         "→ This is a NEW event or suggestion from the child.\n"
         "→ You MUST reflect this in the story continuation.\n"
         "→ Treat this input as the most recent plot development after the story so far.\n"
@@ -287,9 +356,10 @@ def generate_paragraph(state: dict) -> dict:
         f"Theme: {theme}\n"
         f"Mood: {mood}\n"
         f"Child Age: {user_age}세\n"
-        f"Story Stage: '{story_stage}'\n"
-        f"{paragraph_hint}"
-        f"{force_final_ending_instruction}\n\n"
+        f"Story Substage: '{story_substage}'\n"
+        f"Paragraph Hint: {paragraph_hint}\n"
+        f"Substage Instruction: {substage_instruction}\n"
+        f"Force Final Ending Instruction: {force_final_ending_instruction}\n\n"
 
         "Instructions:\n"
         "Use the following format:\n"
@@ -306,8 +376,8 @@ def generate_paragraph(state: dict) -> dict:
 
         "Character Naming Rules:\n"
         "- Animal or fantasy characters (e.g., talking dogs, fairies, goblins) must NEVER have human names.\n"
-        "- Only human characters may have Korean names like 민준 or 수아.\n"
-        "- Each character must have a unique name across the entire story.\n\n"
+        "- Only human characters may have Korean names\n"
+        "- Each character must have a unique name across the entire story.\n"
 
         "Stage-Specific Guidance:\n"
         "- '기' (Beginning):\n"
@@ -340,6 +410,7 @@ def generate_paragraph(state: dict) -> dict:
         "- DO NOT introduce irrelevant or disconnected directions.\n"
         "- DO NOT derail the story with illogical or abrupt shifts.\n"
         "- Choices must align with the planned story arc (기-승-전-결).\n"
+
     )
 
     contents = [
@@ -357,7 +428,7 @@ def generate_paragraph(state: dict) -> dict:
         print("\n" + "="*40)
         print("3. [GenerateParagraph] DEBUG LOG")
         print("="*40)
-        print(f"문단 번호: {paragraph_no} / 이야기 단계: {story_stage}")
+        print(f"문단 번호: {paragraph_no} / 이야기 단계: {story_substage}")
         print(f"현재 요약: {plan_summary}")
         print(f"생성된 문단:\n{paragraph}")
         print(f"질문: {question}")
