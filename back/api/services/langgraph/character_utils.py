@@ -53,8 +53,8 @@ def extract_and_describe(text: str, user_input: str, known_names: list[str], age
         "Character Description Rules:\n"
         "1. Include: gender, hair/fur color, eye color, age, species (human/animal/etc)\n"
         "2. Be specific and child-appropriate, avoid vague terms like 'unknown'\n"
-        "3. For animals: use Korean nickname-style names (루루, 봉치, 포코)\n"
-        "4. For humans: use proper Korean names (민준, 수아)\n"
+        "3. For animals: use Korean nickname-style names\n"
+        "4. For humans: use proper Korean names\n"
         "5. Each character must have a unique name\n\n"
         
         f"Known Characters (DO NOT include): {', '.join(known_names)}\n\n"
@@ -71,8 +71,8 @@ def extract_and_describe(text: str, user_input: str, known_names: list[str], age
         "Output format (JSON only):\n"
         '{\n'
         '  "new_characters": [\n'
-        '    {"name": "봉치", "description": "수컷, 갈색 털, 검은 눈동자, 3세, 강아지"},\n'
-        '    {"name": "포코", "description": "수컷, 파란 털, 초록 눈, 4세, 고양이"}\n'
+        '    {"name": "name1", "description": "수컷, 갈색 털, 검은 눈동자, 3세, 강아지"},\n'
+        '    {"name": "name2", "description": "수컷, 파란 털, 초록 눈, 4세, 고양이"}\n'
         '  ]\n'
         '}\n\n'
         
