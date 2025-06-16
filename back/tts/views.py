@@ -73,3 +73,4 @@ def generate_story_audio(request):
 
     audio_url = request.build_absolute_uri(os.path.join(settings.MEDIA_URL, "tts", file_name))
     return Response({"message": "TTS 생성 완료", "audio_url": audio_url})
+

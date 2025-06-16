@@ -20,12 +20,13 @@ from .routers import (
 
 # 작성자: 최준혁
 # 기능: LangGraph 실행 중 상태(state)에 저장/전달되는 키와 타입을 명시하는 클래스
-# 마지막 수정일: 2025-06-15 (리팩토링 완료)
+# 마지막 수정일: 2025-06-16 (성능 최적화: Story 객체 캐싱 추가)
 class StoryState(TypedDict, total=False):
     story_plan: Annotated[list[str], "static"]# 기승전결 요약
     input: str                                # 사용자 입력 문장
     user_id: Annotated[int, "static"]         # 사용자 ID (고정값으로 반복 허용)
     story_id: Annotated[int, "static"]        # 대상 동화 ID (고정값으로 반복 허용)
+    story: Annotated[object, "static"]        # 캐시된 Story 모델 객체 (DB 중복 조회 방지)
     age: Annotated[int, "static"]             # 사용자 연령 (고정값으로 반복 허용)
     paragraph_id: int                         # 단락 ID (수정 시 필요)
     paragraph_no: int                         # 단락 번호

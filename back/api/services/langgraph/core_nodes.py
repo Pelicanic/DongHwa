@@ -9,7 +9,7 @@ from typing import Tuple, List
 
 from api.models import Story, Storyparagraph
 from django.utils import timezone
-from api.services.vector_utils import search_similar_paragraphs, get_latest_paragraphs
+from api.services.relational_utils import search_similar_paragraphs_by_keywords, get_latest_paragraphs
 from .parsing_utils import extract_choice
 from .summary_utils import get_story_stage
 
@@ -101,7 +101,12 @@ def generate_story_plan(state: dict) -> dict:
             elif current_section == "characters":
                 characters.append(line.strip())
 
-    story = Story.objects.get(story_id=story_id)
+    # DB 저장 - 캐시된 Story 객체 사용
+    story = state.get("story")
+    if not story:
+        # 캐시가 없으면 직접 조회 (예비대비)
+        story = Story.objects.get(story_id=story_id)
+        
     story.summary_4step = "\n".join(story_plan)
     story.characters = "\n".join(characters)
     story.save()
@@ -135,8 +140,8 @@ def generate_story_plan(state: dict) -> dict:
 # ------------------------------------------------------------------------------------------
 
 # 작성자: 최준혁
-# 기능: 벡터 DB에서 관련 문맥을 조회하여 상태에 context로 추가
-# 마지막 수정일: 2025-06-10
+# 기능: 관계형 DB에서 관련 문맥을 조회하여 상태에 context로 추가 (벡터DB 대체)
+# 마지막 수정일: 2025-06-16
 def retrieve_context(state: dict) -> dict:
     query = state.get("input", "")
     story_id = state.get("story_id")
@@ -144,7 +149,8 @@ def retrieve_context(state: dict) -> dict:
 
     # 첫 문단인 경우 context 비움
     if paragraph_no == 1:
-        print("[RetrieveContext] 첫 문단이므로 context 비움")
+        if debug:
+            print("[RetrieveContext] 첫 문단이므로 context 비움")
         return {
             **state,
             "context": ""
@@ -153,13 +159,15 @@ def retrieve_context(state: dict) -> dict:
     retrieved_context = ""
 
     try:
-        # 우선 벡터 검색 시도
-        retrieved_context = search_similar_paragraphs(story_id, query, top_k=6)
+        # 관계형 DB에서 키워드 기반 검색 시도 (벡터DB 대체)
+        retrieved_context = search_similar_paragraphs_by_keywords(story_id, query, top_k=6)
         if not retrieved_context:
-            print("[RetrieveContext] 벡터 검색 결과 없음. 최근 문단 사용.")
+            if debug:
+                print("[RetrieveContext] 키워드 검색 결과 없음. 최근 문단 사용.")
             retrieved_context = get_latest_paragraphs(story_id, top_k=6)
     except Exception as e:
-        print(f"[RetrieveContext Error] {e}")
+        if debug:
+            print(f"[RetrieveContext Error] {e}")
         retrieved_context = get_latest_paragraphs(story_id, top_k=6)
 
     if not retrieved_context:
@@ -167,11 +175,14 @@ def retrieve_context(state: dict) -> dict:
 
     if debug:
         print("\n" + "-"*40)
-        print("2. [RetrieveContext] DEBUG LOG")
+        print("2. [RetrieveContext] DEBUG LOG (관계형 DB)")
         print("-"*40)
         print(f"Story ID     : {story_id}")
         print(f"Paragraph No : {paragraph_no}")
-        print(f"Retrieved Context:\n{retrieved_context}")
+        print(f"Query        : {query}")
+        print(f"Context 길이  : {len(retrieved_context)}자")
+        if retrieved_context != "이전에 생성된 문맥이 없습니다.":
+            print(f"Context 미리보기:\n{retrieved_context[:200]}...")
         print("-"*40 + "\n")
 
     return {
