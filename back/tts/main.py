@@ -32,7 +32,7 @@ def merge_audio_files(file_list, output_name, pause_duration_ms=500):
             print(f"임시 파일 삭제 오류: {e.filename} - {e.strerror}")
 
 
-def build_final_audio(text, save_path, gemini_api_key, clova_client_id, clova_client_secret):
+def build_final_audio(text, save_path, gemini_api_key, clova_client_id, clova_client_secret, character_list=""):
     """
     텍스트 입력 → 문장 분리 → 감정 분석 → TTS 생성 → 병합 저장
     저장 결과: save_path(mp3/wav)
@@ -43,10 +43,13 @@ def build_final_audio(text, save_path, gemini_api_key, clova_client_id, clova_cl
     print(f"✅ 분리된 문장 수: {len(sentences)}")
 
     print("🔍 감정 분석 중...")
-    # ✅ --- 이 부분을 수정합니다 ---
-    # 전달받은 gemini_api_key를 인자로 넘겨줍니다.
-    configs = analyze_texts_with_gemini(sentences, api_key=gemini_api_key)
 
+    # 전달받은 character_list를 analyze_texts_with_gemini 함수에 넘겨줍니다.
+    configs = analyze_texts_with_gemini(
+        sentences, 
+        api_key=gemini_api_key, 
+        characters=character_list
+    )
     print("🎙️ TTS 합성 시작...")
     temp_files = []
 
