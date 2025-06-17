@@ -60,8 +60,10 @@ def get_substage_instruction(substage: str) -> str:
         )
     elif substage == "에필로그":
         return (
-            "- Only write a single sentence [문장] that peacefully ends the story.\n"
+            "- Write a full 3-6 sentence [문장] section that beautifully closes the story.\n"
             "- No [질문] or [행동] should be provided.\n"
+            "- Use peaceful, conclusive tone with proper story closure.\n"
+            "- Include emotional resolution and a sense of completion.\n"
         )
     else:
         return ""

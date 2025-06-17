@@ -31,10 +31,8 @@ def generate_image(state: dict) -> dict:
     imageLC = generate_image_unified(
         story_id=state.get("story_id"),
         paragraph_id=state.get("paragraph_id"),
-        data=state.get("data", ""),
         check="illustration",
     )
-
 
     Illustration.objects.create(
         story_id=state.get("story_id"),
