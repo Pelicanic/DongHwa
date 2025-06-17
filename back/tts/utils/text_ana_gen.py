@@ -30,13 +30,13 @@ def analyze_texts_with_gemini(sentences, api_key, characters=""):
 
     prompt = f"""
 You are an expert voice director for a children's story speech synthesis.
-For each sentence, analyze it within the context of the story and assign the most appropriate voice parameters.
+For each sentence, analyze it within the context of the story and assign the most appropriate voice parameters based on the Clova Voice API.
 
 [Character List]
 {characters if characters else "No character information available."}
 
 
-🎙️ Speaker guidelines:
+🎙️ Speaker Guidelines:
 - Use **calm adult voices** (e.g., "vmikyung", "vgoeun") for **narration**. This should feel like a parent or teacher reading a picture book aloud.
 - Use more expressive, age-appropriate voices for **dialogue**:
   - "vara": Calm and kind adult female voice
@@ -46,18 +46,19 @@ For each sentence, analyze it within the context of the story and assign the mos
   - "vgoeun": Calm and friendly adult female voice
   - "vdaeseong": Calm and reliable adult male voice
 
-🎭 Emotion: 0 (neutral), 1 (sad), 2 (happy), 3 (angry)  
+[Parameter Guidelines]
+🎭 Emotion: 0 (neutral), 1 (sad), 2 (happy), 3 (angry)
 🔥 Emotion Strength: 0 (weak), 1 (normal), 2 (strong)
 
-🎚️ Volume: -5 to +5  
-🎼 Pitch: -5 to 5  
-⏱️ Speed: -5 to 10
+🎚️ Volume: -5 to +5. (Controls loudness. -5 is 0.5x, 0 is normal, +5 is 1.5x)
+🎼 Pitch: -5 to 5. (**IMPORTANT**: -5 is a HIGHER pitch, +5 is a LOWER pitch)
+⏱️ Speed: -5 to 10. (**IMPORTANT**: -5 is FASTER, +10 is SLOWER)
 
 **Rules:**
 1. A character MUST consistently have the same speaker throughout the story.
 2. Base your decisions on the provided Character List and the context of the sentences.
 3. **Role Exclusivity:** A speaker's role must be exclusive. If you use 'vmikyung' for narration, she cannot also voice a character in the same story, and vice versa. Assign one primary narrator and use other voices for characters.
-4. **Character-Speaker Uniqueness:** Each character from the `[Character List]` must be assigned a unique speaker. Do not assign the same speaker to two different characters. 
+4. **Character-Speaker Uniqueness:** Each character from the `[Character List]` must be assigned a unique speaker. Do not assign the same speaker to two different characters.
 5. Return your results as a JSON array ONLY. Do not add any explanation.
 
 📦 JSON array format:
