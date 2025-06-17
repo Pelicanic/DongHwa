@@ -133,7 +133,8 @@ def save_qa(state: dict) -> dict:
         question_text=state.get("input"),
         answer_text=state.get("paragraph_text"),
         created_at=timezone.now(),
-        ai_question=state.get("question")
+        ai_question=state.get("question"),
+        answer_choice=state.get("choices")
     )
 
     if debug:
@@ -186,7 +187,8 @@ def bulk_save_qa(qa_list: list[dict]) -> int:
             question_text=qa["question_text"],
             answer_text=qa["answer_text"],
             created_at=timezone.now(),
-            ai_question=qa.get("ai_question", "")
+            ai_question=qa.get("ai_question", ""),
+            answer_choice=qa.get("choices", "")
         )
         for qa in qa_list
     ]

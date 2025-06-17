@@ -51,6 +51,7 @@ class Paragraphqa(models.Model):
     answer_text = models.TextField()
     created_at = models.DateTimeField()
     ai_question = models.TextField(null=True, blank=True)  
+    answer_choice = models.TextField(null=True, blank=True) 
 
     class Meta:
         managed = False

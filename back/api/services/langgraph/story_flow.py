@@ -40,6 +40,7 @@ class StoryState(TypedDict, total=False):
     continue_story: bool                      # 계속 생성할지 여부
     context: str                              # 벡터 DB에서 불러온 문맥 (RetrieveContext)
     question: str                             # 챗봇 질문
+    choices: str                              # 선택지
 
 
 # 작성자: 최준혁
