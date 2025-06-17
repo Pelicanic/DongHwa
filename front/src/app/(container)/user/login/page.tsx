@@ -26,11 +26,9 @@ const Login: React.FC = () => {
         localStorage.setItem("user_id", data.data.user_id.toString());
         localStorage.setItem('access', data.data.access);
         localStorage.setItem('refresh', data.data.refresh);
-        localStorage.setItem('nickname', data.data.nickname); //닉네임 저장
+        localStorage.setItem('nickname', data.data.nickname); // 닉네임 저장
 
-        // 로그인 이벤트 알림
         window.dispatchEvent(new Event("login"));
-
         router.push('/');
       } else {
         setError(data.message || '로그인 실패');
@@ -41,20 +39,17 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-      <div className="w-full max-w-5xl flex justify-between items-center mb-10 px-4">
-        <h1 className="text-xl font-bold text-gray-700">동화책 생성서비스</h1>
-        <button className="bg-gray-100 px-4 py-1 rounded-full font-semibold shadow hover:shadow-md">
-          Sign up
-        </button>
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start pt-28 px-4">
+      <div className="w-full max-w-5xl flex justify-center items-center mb-10 px-4">
+        <h1 className="text-2xl font-bold text-gray-700">동화책 생성서비스</h1>
       </div>
 
-      <div className="bg-white w-full max-w-md rounded-xl p-8 shadow-lg text-center">
-        <h2 className="text-2xl font-semibold mb-6">Welcome back</h2>
+      <div className="bg-white w-full max-w-lg rounded-xl p-10 shadow-lg text-center">
+        <h2 className="text-2xl font-semibold mb-6 text-gray-800">Welcome back</h2>
 
         <form className="space-y-4 text-left" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-sm font-medium mb-1">ID</label>
+            <label className="block text-sm font-medium mb-1 text-gray-700">ID</label>
             <input
               type="text"
               placeholder="ID"
@@ -65,7 +60,7 @@ const Login: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Password</label>
+            <label className="block text-sm font-medium mb-1 text-gray-700">Password</label>
             <input
               type="password"
               placeholder="Password"
