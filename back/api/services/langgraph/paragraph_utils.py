@@ -63,6 +63,7 @@ def save_paragraph(state: dict) -> dict:
         **state,
         "paragraph_id": paragraph.paragraph_id,
         "paragraph_no": paragraph_no,
+        
     }
 
 
@@ -133,7 +134,8 @@ def save_qa(state: dict) -> dict:
         question_text=state.get("input"),
         answer_text=state.get("paragraph_text"),
         created_at=timezone.now(),
-        ai_question=state.get("question")
+        ai_question=state.get("question"),
+        answer_choice=state.get("answer_choice")
     )
 
     if debug:
