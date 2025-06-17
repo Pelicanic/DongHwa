@@ -38,7 +38,8 @@ def generate_image_unified(story_id, paragraph_id, data, check) -> dict:
     # DB에서 데이터 가져오기
     story = Story.objects.get(story_id=story_id)
     story_paragraph = Storyparagraph.objects.get(paragraph_id=paragraph_id)
-    
+    data = story.characters
+
     # 기본 캐릭터 데이터 설정
     if not data:
         data = " 1. 메리(주인공): 여자, 갈색 털, 8세, 토끼 2. 알렉스: 남자, 붉은 털, 9세, 다람쥐 3. 올빼미: 남자, 하얖색 깃털, 10세, 부엉이 4. 거미 괴물: 성별 불명, 검은색 털, 나이 불명, 거미 괴물"
