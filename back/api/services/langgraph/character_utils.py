@@ -8,8 +8,19 @@ import re
 import google.generativeai as genai
 import os
 from typing import List
-
 from .parsing_utils import normalize_name
+
+
+# ------------------------------------------------------------------------------------------
+# 초기화 및 설정
+# ------------------------------------------------------------------------------------------
+
+debug = True
+
+# Gemini 모델 초기화
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+model = genai.GenerativeModel("gemini-2.0-flash")
+
 
 # ------------------------------------------------------------------------------------------
 # 통합 캐릭터 처리 (성능 최적화: 3개 함수 → 1개 함수)
@@ -20,25 +31,6 @@ from .parsing_utils import normalize_name
 #       하나로 통합하여 Gemini API 호출을 1회로 축소 (성능 최적화)
 # 마지막 수정일: 2025-06-16
 def extract_and_describe(text: str, user_input: str, known_names: list[str], age: int) -> dict:
-    """
-    기존 3개 함수를 통합한 성능 최적화 함수
-    - extract_new_characters: 새 인물 추출
-    - filter_significant_characters: 의미있는 인물 필터링
-    - get_character_description: 인물 프로필 생성
-    
-    Args:
-        text: 문단 내용
-        user_input: 사용자 입력
-        known_names: 기존 알려진 인물 이름들
-        age: 사용자 나이
-        
-    Returns:
-        dict: {
-            "new_characters": [
-                {"name": str, "description": str}, ...
-            ]
-        }
-    """
     system_instruction = (
         f"You are a professional Korean children's story writer for kids aged {age}.\n"
         "Your task is to analyze a story paragraph and extract ONLY new, meaningful characters.\n\n"
@@ -147,16 +139,6 @@ def extract_and_describe(text: str, user_input: str, known_names: list[str], age
         return {"new_characters": []}
 
 
-# ------------------------------------------------------------------------------------------
-# 초기화 및 설정
-# ------------------------------------------------------------------------------------------
-
-debug = True
-
-# Gemini 모델 초기화
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-model = genai.GenerativeModel("gemini-2.0-flash")
-
 
 # ------------------------------------------------------------------------------------------
 # 이름 유사도 및 중복 검사
@@ -174,6 +156,7 @@ def is_similar_name(name: str, known_names: list[str], threshold: float = 0.8) -
         if ratio >= threshold:
             return True
     return False
+
 
 # 작성자: 최준혁
 # 기능: 이름과 전체 프로필 유사도를 함께 고려해 중복 인물 여부 판단
@@ -213,8 +196,21 @@ def get_similar_name(name: str, known_names: list[str], threshold: float = 0.8) 
     return best_match
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ------------------------------------------------------------------------------------------
-# 인물 추출 및 필터링 (레거시 - 호환성용)
+# 인물 추출 및 필터링 (레거시 - 호환성용) 아래의 코드는 현재 사용하지 않습니다.
 # ------------------------------------------------------------------------------------------
 
 # 레거시 경고: 아래 함수들은 성능상 이유로 비추천

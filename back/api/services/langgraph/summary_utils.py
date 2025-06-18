@@ -24,32 +24,15 @@ debug = True
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-
 # ------------------------------------------------------------------------------------------
-# 스토리 단계 관리
-# ------------------------------------------------------------------------------------------
-
-# 작성자: 최준혁
-# 기능: 기승전결 분할
-# 마지막 수정일: 2025-06-12
-def get_story_stage(paragraph_no: int) -> str:
-    if paragraph_no <= 2:
-        return "기"
-    elif paragraph_no <= 5:
-        return "승"
-    elif paragraph_no <= 8:
-        return "전"
-    else:
-        return "결"
-
-
-# ------------------------------------------------------------------------------------------
-# 스토리 업데이트 및 캐릭터 관리
+# 5. 스토리 업데이트 및 캐릭터 관리
 # ------------------------------------------------------------------------------------------
 # 작성자: 최준혁
 # 기능: 사용자 입력을 통해 Story 테이블의 characters와 summary_4step을 수정하는 메인 함수
 # 마지막 수정일: 2025-06-17 (10단계 요약 기반 업데이트 대응)
 def detect_and_update_story(state: dict) -> dict:
+
+    # 맨 처음 문단은 generate_story_plan에서 생성되므로 스킵
     if state.get("paragraph_no", 1) == 1:
         print("[DetectUpdate] 첫 문단이므로 스킵")
         return state
@@ -67,6 +50,7 @@ def detect_and_update_story(state: dict) -> dict:
         print(f"[DetectUpdate] story_id {story_id} not found.")
         return state
 
+    # 선택지 입력만 포함된 경우 스킵
     if is_choice_only(user_input):
         print("[DetectUpdate] 선택지 입력만 포함된 것으로 판단 → 캐릭터 및 요약 업데이트 스킵")
         return {**state, "characters": story.characters.splitlines() if story.characters else []}
@@ -118,7 +102,7 @@ def detect_and_update_story(state: dict) -> dict:
             renumbered_characters.append(f"{len(renumbered_characters)+1}. {cleaned}")
     story.characters = "\n".join(renumbered_characters)
 
-    # ✅ 새 요약 흐름 생성 조건: story_plan 존재 + 사용자 입력의 의미성 + paragraph_no < 10
+    # 새 요약 흐름 생성 조건: story_plan 존재 + 사용자 입력의 의미성 + paragraph_no < 10
     existing_lines = story.summary_4step.strip().splitlines() if story.summary_4step else []
     new_summary = None
     if existing_lines and user_input.strip() and paragraph_no < 10 and len(existing_lines) == 10:

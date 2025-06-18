@@ -11,9 +11,7 @@ from api.models import Story, Storyparagraph
 from django.utils import timezone
 from api.services.relational_utils import search_similar_paragraphs_by_keywords, get_latest_paragraphs
 from .parsing_utils import extract_choice
-from .summary_utils import get_story_stage
 from .substage_prompts import get_substage_instruction  
-
 
 # ------------------------------------------------------------------------------------------
 # 초기화 및 설정
@@ -26,17 +24,12 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 model = genai.GenerativeModel("gemini-2.0-flash")
 
 # ------------------------------------------------------------------------------------------
-# 기승전결 생성
+# 1. 기승전결 생성
 # ------------------------------------------------------------------------------------------
 
-
-# 작성자: 최준혁
-# 기능: 주제/분위기 기반 4단계 요약 생성 + DB 저장
-# 마지막 수정일: 2025-06-12
 # 작성자: 최준혁
 # 기능: 주제/분위기 기반 10단계 요약 생성 + DB 저장
 # 마지막 수정일: 2025-06-17
-
 def generate_story_plan(state: dict) -> dict:
     theme = state.get("theme")
     mood = state.get("mood")
@@ -44,7 +37,7 @@ def generate_story_plan(state: dict) -> dict:
     age = state.get("age", 7)
     story_id = state.get("story_id")  # story_id 반드시 필요
 
-    # 1. 시스템 지침 (system message style)
+    # 1. 시스템 지침 
     system_instruction = (
         f"You are a professional children's story writer for age {age}.\n"
         "Your task is to create a story outline using a 10-step version of the classic Korean 4-stage structure: 기 (Introduction), 승 (Development), 전 (Climax), 결 (Conclusion).\n"
@@ -56,7 +49,7 @@ def generate_story_plan(state: dict) -> dict:
         "Write clearly in Korean. No markdown or explanations."
     )
 
-    # 2. 사용자 요청 (user prompt style)
+    # 2. 사용자 요청 
     user_request = (
         f"[Input Information]\n"
         f"- Topic: {topic}\n"
@@ -140,7 +133,7 @@ def generate_story_plan(state: dict) -> dict:
 
 
 # ------------------------------------------------------------------------------------------
-# 문맥 조회
+# 2. 문맥 조회
 # ------------------------------------------------------------------------------------------
 
 # 작성자: 최준혁
@@ -151,7 +144,7 @@ def retrieve_context(state: dict) -> dict:
     story_id = state.get("story_id")
     paragraph_no = state.get("paragraph_no") 
 
-    # 🔥 11번째 문단 이상 요청 시 거부
+    # 11번째 문단 이상 요청 시 거부
     if not paragraph_no:  # paragraph_no가 설정되지 않은 경우 계산
         last_para = Storyparagraph.objects.filter(story_id=story_id).order_by("-paragraph_no").first()
         paragraph_no = (last_para.paragraph_no + 1) if last_para else 1
@@ -208,6 +201,10 @@ def retrieve_context(state: dict) -> dict:
         **state,
         "context": retrieved_context
     }
+
+# ------------------------------------------------------------------------------------------
+# 3. 문단 생성
+# ------------------------------------------------------------------------------------------
 
 # 작성자: 최준혁
 # 기능: 문단 번호에 따른 이야기 단계 반환
@@ -310,10 +307,6 @@ def get_force_final_ending_instruction(stage: str, paragraph_no: int) -> str:
     return ""
 
 
-
-# ------------------------------------------------------------------------------------------
-# 문단 생성
-# ------------------------------------------------------------------------------------------
 # 작성자: 최준혁
 # 기능: 사용자 입력을 받아 동화 패러그래프를 생성하는 노드
 # 마지막 수정일: 2025-06-17
@@ -344,7 +337,6 @@ def generate_paragraph(state: dict) -> dict:
         }
 
     story_substage = get_story_substage(paragraph_no)
-    print(story_substage)
 
     current_idx = paragraph_no - 1
     plan_summary = story_plan[current_idx] if story_plan and current_idx < len(story_plan) else ""
@@ -366,10 +358,12 @@ def generate_paragraph(state: dict) -> dict:
         "→ Think through this, then write the paragraph.")
 
 
+    # 마지막 문단 강제 종료 지침
     if paragraph_no == 10:
         instruction_suffix = (
             "- This is the final paragraph. Only write the [문장] section with 3–6 complete, emotionally conclusive sentences.\n"
             "- DO NOT write any [질문] or [행동] sections.\n"
+            "- DO NOT include the [문장] label. Only provide 3–6 full sentences as natural story narration.\n"
             "- End with a warm and clear sentence that signals the story has finished.\n"
             "- Examples: 행복하게 살았답니다. / 여기서 끝이랍니다. / 어떻게 되었을까요? \n"
         )
@@ -380,7 +374,7 @@ def generate_paragraph(state: dict) -> dict:
             "- Use soft emotional reflection and prepare the child for closure.\n"
             "- You must gently prepare the child for the ending in the next (10th) paragraph.\n"
         )
-    else:
+    else: # 1~8 paragraph
         instruction_suffix = (
             "- You MUST include [문장], [질문], and [행동].\n"
             "- The [행동] MUST reflect the current story substage and help transition to the next stage.\n"
@@ -428,6 +422,7 @@ def generate_paragraph(state: dict) -> dict:
 
 
         f"Then write:\n"
+
         "--- INSTRUCTION ---\n\n"
         "Use the following format:\n"
         "[문장] - Continue the story in 3–6 Korean sentences.\n"

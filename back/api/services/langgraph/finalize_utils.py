@@ -25,9 +25,6 @@ model = genai.GenerativeModel("gemini-2.0-flash")
 
 # 작성자: 최준혁
 # 기능: 동화의 제목을 짓고, 요약 및 전체 문단을 자연스럽게 연결한 완결형 이야기 본문을 생성
-# 마지막 수정일: 2025-06-15
-# 작성자: 최준혁
-# 기능: 동화의 제목을 짓고, 요약 및 전체 문단을 자연스럽게 연결한 완결형 이야기 본문을 생성
 # 마지막 수정일: 2025-06-16 (완료 플래그 추가)
 def finalize_story_output(state: dict) -> dict:
     story_id = state.get("story_id")
@@ -35,7 +32,7 @@ def finalize_story_output(state: dict) -> dict:
         print("[FinalizeStory] story_id 없음")
         return state
 
-    # 🔥 이미 완료된 스토리인지 체크
+    # 이미 완료된 스토리인지 체크
     story = state.get("story")
     if not story:
         story = Story.objects.filter(story_id=story_id).first()
@@ -83,12 +80,12 @@ def finalize_story_output(state: dict) -> dict:
         "[단락 2] ...\n"
         "...\n"
         "[단락 10] ...\n\n"
-        "모든 출력은 한국어로 작성해 주세요.\n\n"
+        "모든 출력은 한국어로 작성해 주세요.\n"
+        "마크다운은 사용하지 마세요.\n"
         f"{full_text}"
     )
 
     # 3. Gemini 호출
-    import google.generativeai as genai
     genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
     model = genai.GenerativeModel("gemini-2.0-flash")
     response = model.generate_content(prompt)
@@ -126,7 +123,7 @@ def finalize_story_output(state: dict) -> dict:
             for i in range(0, len(sentences), chunk_size)
         ][:10]  # 정확히 10개 자르기
 
-    # 7. 🔥 Story에 완료 상태 저장 - 캐시된 Story 객체 사용
+    # 7. Story에 완료 상태 저장 - 캐시된 Story 객체 사용
     if not story:
         story = Story.objects.filter(story_id=story_id).first()
         
@@ -134,8 +131,8 @@ def finalize_story_output(state: dict) -> dict:
         story.title = title
         story.summary = summary
         story.status = "completed"
-        story.is_completed = True  # 🔥 완료 플래그 설정
-        story.completed_at = timezone.now()  # 🔥 완료 시간 기록 (필드가 있다면)
+        story.is_completed = True  # 완료 플래그 설정
+        story.completed_at = timezone.now()  # 완료 시간 기록 (필드가 있다면)
         story.save()
 
     # 8. 기존 문단 이후 번호 기준으로 이어서 일괄 저장 (bulk_create 사용)
@@ -163,7 +160,7 @@ def finalize_story_output(state: dict) -> dict:
     Storyparagraph.objects.bulk_create(paragraphs_to_create)
 
     print("\n" + "-" * 40)
-    print("[FinalizeStory] 🔥 스토리 완성 및 완료 플래그 설정")
+    print("[FinalizeStory] 스토리 완성 및 완료 플래그 설정")
     print(f"제목       : {title}")
     print(f"단락 개수  : {len(new_paragraphs)}")
     print(f"완료 상태  : True")
@@ -171,15 +168,15 @@ def finalize_story_output(state: dict) -> dict:
 
     return {
         **state,
-        "story_completed": True,  # 🔥 완료 플래그
+        "story_completed": True,  # 완료 플래그
         "title": title,
         "summary_3line": summary,
         "narrative_story": "\n\n".join(new_paragraphs),
-        "completion_message": "동화가 완성되었습니다!"  # 🔥 완료 메시지
+        "completion_message": "동화가 완성되었습니다!"  # 완료 메시지
     }
 
 
-# 🔥 추가: DB 저장 전 완료 상태 체크 헬퍼 함수
+# 추가: DB 저장 전 완료 상태 체크 헬퍼 함수
 def check_story_completion_before_save(story_id: str) -> bool:
     """스토리 완료 상태 체크 - True면 더 이상 저장 금지"""
     try:
@@ -191,7 +188,7 @@ def check_story_completion_before_save(story_id: str) -> bool:
     return False
 
 
-# 🔥 추가: 안전한 문단 저장 함수 (완료된 스토리는 저장 거부)
+# 추가: 안전한 문단 저장 함수 (완료된 스토리는 저장 거부)
 def safe_save_paragraph(story_id: str, paragraph_data: dict) -> bool:
     """완료된 스토리가 아닐 때만 문단 저장"""
     if check_story_completion_before_save(story_id):

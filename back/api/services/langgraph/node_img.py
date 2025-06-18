@@ -94,7 +94,7 @@ def generate_image_unified(story_id, paragraph_id, check) -> dict:
         content = response.content
         
         if debug:
-            print(f"[UnifiedImageGeneration] 통합 응답: {content}")
+            print(f"7. [UnifiedImageGeneration] 통합 응답: {content}")
         
         # JSON 추출 및 파싱
         if "```json" in content:
