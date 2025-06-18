@@ -11,7 +11,7 @@ from django.utils import timezone
 
 # Langgraph용
 from api.services.langgraph.story_flow import story_flow
-from api.models import User
+from api.models import User , Illustration, Storyparagraph, Paragraphqa
 # from django.views.decorators.csrf import csrf_exempt
 
 # 라이브러리 불러오기
@@ -54,7 +54,89 @@ def index(request):
 #             status=status.HTTP_500_INTERNAL_SERVER_ERROR
 #         )
 
+# 작성자 : 최재우
+# 기능 : story_id 를 통해 StoryParagraph테이블 데이터 호출
+# 마지막 수정일 : 2025-06-17
+@api_view(['POST'])
+def story_paragraphQA(request):
+    try:
+        story_id = request.data.get("story_id")
 
+        datas = Paragraphqa.objects.raw("SELECT * FROM ParagraphQA WHERE story_id = %s", [story_id])
+
+        list = []
+        for data in datas:
+            list.append({
+                "qa_id": data.qa_id,
+                "paragraph_id": data.paragraph.paragraph_id,
+                "story_id": data.story.story_id,
+                "question_text": data.question_text,
+                "answer_text": data.answer_text,
+                "created_at": data.created_at.strftime("%Y-%m-%d %H:%M:%S")
+            })
+        return Response({"paragraphQA": list})
+    
+    except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return Response({"error": str(e)}, status=500)
+    
+# 작성자 : 최재우
+# 기능 : story_id 를 통해 StoryParagraph테이블 데이터 호출
+# 마지막 수정일 : 2025-06-17
+@api_view(['POST'])
+def story_storyParagraph(request):
+    try:
+        story_id = request.data.get("story_id")
+
+        datas = Storyparagraph.objects.raw("SELECT * FROM StoryParagraph WHERE story_id = %s", [story_id])
+
+        list = []
+        for data in datas:
+            list.append({
+                "paragraph_id": data.paragraph_id,
+                "story_id": data.story_id,
+                "paragraph_no": data.paragraph_no,
+                "content_text": data.content_text,
+                "created_at": data.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                "updated_at": data.updated_at.strftime("%Y-%m-%d %H:%M:%S")
+            })
+        return Response({"storyParagraph": list})
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({"error": str(e)}, status=500)
+# 작성자 : 최재우
+# 기능 : story_id 를 통해 Illustration테이블 데이터 호출
+# 마지막 수정일 : 2025-06-17
+@api_view(['POST'])
+def story_illustration(request):
+    try:
+        story_id = request.data.get("story_id")
+
+        datas = Illustration.objects.raw("SELECT * FROM Illustration WHERE story_id = %s", [story_id])
+        list = []
+        for data in datas:
+            list.append({
+                "illustration_id": data.illustration_id,
+                "paragraph_id": data.paragraph_id,
+                "story_id": data.story_id,
+                "image_url": data.image_url,
+                "caption_text": data.caption_text,
+                "labels": json.loads(data.labels) if data.labels else [],
+                "created_at": data.created_at.strftime("%Y-%m-%d %H:%M:%S")
+            })
+        return Response({"illustration": list})
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({"error": str(e)}, status=500)
+
+# 작성자 : 최재우
+# 기능 : story_id 를 통해 Story테이블 데이터 호출
+# 마지막 수정일 : 2025-06-17
 @api_view(['POST'])
 def list_story(request):
     user_id = request.data.get("user_id")
@@ -151,3 +233,8 @@ def chatbot_story(request):
         import traceback
         traceback.print_exc()
         return Response({"error": str(e)}, status=500)
+
+
+
+    
+    

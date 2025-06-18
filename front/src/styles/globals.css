@@ -8,6 +8,13 @@
 /* ==============================================
   기본 리셋 및 설정
    ============================================== */
+main {
+    width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+}
+
 * {
   box-sizing: border-box;
   padding: 0;
