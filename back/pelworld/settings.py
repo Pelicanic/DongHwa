@@ -107,10 +107,10 @@ REST_FRAMEWORK = {
 # JWT 인증 설정
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-    'ROTATE_REFRESH_TOKENS': True,            # 새로 발급될 때 refresh도 함께 갱신
-    'BLACKLIST_AFTER_ROTATION': True,         # 이전 refresh 토큰은 폐기
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,         # 리프레시 토큰은 한 번만 사용 가능
+    "BLACKLIST_AFTER_ROTATION": False,     # 블랙리스트는 사용하지 않음 (마이그레이션 불필요)
 }# JWT 토큰 설정
 
 APPEND_SLASH = False
