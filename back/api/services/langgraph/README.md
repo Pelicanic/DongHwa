@@ -86,7 +86,6 @@ graph TD
     K --> L{paragraph_no >= 10?}
     L -->|No| M[END]
     L -->|Yes| N[FinalizeStory]
-    N --> M
 ```
 
 <br>
