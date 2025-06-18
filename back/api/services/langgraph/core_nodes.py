@@ -286,27 +286,6 @@ def get_paragraph_hint(substage: str) -> str:
         )
     return ""
 
-
-# 작성자: 최준혁
-# 기능: 마지막 문단 강제 종료 지침
-# 마지막 수정일: 2025-06-15
-def get_force_final_ending_instruction(stage: str, paragraph_no: int) -> str:
-    if stage == "에필로그" and paragraph_no == 10:
-        return (
-            "\n\nFinal Ending Instruction:\n"
-            "- This is the final paragraph of the story.\n"
-            "- You MUST end the story.\n"
-            "- Write 3-6 engaging sentences in the [문장] section to properly conclude the story.\n"
-            "- You MUST conclude the story in a warm, clear, and emotionally satisfying way suitable for children.\n"
-            "- DO NOT include any [질문] or [행동] sections.\n"
-            "- The ending must feel complete. Do NOT imply that the story continues.\n"
-            "- Finish with a clear emotional conclusion.\n"
-            "- You MUST include a clear final sentence that signals the story has ended (e.g., 'From that day on...', 'Since then...', 'And the adventure came to an end.').\n"
-            "- Write the full [문장] section with sufficient detail, not just a brief summary.\n"
-        )
-    return ""
-
-
 # 작성자: 최준혁
 # 기능: 사용자 입력을 받아 동화 패러그래프를 생성하는 노드
 # 마지막 수정일: 2025-06-17
@@ -343,7 +322,6 @@ def generate_paragraph(state: dict) -> dict:
     next_summary = story_plan[current_idx + 1] if story_plan and current_idx + 1 < len(story_plan) else None
 
     paragraph_hint = get_paragraph_hint(story_substage)
-    force_final_ending_instruction = get_force_final_ending_instruction(story_substage, paragraph_no)
     substage_instruction = get_substage_instruction(story_substage)
 
 
