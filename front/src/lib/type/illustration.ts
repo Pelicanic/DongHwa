@@ -1,7 +1,7 @@
 // 작성자 : 최재우
 // 마지막 수정일 : 2025-06-11
 
-export interface IllustrationDTO {
+export interface illustrationDTO {
     illustration_id?: number;
     paragraph_id?: number;
     story_id?: number;

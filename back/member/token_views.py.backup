@@ -1,0 +1,39 @@
+from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt.exceptions import InvalidToken
+from rest_framework_simplejwt.settings import api_settings
+from api.models import User
+
+class CustomTokenRefreshSerializer(TokenRefreshSerializer):
+    def validate(self, attrs):
+        refresh = self.token_class(attrs['refresh'])
+        
+        # 토큰에서 user_id 가져오기
+        try:
+            user_id = refresh.get('user_id')
+            # api.User 모델로 사용자 확인
+            user = User.objects.get(user_id=user_id)
+        except User.DoesNotExist:
+            raise InvalidToken('User not found')
+        
+        data = {'access': str(refresh.access_token)}
+        
+        if api_settings.ROTATE_REFRESH_TOKENS:
+            if api_settings.BLACKLIST_AFTER_ROTATION:
+                try:
+                    # Attempt to blacklist the given refresh token
+                    refresh.blacklist()
+                except AttributeError:
+                    # If blacklist app not installed, just pass
+                    pass
+            
+            refresh.set_jti()
+            refresh.set_exp()
+            refresh.set_iat()
+            
+            data['refresh'] = str(refresh)
+        
+        return data
+
+class CustomTokenRefreshView(TokenRefreshView):
+    serializer_class = CustomTokenRefreshSerializer

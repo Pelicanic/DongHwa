@@ -1,0 +1,444 @@
+
+.container_box_right_inner_box_temp_btn{
+    color: white;
+    border-radius: 12px;
+    position: relative;
+    border: 1px solid black;
+    display: flex;
+    justify-content: space-around;
+    flex-direction: row;
+    align-items: center;
+    width: 76px;
+    height: 100%;
+}
+
+.container_box_right_inner_box_temp{
+    border: 1px solid black;
+    width: 100%;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: right;
+    color: white;
+    border-radius: 12px;
+    position: relative;
+    margin-bottom: 5%;
+}
+
+.container_box_right_inner_box_user {
+    border: 1px solid black;
+    width: 100%;
+    height: 37%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border-radius: 12px;
+    position: relative;
+    /* border: 1px solid black; */
+    flex-direction: column;
+    margin-bottom: 5%;
+}
+
+.container_box_right_inner_box_ai {
+    width: 100%;
+    height: 20%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border-radius: 12px;
+    position: relative;
+    border: 1px solid black;
+    margin-bottom: 5%;
+}
+
+.container_box_right_inner_box_progress{
+  border: 1px solid black;
+  width: 100%;
+  height: 30px;
+  margin-bottom: 7%;
+  text-align: center;
+  align-items: center;
+}
+
+.container_box_right_inner_box{
+  border: 1px solid black;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.container_box_left_inner_text {
+    text-align: left;
+    border: 1px solid black;
+    
+    /* 여러 줄 텍스트 설정 */
+    white-space: pre-wrap; /* 줄바꿈과 공백 보존 */
+    word-wrap: break-word; /* 긴 단어 줄바꿈 */
+    word-break: break-word; /* 한글 등 적절한 줄바꿈 */
+    
+    /* 레이아웃 */
+    margin: 0;
+    padding: 8px;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+
+    /* 스크롤 설정 */
+    overflow-y: auto; /* 세로 스크롤 허용 */
+    overflow-x: hidden; /* 가로 스크롤 숨김 */
+    
+
+    
+    /* 스크롤바 스타일링 (선택사항) */
+    scrollbar-width: thin;
+    scrollbar-color: #ccc transparent;
+}
+
+.container_box_right_inner {
+    width: 90%;
+    height: 90%;
+    border: 1px solid black;
+    position: relative;
+    padding: 7% 10% 7%;
+    box-sizing: border-box;
+}
+
+.container_box_left_inner {
+    width: 90%;
+    height: 90%;
+    border: 1px solid black;
+    position: relative;
+    padding: 10%;
+    box-sizing: border-box;
+    overflow: hidden; /* 부모에서 overflow 제어 */
+}
+
+.container_box_left, .container_box_right{
+    width: 46%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 1px solid black;
+}
+
+.container_box{
+    width: 75%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    border: 1px solid black;
+
+    /* 텍스트 스타일 */
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+
+/* 기본 스타일 */
+.preview,
+.preview * {
+  box-sizing: border-box;
+}
+
+.preview {
+  background: #ffffff;
+  /* height: 1080px; */
+  position: relative;
+  overflow: hidden;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 64px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.intro-section {
+    height: 100px;
+    position: relative;
+}
+
+.description {
+  color: #000000;
+  text-align: center;
+  font-family: "Inter", sans-serif;
+  font-size: 18px;
+  line-height: 140%;
+  font-weight: 400;
+  position: relative;
+  align-self: stretch;
+}
+
+.description-span {
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+}
+
+.description-span2 {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+}
+
+.carousel {
+  /* padding: 40px 64px 40px 64px; */
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 1428px;
+  height: 560px;
+  position: relative;
+  box-shadow: var(--smooth-shadow-box-shadow);
+  border-radius: 16px;
+  background: var(--carousel-white);
+  box-sizing: border-box;
+}
+
+.slides-box {
+  align-self: stretch;
+  flex: 1;
+  height: auto;
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+}
+
+/* 슬라이드 관련 스타일 */
+.slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.6s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+}
+
+.slide.active {
+  opacity: 1;
+}
+
+.slide-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  border-radius: 12px;
+  position: relative;
+}
+
+/* 마스크 오버레이 효과 */
+.slide-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--mask);
+  opacity: 0.3;
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.slides-navigation {
+  padding: 8px;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.click-area {
+  padding: 8px;
+  display: flex;
+  flex-direction: row;
+  gap: 0px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  position: relative;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  border: none;
+  background: transparent;
+}
+
+.click-area:hover {
+  background-color: rgba(123, 97, 255, 0.1);
+  transform: scale(1.1);
+}
+
+.click-area:focus {
+  outline: 2px solid #7b61ff;
+  outline-offset: 2px;
+}
+
+.arrow-left, .arrow-right {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  position: relative;
+  overflow: visible;
+}
+
+.arrow-svg {
+  width: 100%;
+  height: 100%;
+  fill: #333;
+  transition: fill 0.2s ease;
+}
+
+.click-area:hover .arrow-svg {
+  fill: #7b61ff;
+}
+
+.slide-indicator {
+  padding: 8px;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.dot-indicator {
+  flex-shrink: 0;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dot-indicator:focus {
+  outline: 2px solid #7b61ff;
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+.dot-indicator-1 {
+  width: 16px;
+  height: 16px;
+}
+
+.dot-indicator.dot-inactive {
+  opacity: 0.5;
+  width: 12px;
+  height: 12px;
+}
+
+.dot-indicator-active, .dot-indicator-inactive {
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  right: 0%;
+  left: 0%;
+  bottom: 0%;
+  top: 0%;
+  transition: all 0.3s ease;
+}
+
+.dot-indicator-active {
+  background: #7b61ff;
+}
+
+.dot-indicator-inactive {
+  background: var(--carousel-gray, #999999);
+}
+
+/* 호버 효과 */
+.dot-indicator.dot-inactive:hover {
+  opacity: 0.8;
+  transform: scale(1.2);
+}
+
+.dot-indicator.dot-inactive:hover .dot-indicator-inactive {
+  background: #7b61ff;
+}
+
+/* 활성/비활성 상태 클래스 */
+.dot-active {
+  opacity: 1 !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.description2 {
+  color: #000000;
+  text-align: center;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  line-height: 140%;
+  font-weight: 400;
+  opacity: 0.5;
+  position: relative;
+  align-self: stretch;
+}
+
+.description-2-span {
+  font-family: "Inter", sans-serif;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1600px) {
+  .content {
+    left: 50px;
+  }
+  
+  .carousel {
+    width: calc(100vw - 100px);
+    max-width: 1428px;
+  }
+}
+
+@media (max-width: 768px) {
+  .content {
+    left: 20px;
+    right: 20px;
+    position: relative;
+    top: 40px;
+  }
+  
+  .carousel {
+    width: calc(100vw - 40px);
+    padding: 20px 32px;
+    height: 400px;
+  }
+  
+  .preview {
+    height: auto;
+    min-height: 100vh;
+  }
+
+
+}

@@ -12,7 +12,7 @@
     "axios": "^1.9.0",
     "framer-motion": "^12.16.0",
     "lucide-react": "^0.511.0",
-    "next": "15.1.8",
+    "next": "^15.4.0-canary.84",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-pageflip": "^2.0.3",

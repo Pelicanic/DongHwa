@@ -11,13 +11,13 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import LinkButton from '@/(components)/Button/button';
 import MainCard from '@/(components)/Card/Cardbox';
-import { StoryDTO } from '@/lib/type/story';
+import { storyDTO } from '@/lib/type/story';
 
 // 작성자 : 최재우
 // 마지막 수정일 : 2025-06-10
 // 기능 : story 테이블 API 호출
 
-const StoryResponse = async (): Promise<StoryDTO[]> => {
+const storyResponse = async (): Promise<storyDTO[]> => {
   const user_id = 772;
     const res = await axios.post('http://localhost:8721/api/v1/main/story/', { user_id });
     return res.data.stories;
@@ -25,16 +25,15 @@ const StoryResponse = async (): Promise<StoryDTO[]> => {
 
 const Main: React.FC = () => {
   const [nickname, setNickname] = useState('우리');
-  const [posts, setPosts] = useState<StoryDTO[]>([]);
+  const [posts, setPosts] = useState<storyDTO[]>([]);
 
   useEffect(() => {
-    console.log('Main 컴포넌트가 마운트되었습니다.');
     if (typeof window !== 'undefined') {
       const storedNickname = localStorage.getItem('nickname');
       if (storedNickname) setNickname(storedNickname);
     }
     const fetchStories = async () => {
-      const boards = await StoryResponse();
+      const boards = await storyResponse();
       setPosts(boards);
     };
     fetchStories();

@@ -2,7 +2,7 @@
 // 작성자 : 최재우
 // 마지막 수정일 : 2025-06-11
 
-export interface UserDTO {
+export interface userDTO {
     user_id?: number;
     login_id?: string;
     password_hash?: string;
