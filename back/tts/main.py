@@ -1,3 +1,4 @@
+# back/tts/main.py
 import os
 import time
 from .utils.text_processor import split_text_into_sentences
@@ -5,56 +6,66 @@ from .utils.text_ana_gen import analyze_texts_with_gemini
 from .utils.clova_tts import synthesize_clova_tts
 from pydub import AudioSegment
 
-
-def merge_audio_files(file_list, output_name, pause_duration_ms=500):
-    """여러 개의 wav 파일을 하나로 병합 (중간에 정적 pause 삽입)"""
-    if not file_list:
-        print("병합할 파일이 없습니다.")
-        return
-
-    # pydub이 mp3를 직접 처리하지 못하는 경우를 대비해 wav로 통일
-    # 이 부분은 synthesize_clova_tts가 wav로 저장하므로 유효합니다.
-    combined = AudioSegment.from_wav(file_list[0])
-
-    for file in file_list[1:]:
-        combined += AudioSegment.silent(duration=pause_duration_ms)
-        combined += AudioSegment.from_wav(file)
-
-    # 최종 저장 포맷을 mp3로 변경
-    final_format = output_name.split('.')[-1]
-    combined.export(output_name, format=final_format)
-    print(f"✅ 병합 완료 및 {output_name} 저장")
-
-    for file in file_list:
-        try:
-            os.remove(file)
-        except OSError as e:
-            print(f"임시 파일 삭제 오류: {e.filename} - {e.strerror}")
-
-
 def build_final_audio(text, save_path, gemini_api_key, clova_client_id, clova_client_secret, character_list=""):
     """
-    텍스트 입력 → 문장 분리 → 감정 분석 → TTS 생성 → 병합 저장
-    저장 결과: save_path(mp3/wav)
+    전체 텍스트 입력 → 문단별 문장 분리 → 감정 분석 → TTS 생성
+    → 병합 저장 (userID_storyID_all.mp3) → 문단별 추출 (userID_storyID_paragraph_x.mp3) → 임시파일 삭제
     """
-    start_time = time.time()
+    total_start = time.time()
 
-    sentences = split_text_into_sentences(text)
-    print(f"✅ 분리된 문장 수: {len(sentences)}")
+    # 사용자 및 스토리 ID 추출
+    base_dir = os.path.dirname(save_path)
+    filename = os.path.splitext(os.path.basename(save_path))[0]
+    file_prefix = filename if not filename.endswith("_all") else filename[:-4]  
+
+    all_audio_path = os.path.join(base_dir, f"{file_prefix}_all.mp3")
+
+    # 이미 생성된 전체 파일이 있다면 재사용
+    if os.path.exists(all_audio_path):
+        print(f"⚠️ 이미 존재하는 파일: {all_audio_path} → 재생성 생략")
+        paragraph_paths = {}
+        for i in range(10):
+            para_path = os.path.join(base_dir, f"{file_prefix}_paragraph_{i + 11}.mp3")
+            if os.path.exists(para_path):
+                paragraph_paths[i + 11] = para_path
+        return all_audio_path, paragraph_paths
+
+    # 문단별 텍스트 추출
+    paragraphs = text.strip().split("\n")
+
+    # 문단별 문장 분리 
+    paragraph_sentence_map = []
+    for para in paragraphs:
+        sentence_list = split_text_into_sentences(para)
+        paragraph_sentence_map.append(sentence_list)
+
+    # 전체 문장 리스트 + 문단별 인덱스 범위 생성
+    all_sentences = []
+    index_ranges = []
+    cursor = 0
+    for sents in paragraph_sentence_map:
+        all_sentences.extend(sents)
+        index_ranges.append(list(range(cursor, cursor + len(sents))))
+        cursor += len(sents)
+
+    print(f"✅ 전체 문장 수: {len(all_sentences)}")
 
     print("🔍 감정 분석 중...")
-
-    # 전달받은 character_list를 analyze_texts_with_gemini 함수에 넘겨줍니다.
     configs = analyze_texts_with_gemini(
-        sentences, 
-        api_key=gemini_api_key, 
+        all_sentences,
+        api_key=gemini_api_key,
         characters=character_list
     )
+
     print("🎙️ TTS 합성 시작...")
-    temp_files = []
+    temp_dir = os.path.join(base_dir, "_segments")
+    os.makedirs(temp_dir, exist_ok=True)
+
+    segment_files = []
+    durations = []
 
     for i, cfg in enumerate(configs):
-        temp_filename = f"temp_{i+1}.wav"
+        temp_path = os.path.join(temp_dir, f"seg_{i+1}.wav")
         print(f"   - [{i+1}] speaker={cfg['speaker']}, emotion={cfg['emotion']}")
 
         success = synthesize_clova_tts(
@@ -65,18 +76,66 @@ def build_final_audio(text, save_path, gemini_api_key, clova_client_id, clova_cl
             pitch=cfg["pitch"],
             speed=cfg["speed"],
             volume=cfg["volume"],
-            output_path=temp_filename,
+            output_path=temp_path,
             client_id=clova_client_id,
             client_secret=clova_client_secret
         )
         if success:
-            temp_files.append(temp_filename)
+            segment_files.append(temp_path)
+            durations.append(len(AudioSegment.from_wav(temp_path)))
 
-    print("🎧 음성 병합 중...")
-    if temp_files:
-        merge_audio_files(temp_files, save_path)
-        print(f"✅ 최종 저장 완료: {save_path}  (총 {round(time.time() - start_time, 2)}초)")
-        return True
-    else:
+    if not segment_files:
         print("❌ TTS 합성에 성공한 파일이 없어 병합을 건너뜁니다.")
         return False
+
+    # 병합
+    print("🎧 음성 병합 중...")
+    segments = [AudioSegment.from_wav(f) for f in segment_files]
+    combined = sum(segments[1:], segments[0])
+    combined.export(all_audio_path, format="mp3")
+    audio_merge_end = time.time()
+    print(f"✅ 병합 완료 및 {all_audio_path} 저장")
+
+    # Offset 계산
+    offsets = []
+    current_offset = 0
+    for dur in durations:
+        offsets.append((current_offset, current_offset + dur))
+        current_offset += dur
+
+    # 문단 번호 1~10에 매핑
+    full_audio = AudioSegment.from_mp3(all_audio_path)
+    paragraph_paths = {}
+
+    for i, idx_range in enumerate(index_ranges, start=1):
+        para_path = os.path.join(base_dir, f"{file_prefix}_paragraph_{i}.mp3")
+        if os.path.exists(para_path):
+            print(f"⏩ 문단 {i} 파일 존재함 → 건너뜀")
+            paragraph_paths[i] = para_path
+            continue
+
+        start = offsets[idx_range[0]][0]
+        end = offsets[idx_range[-1]][1]
+        segment = full_audio[start:end]
+        segment.export(para_path, format="mp3")
+        paragraph_paths[i] = para_path
+
+    segment_split_end = time.time()
+
+    # 임시파일 삭제
+    for f in segment_files:
+        try:
+            os.remove(f)
+        except OSError as e:
+            print(f"⚠️ 임시파일 삭제 실패: {e.filename} - {e.strerror}")
+    try:
+        os.rmdir(temp_dir)
+    except OSError:
+        pass
+
+    print(f"✅ 최종 저장 완료: {all_audio_path}")
+    print(f"⏱️ 전체 병합 시간: {round(audio_merge_end - total_start, 2)}초")
+    print(f"⏱️ 문단별 분할 시간: {round(segment_split_end - audio_merge_end, 2)}초")
+    print(f"⏱️ 총 소요 시간: {round(segment_split_end - total_start, 2)}초")
+
+    return all_audio_path, paragraph_paths
