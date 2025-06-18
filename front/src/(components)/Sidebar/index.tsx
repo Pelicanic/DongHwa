@@ -1,14 +1,12 @@
 // 작성자 : 최재우
-// 마지막 수정일 : 2025-06-03
-// 마지막 수정 내용 : LinkButton 컴포넌트를 통한 페이지 이동 기능 적용
-// SidebarLink에 대한 컴포넌트 분리
+// 마지막 수정일 : 2025-06-18
+// 마지막 수정 내용 : refresh 토큰을 한 번 사용하여 폐기 후 완전 로그아웃 처리
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import {Search, Home, Book, Tag, Users, CreditCard, Settings, X } from 'lucide-react';
+import { Search, Home, Book, Tag, Users, CreditCard, Settings, X } from 'lucide-react';
 import LinkButton from '@/(components)/Button/button';
 import SidebarLink from '@/(components)/Button/sidebarlinkButton';
-
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -65,12 +63,27 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
     };
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('access');
-    localStorage.removeItem('refresh');
-    localStorage.removeItem('user_id');
-    localStorage.removeItem('nickname');
-    localStorage.removeItem('age');
+  const handleLogout = async () => {
+    const refresh = localStorage.getItem('refresh');
+
+    if (refresh) {
+      try {
+        await fetch("http://localhost:8721/member/token/refresh/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refresh }),
+        });
+      } catch (e) {
+        console.warn("refresh 소진 실패 (무시 가능):", e);
+      }
+    }
+
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("nickname");
+    localStorage.removeItem("age");
+
     setIsLoggedIn(false);
     window.location.reload();
   };
