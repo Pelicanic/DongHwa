@@ -1,4 +1,4 @@
-# ttts/utils/voice_selector.py
+# back/tts/utils/voice_selector.py
 # 화자 이름과 감정 목록 등을 사전 정의하거나 UI용으로 제공할 수 있음
 
 AVAILABLE_SPEAKERS = [
