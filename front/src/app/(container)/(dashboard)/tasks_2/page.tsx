@@ -20,13 +20,13 @@ interface ImageCarouselProps {
 }
 
 const paragraphQAResponse = async (): Promise<paragraphQADTO[]> => {
-  const story_id = '2073';
+  const story_id = '2245';
   const res = await axios.post('http://localhost:8721/api/v1/paragraphQA/story/', { story_id });
   return res.data.paragraphQA;
 };
 
 const storyParagraphResponse = async (): Promise<storyParagraphDTO[]> => {
-  const story_id = '2073';
+  const story_id = '2245';
   const res = await axios.post('http://localhost:8721/api/v1/storyParagraph/story/', { story_id });
   return res.data.storyParagraph;
 };
@@ -131,7 +131,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                         <div className='container_box_left'>
                             <div className='container_box_left_inner'>
                                 <div className='container_box_left_inner_text'>
-                                    {data.content_text}
+                                    {data.content_text || '내용이 없습니다'}
                                 </div>
                             </div>
                         </div>
@@ -141,7 +141,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                                   <div className='container_box_right_inner_box_progress'>
                                     진행상황
                                   </div>
-                                  <div className='container_box_right_inner_box_ai'>{data_QA.question_text}</div>
+                                  <div className='container_box_right_inner_box_ai'>{data_QA?.ai_question || 'AI 질문이 없습니다'}</div>
                                   <div className='container_box_right_inner_box_user'>유저 선택</div>
                                   <div className='container_box_right_inner_box_temp'>
                                     <div className='container_box_right_inner_box_temp_btn'>임시저장</div>
