@@ -66,6 +66,8 @@ const PageFlip: React.FC<PageFlipProps> = ({
   const bookRef = useRef<HTMLDivElement>(null); // 또는 라이브러리에서 제공하는 ref 타입
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(storyParagraph.length);
+  console.log("storyParagraph", storyParagraph);
+  console.log("illustration", illustration);
 
   useEffect(() => {
     setTotalPages(storyParagraph.length*2);
@@ -126,16 +128,25 @@ const PageFlip: React.FC<PageFlipProps> = ({
             <p className="text-lg">재미있는 동화의 시작</p>
           </div>
         </div>
-
+        {/* <div>
+          <div className="page-content">
+            {storyParagraph[0]?.content_text || '내용이 없습니다.'}
+          </div>
+        </div>
+        <div>
+          <div className="page-content">
+            {storyParagraph[1]?.content_text || '내용이 없습니다.'}
+          </div>
+        </div> */}
         {/* 스토리 페이지들 - 각 단락마다 이미지(왼쪽) + 텍스트(오른쪽) 쌍으로 생성 */} 
-        {/* {storyParagraph && storyParagraph.flatMap((storypage, index) => {
+        {storyParagraph && storyParagraph.map((storypage, index) => {
         const illust = illustration[index];
         return [
-          <div key={`image-${storypage.paragraph_no}`} className="pageflip-page right-page">
+          <div key={`image-${storypage.paragraph_id}`} className="pageflip-page right-page">
             <div className="page-content">
               {illust ? (
                 <Image
-                  src={illust.image_url ?? "/placeholder.png"}
+                  src={`/images/${illust.image_url ?? "soyee-secret.png"}`}
                   className="w-full h-auto object-cover"
                   alt=""
                   width={384} // 원하는 값
@@ -149,29 +160,29 @@ const PageFlip: React.FC<PageFlipProps> = ({
             </div>
             <div className="page-number left-number">
               {index + 1}
-            </div> */}
+            </div>
             {/* 페이지 구분선 (가운데) */}
-            {/* {index % 2 === 0 && (
+            {index % 2 === 0 && (
               <div className="page-divider"></div>
             )}
           </div>,
 
-          <div key={`text-${storypage.paragraph_no}`} className="pageflip-page left-page">
+          <div key={`text-${storypage.paragraph_id}`} className="pageflip-page left-page">
             <div>
               <div className="page-content">
                 {storypage.content_text}
               </div>
               <div className="page-number right-number">
                 {index + 1}
-              </div> */}
+              </div>
               {/* 페이지 구분선 (가운데) */}
-              {/* {index % 2 === 1 && (
+              {index % 2 === 1 && (
                 <div className="page-divider"></div>
               )}
             </div>
           </div>
           ];
-        })} */}
+        })}
 
         {/* 뒷표지 */}
         <div className="bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center text-white p-8">

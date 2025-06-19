@@ -10,13 +10,13 @@ import { storyParagraphDTO } from '@/lib/type/storyParagraph';
 
 
 const illustrationResponse = async (): Promise<illustrationDTO[]> => {
-  const story_id = '2073';
+  const story_id = '2245';
   const res = await axios.post('http://localhost:8721/api/v1/illustration/story/', { story_id });
   return res.data.illustration;
 };
 
 const storyParagraphResponse = async (): Promise<storyParagraphDTO[]> => {
-  const story_id = '2073';
+  const story_id = '2245';
   const res = await axios.post('http://localhost:8721/api/v1/storyParagraph/story/', { story_id });
   return res.data.storyParagraph;
 };

@@ -8,4 +8,6 @@ export interface paragraphQADTO {
     question_text?: string;
     answer_text?: string;
     created_at?: string;
+    ai_question?: string;
+    answer_choice?: string;
 }

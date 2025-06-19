@@ -200,7 +200,7 @@
   flex-shrink: 0;
   width: 100%;
   max-width: 1428px;
-  height: 560px;
+  height: 700px;
   position: relative;
   box-shadow: var(--smooth-shadow-box-shadow);
   border-radius: 16px;
@@ -298,8 +298,8 @@
 }
 
 .click-area:focus {
-  outline: 2px solid #7b61ff;
-  outline-offset: 2px;
+  /* outline: 2px solid #7b61ff;
+  outline-offset: 2px; */
 }
 
 .arrow-left, .arrow-right {
@@ -340,9 +340,9 @@
 }
 
 .dot-indicator:focus {
-  outline: 2px solid #7b61ff;
+  /* outline: 2px solid #7b61ff;
   outline-offset: 2px;
-  border-radius: 50%;
+  border-radius: 50%; */
 }
 
 .dot-indicator-1 {

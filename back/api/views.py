@@ -72,7 +72,9 @@ def story_paragraphQA(request):
                 "story_id": data.story.story_id,
                 "question_text": data.question_text,
                 "answer_text": data.answer_text,
-                "created_at": data.created_at.strftime("%Y-%m-%d %H:%M:%S")
+                "created_at": data.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                "ai_question": data.ai_question,
+                "answer_choice": data.answer_choice,
             })
         return Response({"paragraphQA": list})
     
@@ -89,8 +91,7 @@ def story_storyParagraph(request):
     try:
         story_id = request.data.get("story_id")
 
-        datas = Storyparagraph.objects.raw("SELECT * FROM StoryParagraph WHERE story_id = %s", [story_id])
-
+        datas = Storyparagraph.objects.raw("SELECT * FROM StoryParagraph WHERE story_id = %s ORDER BY paragraph_no", [story_id])
         list = []
         for data in datas:
             list.append({
@@ -99,14 +100,31 @@ def story_storyParagraph(request):
                 "paragraph_no": data.paragraph_no,
                 "content_text": data.content_text,
                 "created_at": data.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                "updated_at": data.updated_at.strftime("%Y-%m-%d %H:%M:%S")
+                "updated_at": data.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
             })
-        return Response({"storyParagraph": list})
+        
+        # 빈 데이터 처리
+        if not list:
+            return Response({
+                "storyParagraph": [],
+                "message": "해당 스토리에 대한 문단이 없습니다.",
+                "isEmpty": True
+            })
+        
+        return Response({
+            "storyParagraph": list,
+            "isEmpty": False,
+            "count": len(list)
+        })
 
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return Response({"error": str(e)}, status=500)
+        return Response({
+            "error": str(e),
+            "storyParagraph": [],
+            "isEmpty": True
+        }, status=500)
 # 작성자 : 최재우
 # 기능 : story_id 를 통해 Illustration테이블 데이터 호출
 # 마지막 수정일 : 2025-06-17
@@ -124,7 +142,7 @@ def story_illustration(request):
                 "story_id": data.story_id,
                 "image_url": data.image_url,
                 "caption_text": data.caption_text,
-                "labels": json.loads(data.labels) if data.labels else [],
+                "labels": data.labels,
                 "created_at": data.created_at.strftime("%Y-%m-%d %H:%M:%S")
             })
         return Response({"illustration": list})
@@ -159,6 +177,7 @@ def list_story(request):
             "author_name": story.author_name,
             "age": story.age,
             "cover_img": story.cover_img,
+            "characters": story.characters
         })
     return Response({"stories": story_list})
 
