@@ -1,0 +1,86 @@
+/* styles/flipbook.css */
+.flipbook-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.flipbook {
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.page {
+  background: white;
+  border: 1px solid #ddd;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.page-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-primary);
+  font-size: var(--font-size-2xl);
+  line-height: var(--line-height-relaxed);
+  font-weight: var(--font-weight-medium);
+}
+
+.page-content h2 {
+  margin-top: 0;
+  color: #333;
+}
+
+.page-number {
+  text-align: center;
+  margin-top: auto;
+  font-size: 14px;
+  color: #666;
+}
+
+.flipbook-controls {
+  margin-top: 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.control-buttons button {
+  padding: 10px 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.control-buttons button:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.control-buttons button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-weight: bold;
+  color: #333;
+}
+
+.flipbook-wrapper {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  width: 100%;
+}

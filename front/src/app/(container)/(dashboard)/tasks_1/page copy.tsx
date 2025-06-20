@@ -411,9 +411,10 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
             </button>
           </div>
         </div>
+        
         <div className="description2">
           <span>
-            <span className="description-2-span">pel-world</span>
+            <span className="description-2-span">interactive.carousel</span>
             <span className="description-2-span">®</span>
           </span>
         </div>

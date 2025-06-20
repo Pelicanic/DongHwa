@@ -1,4 +1,192 @@
 
+
+.next-button-area{
+  height: 12%;
+  width: 42%;
+  padding: 5px;
+}
+
+/* tasks_1에서 가져온 스타일들 */
+.choice-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 50px;
+  pointer-events: auto;
+  z-index: 5;
+  position: relative;
+}
+
+.choice-btn:hover {
+  border-color: #3b82f6;
+  background: #f0f9ff;
+  transform: translateY(-1px);
+}
+
+.choice-selected {
+  border-color: #3b82f6 !important;
+  background: #dbeafe !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.choice-text {
+  flex: 1;
+  text-align: left;
+}
+
+.choice-check {
+  color: #10b981;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.answer-input {
+  width: 100%;
+  padding: 6px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.2s ease;
+  color: #000000 !important;
+  background-color: #ffffff !important;
+  z-index: 10;
+  position: relative;
+}
+
+.answer-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.answer-input::placeholder {
+  color: #6b7280 !important;
+  opacity: 1;
+}
+
+/* 답변 완료 상태 표시 */
+.dot-completed {
+  position: relative;
+}
+
+.dot-completed .dot-indicator-inactive {
+  background: #10b981 !important; /* 녹색으로 완료 표시 */
+}
+
+.dot-completed .dot-indicator-active {
+  background: #10b981 !important;
+}
+
+/* Grid 레이아웃 스타일 */
+.user-interaction-grid {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.text-input-area {
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.choice-buttons-grid {
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.choice-btn {
+  padding: 10px 15px;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.choice-btn:hover {
+  border-color: #007bff;
+}
+
+.choice-btn.selected {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.selected-text {
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.selected-value {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.confirm-btn {
+  padding: 12px 24px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 100%;
+}
+
+.confirm-btn:hover:not(:disabled) {
+  background: #218838;
+}
+
+.confirm-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* next-btn 스타일 추가 */
+.next-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 80px;
+  width: 100%;
+}
+
+.next-btn:disabled {
+  cursor: default; /* cursor-not-allowed 대신 default 사용 */
+  opacity: 0.6;
+}
+
+.next-btn.cursor-not-allowed {
+  cursor: default !important; /* 금지 표시 제거 */
+}
+
+.next-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+} */
+
 .container_box_right_inner_box_temp_btn{
     color: white;
     border-radius: 12px;
@@ -22,13 +210,12 @@
     color: white;
     border-radius: 12px;
     position: relative;
-    margin-bottom: 5%;
 }
 
 .container_box_right_inner_box_user {
     border: 1px solid black;
     width: 100%;
-    height: 37%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -37,7 +224,7 @@
     position: relative;
     /* border: 1px solid black; */
     flex-direction: column;
-    margin-bottom: 5%;
+    /* margin-bottom: 5%; */
 }
 
 .container_box_right_inner_box_ai {
@@ -92,7 +279,12 @@
     overflow-y: auto; /* 세로 스크롤 허용 */
     overflow-x: hidden; /* 가로 스크롤 숨김 */
     
-
+    /* 텍스트 스타일 - CSS 변수 사용 */
+    font-family: var(--font-primary);
+    font-size: var(--font-size-lg);
+    line-height: var(--line-height-relaxed);
+    color: #1a1a1a;
+    font-weight: var(--font-weight-medium);
     
     /* 스크롤바 스타일링 (선택사항) */
     scrollbar-width: thin;
@@ -159,13 +351,13 @@
 .content {
   display: flex;
   flex-direction: column;
-  gap: 64px;
+  gap: 35px;
   align-items: center;
   justify-content: flex-start;
 }
 
 .intro-section {
-    height: 100px;
+    height: 5rem;
     position: relative;
 }
 
