@@ -260,7 +260,14 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
   };
 
   return (
-    <div className="preview min-h-screen">
+    <div
+      className="preview min-h-screen bg-no-repeat"
+      style={{
+        backgroundImage: "url('/images/task1-bg.jpg')",
+        backgroundSize: 'auto 105%',
+        backgroundPosition: 'auto 100%',
+      }}
+    >
       <div className="content">
         <div className="intro-section">
           <div className="intro-text">
