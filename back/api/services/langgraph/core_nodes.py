@@ -329,11 +329,17 @@ def generate_paragraph(state: dict) -> dict:
     reasoning_instruction = (
         "Before writing the paragraph, think step-by-step:")
     reasoning_prompt = (
-        "1. What just happened in the story?"
-        "2. How would the character logically feel now?"
-        "3. What event could naturally happen next, based on the child's input?"
-        "4. What emotional tone fits best?"
-        "→ Think through this, then write the paragraph.")
+        "1. What just happened in the previous part of the story?\n"
+        "2. How would the main character logically feel at this point?\n"
+        "3. Based on the child's input, what event would naturally happen next?\n"
+        "4. What emotional tone best fits this paragraph? (e.g., joy, anxiety, wonder)\n"
+        "5. If you had to choose one central emotion for this paragraph, what would it be?\n"
+        "6. Could you vary sentence length and rhythm to make the paragraph more engaging for a child?\n"
+        "7. What kind of ending sentence would gently connect to the next paragraph?\n"
+        "8. What question could you ask the child that directly relates to this paragraph and invites them to choose the next direction?\n"
+        "9. What are three possible action choices that logically follow the current events, help the story progress, and align with the child’s age and theme?\n"
+        "→ Think through all of these step by step, then write the [문장], [질문], and [행동] sections accordingly."
+    )
 
 
     # 마지막 문단 강제 종료 지침
@@ -396,7 +402,29 @@ def generate_paragraph(state: dict) -> dict:
         f"Current Context:\n{context}\n\n"
 
 
+        "--- REASONING ---\n\n"
         f"{reasoning_instruction}\n{reasoning_prompt}\n\n"
+
+        "Answer these step-by-step **in your internal reasoning** (DO NOT show these in the final output).\n\n"
+
+        "Then begin writing output with the following format:\n"
+        "[문장] ...\n"
+        "[질문] ...\n"
+        "[행동] ...\n"
+
+        "Here is a good example for reference (DO NOT COPY):\n\n"
+
+
+        "[문장]\n"
+        "작은 다람쥐는 조심스럽게 다가가 인사를 했어요. 나무 위의 새도 고개를 끄덕이며 인사를 받아주었답니다. 그렇게 둘은 금세 친구가 되었어요.\n\n"
+        "[질문]\n"
+        "다람쥐는 다음에 무엇을 하면 좋을까요?\n\n"
+        "[행동]\n"
+        "- 새에게 나무 열매를 가져다줘요.\n"
+        "- 새와 함께 나무 위를 올라가요.\n"
+        "- 새의 둥지를 구경해요.\n"
+
+        "Now write your own output below, based on the child's latest input and the reasoning above.\n\n"
 
 
         f"Then write:\n"
@@ -413,10 +441,10 @@ def generate_paragraph(state: dict) -> dict:
         "- [행동]: Each choice must end with ~해요/~어요/~예요\n"
         "- DO NOT use ~았다/~었다/~했다 ANYWHERE\n\n"
         "✓ Correct Examples: (DO NOT repeat in output, just for style understanding):\n"
-        "- 토끼가 숲속을 뛰어다녀요 (✅ OK)\n"
-        "- 공주가 \"안녕하세요\"라고 말해요 (✅ OK)\n"
-        "- 그들은 행복하게 살아요 (✅ OK)\n"
-        "- 문이 열려요 (✅ OK)\n"
+        "1. 토끼가 숲속을 뛰어다녀요 (✅ OK)\n"
+        "2. 공주가 \"안녕하세요\"라고 말해요 (✅ OK)\n"
+        "3. 그들은 행복하게 살아요 (✅ OK)\n"
+        "1. 문이 열려요 (✅ OK)\n"
         "❌ DO NOT write: 뛰어다녔다, 말했다, 살았다, 열렸다\n\n"
 
         "Additional Formatting Constraints:\n"
@@ -424,6 +452,13 @@ def generate_paragraph(state: dict) -> dict:
         "- Choices must describe what the character does, not what the child should do.\n"
         "- NEVER use emojis, markdown, or sound effects.\n"
         "- DO NOT repeat the story summary or previous context.\n\n"
+
+        "→ The [행동] section MUST follow this exact format:\n"
+        "1. [specific child-directed action in Korean, ending with ~해요/~어요]\n"
+        "2. ...\n"
+        "3. ...\n"
+        "→ Do NOT use hyphens or bullet points. Only use '1.', '2.', '3.' as prefix.\n"
+        "→ Each sentence must end with polite declarative endings, not questions or suggestions.\n\n"
 
         "Character Naming Rules:\n"
         "- Animal or fantasy characters (e.g., talking dogs, fairies, goblins) must NEVER have human names.\n"

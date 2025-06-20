@@ -29,17 +29,17 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
     {
       id: 2,
       title: "테마는 어떻게 할까?",
-      choices: ["고전", "판타지", "현대"]
+      choices: ["고전", "판타지", "현대", "로맨스", "미스터리"]
     },
     {
       id: 3,
       title: "이야기 속의 분위기는 어때?",
-      choices: ["밝은", "따뜻한", "슬픈", "무서운"]
+      choices: ["밝은", "따뜻한", "슬픈", "신비로운", "무서운"]
     },
     {
       id: 4,
       title: "주인공의 이름을 정해봐!",
-      choices: ["마리", "제이슨", "루시"]
+      choices: ["마리", "제이슨", "루시", "철수", "영희"]
     },
     {
       id: 5,
@@ -172,7 +172,7 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
         // 성공 메시지 표시
         await Swal.fire({
           title: "자 이제 이야기 속으로 떠나볼까?!",
-          confirmButtonText: "가자!",
+          confirmButtonText: "가자 !",
           icon: "success"
         });
 
