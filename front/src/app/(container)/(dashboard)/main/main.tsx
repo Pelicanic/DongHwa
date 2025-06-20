@@ -93,7 +93,9 @@ const Main: React.FC = () => {
                   </h2>
                 </div>
                 {/* 추천 카드 리스트 */}
-                <MainCard posts={posts} />
+                <div className='mainCard_box'>
+                  <MainCard posts={posts} />
+                </div>
               </div>
             </div>
           </div>
