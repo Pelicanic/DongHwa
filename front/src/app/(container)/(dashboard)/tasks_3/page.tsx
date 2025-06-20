@@ -140,10 +140,20 @@ const DynamicFlipBook: React.FC = () => {
 
             <div key={`text-${index}`} className="pageflip-page left-page">
               <div>
-                <div className="page-content">
+                <div className="page-content" style={{
+                  color: '#1a1a1a',
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  lineHeight: '1.6',
+                  padding: '20px'
+                }}>
                   {storypage.content_text}
                 </div>
-                <div className="page-number right-number">
+                <div className="page-number right-number" style={{
+                  color: '#4b5563',
+                  fontSize: '16px',
+                  fontWeight: '600'
+                }}>
                   {index + 1}
                 </div>
               </div>

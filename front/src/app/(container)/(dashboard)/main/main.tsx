@@ -69,18 +69,13 @@ const Main: React.FC = () => {
                 <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
                   <LinkButton
                     text="동화 만들어 보기"
-                    href="/tasks"
+                    href="/tasks_1"
                     className="bg-blue-500 hover:bg-blue-600 text-white px-4 sm:px-6 py-3 rounded-lg font-medium text-sm sm:text-base transition-colors"
                   />
                   <LinkButton
                     text="동화 이어 만들기"
-                    href="/"
+                    href="/tasks_2"
                     className="border border-blue-500 text-blue-500 hover:bg-blue-50 px-4 sm:px-6 py-3 rounded-lg font-medium text-sm sm:text-base transition-colors"
-                  />
-                  <LinkButton
-                    text="동화 만들어 보기(준혁)"
-                    href="/news"
-                    className="bg-green-500 hover:bg-green-600 text-white px-4 sm:px-6 py-3 rounded-lg font-medium text-sm sm:text-base transition-colors"
                   />
                 </div>
               </div>

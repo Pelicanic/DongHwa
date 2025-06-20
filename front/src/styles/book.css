@@ -25,21 +25,27 @@
   display: flex;
   flex-direction: column;
   font-family: var(--font-primary);
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-xl); /* 폰트 크기 증가 */
   line-height: var(--line-height-relaxed);
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-semibold); /* 폰트 두께 증가 */
+  color: #1a1a1a; /* 명시적 색상 지정 */
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .page-content h2 {
   margin-top: 0;
-  color: #333;
+  color: #1a1a1a; /* 더 진한 검은색 */
+  font-weight: 700;
+  font-size: var(--font-size-3xl);
 }
 
 .page-number {
   text-align: center;
   margin-top: auto;
-  font-size: 14px;
-  color: #666;
+  font-size: 16px; /* 폰트 크기 증가 */
+  color: #4b5563; /* 더 진한 회색 */
+  font-weight: 600;
 }
 
 .flipbook-controls {
@@ -75,7 +81,8 @@
 
 .page-info {
   font-weight: bold;
-  color: #333;
+  color: #1a1a1a; /* 더 진한 검은색 */
+  font-size: 18px;
 }
 
 .flipbook-wrapper {

@@ -21,6 +21,35 @@
   pointer-events: auto;
   z-index: 5;
   position: relative;
+  color: #1a1a1a !important; /* 글자 색상 명시적 지정 */
+  font-weight: 500;
+}
+
+/* 비활성화된 선택지 버튼 */
+.choice-btn.choice-disabled {
+  background-color: #f3f4f6 !important;
+  border-color: #d1d5db !important;
+  color: #9ca3af !important;
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
+.choice-btn.choice-disabled:hover {
+  background-color: #f3f4f6 !important;
+  border-color: #d1d5db !important;
+  transform: none !important;
+}
+
+/* 비활성화된 input */
+.answer-input:disabled {
+  background-color: #f3f4f6 !important;
+  border-color: #d1d5db !important;
+  color: #9ca3af !important;
+  cursor: not-allowed !important;
+}
+
+.answer-input:disabled::placeholder {
+  color: #9ca3af !important;
 }
 
 .choice-btn:hover {
@@ -37,7 +66,8 @@
 
 .choice-text {
   flex: 1;
-  text-align: left;
+  text-align: center;
+  font-size: 16px; /* 폰트 크기 축소 */
 }
 
 .choice-check {
@@ -51,7 +81,7 @@
   padding: 6px 16px;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 15px;
   transition: border-color 0.2s ease;
   color: #000000 !important;
   background-color: #ffffff !important;
@@ -136,6 +166,10 @@
   font-size: 14px;
 }
 
+.selected-text-display{
+  width: 100%;
+}
+
 .selected-value {
   font-weight: bold;
   color: #007bff;
@@ -213,13 +247,14 @@
 }
 
 .container_box_right_inner_box_user {
-    border: 1px solid black;
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 2px solid #e2e8f0;
     width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: #1a1a1a; /* 검은색으로 변경 */
     border-radius: 12px;
     position: relative;
     /* border: 1px solid black; */
@@ -233,35 +268,50 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: #1a1a1a; /* 검은샄으로 변경 */
+    font-weight: 600;
+    font-size: 18px;
     border-radius: 12px;
     position: relative;
-    border: 1px solid black;
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 2px solid #e2e8f0;
     margin-bottom: 5%;
 }
 
 .container_box_right_inner_box_progress{
-  border: 1px solid black;
+  background-color: rgba(255, 255, 255, 0.95);
+  /* border: 2px solid #e2e8f0; */
   width: 100%;
-  height: 30px;
+  height: 40px; /* 높이 증가 */
   margin-bottom: 7%;
   text-align: center;
   align-items: center;
+  color: #1a1a1a;
+  font-weight: 600;
+  font-size: 16px;
+  display: flex;
+  justify-content: center;
+  border-radius: 8px;
+  padding: 0 12px; /* 내부 여백 추가 */
+  box-sizing: border-box;
 }
 
 .container_box_right_inner_box{
-  border: 1px solid black;
+  background-color: rgba(255, 255, 255, 0.9);
+  /* border: 2px solid #e2e8f0; */
   width: 100%;
   height: 100%;
   text-align: center;
   align-items: center;
   display: flex;
   flex-direction: column;
+  border-radius: 12px;
+  /* box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); */
 }
 
 .container_box_left_inner_text {
     text-align: left;
-    border: 1px solid black;
+    /* border: 1px solid black; */
     
     /* 여러 줄 텍스트 설정 */
     white-space: pre-wrap; /* 줄바꿈과 공백 보존 */
@@ -270,10 +320,15 @@
     
     /* 레이아웃 */
     margin: 0;
-    padding: 8px;
+    padding: 20px; /* 패딩 증가 */
     width: 100%;
     height: 100%;
     box-sizing: border-box;
+    
+    /* 중앙 왼쪽 정렬을 위한 flexbox */
+    display: flex;
+    align-items: center; /* 세로 중앙 정렬 */
+    justify-content: flex-start; /* 가로 왼쪽 정렬 */
 
     /* 스크롤 설정 */
     overflow-y: auto; /* 세로 스크롤 허용 */
@@ -281,10 +336,11 @@
     
     /* 텍스트 스타일 - CSS 변수 사용 */
     font-family: var(--font-primary);
-    font-size: var(--font-size-lg);
-    line-height: var(--line-height-relaxed);
+    font-size: 20px; /* 폰트 크기 증가 */
+    line-height: 1.6; /* 줄 간격 증가 */
+    letter-spacing: 2px; /* 글자 간격 증가 */
     color: #1a1a1a;
-    font-weight: var(--font-weight-medium);
+    font-weight: 600; /* 폰트 두께 증가 */
     
     /* 스크롤바 스타일링 (선택사항) */
     scrollbar-width: thin;
@@ -294,20 +350,24 @@
 .container_box_right_inner {
     width: 90%;
     height: 90%;
-    border: 1px solid black;
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 2px solid #e2e8f0;
     position: relative;
     padding: 7% 10% 7%;
     box-sizing: border-box;
+    border-radius: 12px;
 }
 
 .container_box_left_inner {
     width: 90%;
     height: 90%;
-    border: 1px solid black;
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 2px solid #e2e8f0;
     position: relative;
     padding: 10%;
     box-sizing: border-box;
     overflow: hidden; /* 부모에서 overflow 제어 */
+    border-radius: 12px;
 }
 
 .container_box_left, .container_box_right{
@@ -317,7 +377,9 @@
     align-items: center;
     justify-content: center;
     position: relative;
-    border: 1px solid black;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
 }
 
 .container_box{
@@ -327,7 +389,10 @@
     align-items: center;
     justify-content: space-between;
     position: relative;
-    border: 1px solid black;
+    /* background-color: rgba(255, 255, 255, 0.9); */
+    /* border: 2px solid #e2e8f0; */
+    border-radius: 16px;
+    box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
 
     /* 텍스트 스타일 */
     font-size: 16px;
@@ -407,7 +472,7 @@
   position: relative;
   overflow: hidden;
   border-radius: 12px;
-  background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+  background: linear-gradient(45deg, rgba(248, 249, 250, 0.7), rgba(233, 236, 239, 0.7)); /* 투명도 추가 */
 }
 
 /* 슬라이드 관련 스타일 */

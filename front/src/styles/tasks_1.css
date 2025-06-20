@@ -72,6 +72,8 @@
   pointer-events: auto; /* 클릭 이벤트 활성화 */
   z-index: 5; /* 레이어 순서 설정 */
   position: relative;
+  color: #1a1a1a !important; /* 글자 색상 명시적 지정 */
+  font-weight: 500;
 }
 
 .choice-button:hover {
@@ -106,7 +108,7 @@
 
 .choice-text {
   flex: 1;
-  text-align: left;
+  text-align: center; /* 텍스트 가운데 정렬 */
 }
 
 .choice-check {
@@ -197,6 +199,12 @@
   margin-bottom: 1rem;
 }
 
+.summary-header h3 {
+  color: #1a1a1a;
+  font-weight: 700;
+  font-size: 20px;
+}
+
 .completion-rate {
   background: #3b82f6;
   color: white;
@@ -233,12 +241,14 @@
 .summary-question {
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: #374151;
+  color: #1a1a1a; /* 더 진한 검은색 */
+  font-size: 16px;
 }
 
 .summary-answer {
-  color: #6b7280;
+  color: #4b5563; /* 더 진한 회색 */
   font-size: 14px;
+  font-weight: 500;
 }
 
 .completed .summary-answer {
@@ -305,10 +315,11 @@
     border: 1px solid black;
 }
 .slide-content-box-user-question-btn {
-    color: white;
+    color: #1a1a1a; /* 검은색으로 변경 */
     border-radius: 12px;
     position: relative;
-    border: 1px solid black;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 2px solid #e2e8f0;
     display: flex;
     justify-content: space-around;
     flex-direction: row;
@@ -317,6 +328,7 @@
     height: 100%;
     pointer-events: auto; /* 클릭 이벤트 활성화 */
     z-index: 1;
+    gap: 20px;
 }
 
 .slide-content-box-user-question {
@@ -325,9 +337,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: #1a1a1a; /* 검은색으로 변경 */
     border-radius: 12px;
     position: relative;
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 2px solid #e2e8f0;
     /* border: 1px solid black; */
     flex-direction: column;
 }
@@ -338,10 +352,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: #1a1a1a; /* 검은색으로 변경 */
+    font-weight: 600;
+    font-size: 18px;
     border-radius: 12px;
     position: relative;
-    border: 1px solid black;
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 2px solid #e2e8f0;
     margin-bottom: 30px;
 }
 
@@ -358,28 +375,33 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: #1a1a1a; /* 검은색으로 변경 */
+    font-weight: 700; /* 폰트 두께 증가 */
+    font-size: 24px; /* 폰트 크기 증가 */
     /* text-shadow: 0 2px 4px rgba(0,0,0,0.3); */
     border-radius: 12px;
     position: relative;
-    border: 1px solid black;
+    background-color: rgba(255, 255, 255, 0.95); /* 배경색 추가 */
+    border: 2px solid #e2e8f0;
     margin-bottom: 30px;
 }
 
-  .slide-content-box{
+.slide-content-box{
     width: 88%;
     height: 100%;
     font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: #1a1a1a; /* 검은색으로 변경 */
     /* text-shadow: 0 1px 2px rgba(0,0,0,0.3); */
     border-radius: 12px;
     position: relative;
-    border: 1px solid #ccc;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 2px solid #e2e8f0;
     flex-direction: column;
-  }
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
 
 /* 기본 스타일 */
 .preview,
@@ -466,7 +488,7 @@
   position: relative;
   overflow: hidden;
   border-radius: 12px;
-  background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+  background: linear-gradient(45deg, rgba(248, 249, 250, 0.8), rgba(233, 236, 239, 0.8)); /* 투명도 추가 */
   margin: 0 33px 0;
 }
 

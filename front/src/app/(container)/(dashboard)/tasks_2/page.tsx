@@ -56,7 +56,9 @@ export const useStoryData = () => {
           axios.post('http://localhost:8721/api/v1/paragraphQA/story/', { story_id }),
           axios.post('http://localhost:8721/api/v1/storyParagraph/story/', { story_id })
         ]);
-
+        
+        console.log("qaResponse:", qaResponse.data.paragraphQA);
+        console.log("paragraphResponse:", paragraphResponse.data.storyParagraph);
         setParagraphQA(qaResponse.data.paragraphQA);
         setStoryParagraph(paragraphResponse.data.storyParagraph);
         
@@ -99,8 +101,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
     }
   }, [loading, lastParagraphIndex, storyParagraph.length]);
 
-  console.log("paragraphQA:", paragraphQA);
-  console.log("storyParagraph:", storyParagraph);
+
 
   // 각 슬라이드별 사용자 답변을 저장하는 state (tasks_1과 동일)
   const [userAnswers, setUserAnswers] = useState<{[key: number]: string}>({});
@@ -259,11 +260,32 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                   const data_QA = paragraphQA[index];
                   const selectedChoice = userAnswers[index]; // userAnswers 사용
                   
-                  const choices = ['선택지1', '선택지2', '선택지3'];
+                  // 선택지에서 [, ], , 문자 제거 후 처리
+                  let choices = ['선택지1', '선택지2', '선택지3']; // 기본값
+                  
+                  if (data_QA?.answer_choice) {
+                    // [, ], , 문자 제거
+                    const cleanedText = data_QA.answer_choice.replace(/[\[\],']/g, '');
+                    console.log(`Original text:`, data_QA.answer_choice);
+                    console.log(`Cleaned text:`, cleanedText);
+                    
+                    // 숫자. 패턴으로 분리
+                    const splitChoices = cleanedText.split(/[123]\./);
+                    console.log(`Split choices:`, splitChoices);
+                    
+                    // 빈 문자열 제거 및 트림
+                    const filteredChoices = splitChoices.filter(choice => choice.trim() !== '').map(choice => choice.trim());
+                    
+                    if (filteredChoices.length > 0) {
+                      choices = filteredChoices;
+                    }
+                  }
+                  
+                  console.log(`Final choices for slide ${index}:`, choices);
                   
                   return (
                     <div
-                      key={data.paragraph_no}
+                      key={index}
                       className={`slide ${index === currentSlide ? 'active' : ''}`}
                       role="img"
                     >
@@ -280,67 +302,132 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                             <div className='container_box_right_inner'>
                               <div className='container_box_right_inner_box'>
                                 <div className='container_box_right_inner_box_progress'>
-                                  진행상황
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
+                                    <span style={{ fontSize: '14px', fontWeight: '600', minWidth: 'fit-content' }}>
+                                      진행상황
+                                    </span>
+                                    <div style={{ 
+                                      flex: 1, 
+                                      height: '8px', 
+                                      backgroundColor: '#e5e7eb', 
+                                      borderRadius: '4px',
+                                      overflow: 'hidden'
+                                    }}>
+                                      <div style={{
+                                        height: '100%',
+                                        backgroundColor: '#3b82f6',
+                                        width: `${((index + 1) / 10) * 100}%`,
+                                        borderRadius: '4px',
+                                        transition: 'width 0.3s ease'
+                                      }}></div>
+                                    </div>
+                                    <span style={{ 
+                                      fontSize: '14px', 
+                                      fontWeight: '600', 
+                                      color: '#3b82f6',
+                                      minWidth: 'fit-content'
+                                    }}>
+                                      {index + 1}/10
+                                    </span>
+                                  </div>
                                 </div>
                                 <div className='container_box_right_inner_box_ai'>
                                   {data_QA?.ai_question || 'AI 질문이 없습니다'}
                                 </div>
                                 
                                 <div className='container_box_right_inner_box_user'>
-                                  <div className='user-interaction-grid'>
-                                    {/* 텍스트 작성 영역 */}
-                                    <div className='text-input-area'>
-                                      <div className='selected-text-display'>
-                                        <input 
-                                          type="text" 
-                                          name={`userAnswer_${index}`}
-                                          value={selectedChoice || ''}
-                                          onChange={(e) => handleInputChange(index, e.target.value)}
-                                          placeholder="이야기를 작성해 보아요!"
-                                          className="answer-input"
-                                          key={`input-${index}`}
-                                          data-slide={index}
-                                        />
+                                  {index !== 9 && ( // 9번째 인덱스가 아니면 표시
+                                    <div className='user-interaction-grid'>
+                                      {/* 텍스트 작성 영역 */}
+                                      <div className='text-input-area'>
+                                        <div className='selected-text-display'>
+                                          <input 
+                                            type="text" 
+                                            name={`userAnswer_${index}`}
+                                            value={selectedChoice || ''}
+                                            onChange={(e) => {
+                                              // 마지막 슬라이드에서만 입력 가능
+                                              if (index === lastParagraphIndex) {
+                                                handleInputChange(index, e.target.value);
+                                              }
+                                            }}
+                                            placeholder={index === lastParagraphIndex ? "이야기를 작성해 보아요!" : data_QA?.answer_text || ""}
+                                            className="answer-input"
+                                            key={`input-${index}`}
+                                            data-slide={index}
+                                            disabled={index !== lastParagraphIndex} // 마지막 슬라이드가 아니면 비활성화
+                                            style={{
+                                              backgroundColor: index !== lastParagraphIndex ? '#f3f4f6' : '#ffffff',
+                                              cursor: index !== lastParagraphIndex ? 'not-allowed' : 'text'
+                                            }}
+                                          />
+                                        </div>
+                                      </div>
+
+                                      {/* 선택지 버튼들 */}
+                                      <div className="choice-buttons-grid">
+                                        {choices.map((choice, choiceIndex) => (
+                                          <button
+                                            key={choiceIndex}
+                                            className={`choice-btn ${
+                                              selectedChoices[index] === choiceIndex ? 'choice-selected' : ''
+                                            } ${
+                                              index !== lastParagraphIndex ? 'choice-disabled' : ''
+                                            }`}
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              e.stopPropagation();
+                                              // 마지막 슬라이드에서만 클릭 가능
+                                              if (index === lastParagraphIndex) {
+                                                console.log(`Button clicked: Slide ${index}, Choice ${choiceIndex}`);
+                                                handleChoiceClick(index, choiceIndex, choice);
+                                              }
+                                            }}
+                                            role="button"
+                                            tabIndex={index === lastParagraphIndex ? 0 : -1}
+                                            aria-label={`선택지 ${choiceIndex + 1}: ${choice}`}
+                                            onKeyDown={(e) => {
+                                              if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault();
+                                                if (index === lastParagraphIndex) {
+                                                  handleChoiceClick(index, choiceIndex, choice);
+                                                }
+                                              }
+                                            }}
+                                            disabled={index !== lastParagraphIndex} // 마지막 슬라이드가 아니면 비활성화
+                                            style={{
+                                              pointerEvents: index === lastParagraphIndex ? 'auto' : 'none',
+                                              zIndex: 10,
+                                              position: 'relative',
+                                              opacity: index !== lastParagraphIndex ? 0.5 : 1,
+                                              cursor: index !== lastParagraphIndex ? 'not-allowed' : 'pointer'
+                                            }}
+                                          >
+                                            <span className="choice-text">{choice}</span>
+                                            {selectedChoices[index] === choiceIndex && (
+                                              <span className="choice-check">✓</span>
+                                            )}
+                                          </button>
+                                        ))}
                                       </div>
                                     </div>
-
-                                    {/* 선택지 버튼들 */}
-                                    <div className="choice-buttons-grid">
-                                      {choices.map((choice, choiceIndex) => (
-                                        <button
-                                          key={choiceIndex}
-                                          className={`choice-btn ${
-                                            selectedChoices[index] === choiceIndex ? 'choice-selected' : ''
-                                          }`}
-                                          onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            console.log(`Button clicked: Slide ${index}, Choice ${choiceIndex}`);
-                                            handleChoiceClick(index, choiceIndex, choice);
-                                          }}
-                                          role="button"
-                                          tabIndex={0}
-                                          aria-label={`선택지 ${choiceIndex + 1}: ${choice}`}
-                                          onKeyDown={(e) => {
-                                            if (e.key === 'Enter' || e.key === ' ') {
-                                              e.preventDefault();
-                                              handleChoiceClick(index, choiceIndex, choice);
-                                            }
-                                          }}
-                                          style={{
-                                            pointerEvents: 'auto',
-                                            zIndex: 10,
-                                            position: 'relative'
-                                          }}
-                                        >
-                                          <span className="choice-text">{choice}</span>
-                                          {selectedChoices[index] === choiceIndex && (
-                                            <span className="choice-check">✓</span>
-                                          )}
-                                        </button>
-                                      ))}
+                                  )}
+                                  
+                                  {/* 9번째 인덱스일 때 완료 메시지 표시 */}
+                                  {index === 9 && (
+                                    <div style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      height: '100%',
+                                      fontSize: '24px',
+                                      fontWeight: '700',
+                                      color: '#1a1a1a',
+                                      textAlign: 'center'
+                                    }}>
+                                      이야기가 완성되었습니다!
                                     </div>
-                                  </div>
+                                  )}
                                 </div>
                                 
                                 
@@ -349,7 +436,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                                   <div className='container_box_right_inner_box_temp_btn'>임시저장</div>
                                 </div> */}
                                 <div className='next-button-area'>
-                                  {index === 10 ? (
+                                  {index === 9 ? (
                                     <button 
                                       className="next-btn bg-green-500 hover:bg-green-600" 
                                       onClick={() => {

@@ -12,12 +12,16 @@ interface SidebarLinkProps {
     href: string;
     icon: LucideIcon;
     label: string;
+    isCollapsed?: boolean;
+    showLabel?: boolean;
 }
 
 const SidebarLink = ({
     href,
     icon: Icon,
     label,
+    isCollapsed = false,
+    showLabel = true,
 }: SidebarLinkProps) => {
     const pathname = usePathname();
     const isActive =
@@ -27,12 +31,16 @@ const SidebarLink = ({
         <Link href={href}>
             <div
                 className={`
-                    flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors
+                    flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors
                     ${isActive ? "bg-blue-200 text-gray-700" : ""}
+                    ${isCollapsed ? "justify-center" : "space-x-3"}
                 `}
+                title={isCollapsed ? label : undefined}
             >
                 <Icon className="w-5 h-5" />
-                <span className="text-sm font-medium">{label}</span>
+                {!isCollapsed && showLabel && (
+                    <span className="text-sm font-medium">{label}</span>
+                )}
             </div>
         </Link>
     );

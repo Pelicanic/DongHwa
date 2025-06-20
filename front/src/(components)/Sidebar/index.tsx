@@ -185,31 +185,54 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktopSidebarOpen = true, to
         </nav>
 
         {/* 로그인 / 로그아웃 버튼 */}
-        {isDesktopSidebarOpen && showContent && (
-          <div className="p-4 space-y-2 border-t bg-white animate-fade-in">
-            {isLoggedIn ? (
-              <button
-                className="w-full py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium"
-                onClick={handleLogout}
-              >
-                로그아웃
-              </button>
-            ) : (
-              <>
-                <LinkButton
+        <div className="p-4 space-y-2 border-t bg-white">
+          {isDesktopSidebarOpen && showContent ? (
+            <div className="animate-fade-in">
+              {isLoggedIn ? (
+                <button
                   className="w-full py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium"
-                  text='로그인'
-                  href="/user/login"
-                />
-                <LinkButton
-                  className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm font-medium"
-                  text='회원가입'
-                  href="/user/signup"
-                />
-              </>
-            )}
-          </div>
-        )}
+                  onClick={handleLogout}
+                >
+                  로그아웃
+                </button>
+              ) : (
+                <>
+                  <LinkButton
+                    className="w-full py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium"
+                    text='로그인'
+                    href="/user/login"
+                  />
+                  <LinkButton
+                    className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm font-medium"
+                    text='회원가입'
+                    href="/user/signup"
+                  />
+                </>
+              )}
+            </div>
+          ) : (
+            // 축소된 상태에서는 아이콘만 표시
+            <div className="flex flex-col space-y-2 items-center">
+              {isLoggedIn ? (
+                <button
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  onClick={handleLogout}
+                  title="로그아웃"
+                >
+                  <Settings className="w-5 h-5 text-gray-600" />
+                </button>
+              ) : (
+                <>
+                  <Link href="/user/login" title="로그인">
+                    <div className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                      <Users className="w-5 h-5 text-gray-600" />
+                    </div>
+                  </Link>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </aside>
   );
