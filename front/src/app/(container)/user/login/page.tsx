@@ -23,12 +23,11 @@ const Login: React.FC = () => {
       const data = await res.json();
 
       if (data.success) {
-        localStorage.setItem("user_id", data.data.user_id.toString());
+        localStorage.setItem('user_id', data.data.user_id.toString());
         localStorage.setItem('access', data.data.access);
         localStorage.setItem('refresh', data.data.refresh);
-        localStorage.setItem('nickname', data.data.nickname); // 닉네임 저장
-
-        window.dispatchEvent(new Event("login"));
+        localStorage.setItem('nickname', data.data.nickname);
+        window.dispatchEvent(new Event('login'));
         router.push('/');
       } else {
         setError(data.message || '로그인 실패');
@@ -39,12 +38,21 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start pt-28 px-4">
+    <div
+      className="
+        min-h-screen
+        bg-[url('/images/login-bg.jpg')]
+        bg-cover
+        bg-center
+        flex flex-col items-center justify-start
+        pt-28 px-4
+      "
+    >
       <div className="w-full max-w-5xl flex justify-center items-center mb-10 px-4">
         <h1 className="text-2xl font-bold text-gray-700">동화책 생성서비스</h1>
       </div>
 
-      <div className="bg-white w-full max-w-lg rounded-xl p-10 shadow-lg text-center">
+      <div className="bg-white/60 backdrop-blur-md w-full max-w-lg rounded-xl p-10 shadow-lg text-center">
         <h2 className="text-2xl font-semibold mb-6 text-gray-800">Welcome back</h2>
 
         <form className="space-y-4 text-left" onSubmit={handleSubmit}>
