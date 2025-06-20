@@ -276,6 +276,8 @@
     background-color: rgba(255, 255, 255, 0.95);
     border: 2px solid #e2e8f0;
     margin-bottom: 5%;
+    padding: 2px 18px;
+    text-align: start;
 }
 
 .container_box_right_inner_box_progress{

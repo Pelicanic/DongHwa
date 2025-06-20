@@ -6,29 +6,29 @@ import HTMLFlipBook from 'react-pageflip';
 import '@/styles/book.css'; // CSS 스타일 파일
 import { illustrationDTO } from '@/lib/type/illustration';
 import { storyParagraphDTO } from '@/lib/type/storyParagraph';
-import { storyDTO } from '@/lib/type/story';
+// import { storyDTO } from '@/lib/type/story';
 import Image from "next/image";
 import Loading from '@/(components)/Loading/loading';
 
 type FlipEvent = { data: number };
 
-const illustrationResponse = async (): Promise<illustrationDTO[]> => {
-  const story_id = '2257';
-  const res = await axios.post('http://localhost:8721/api/v1/illustration/story/', { story_id });
-  return res.data.illustration;
-};
+// const illustrationResponse = async (): Promise<illustrationDTO[]> => {
+//   const story_id = sessionStorage.getItem('selectedStoryId') || '2241'; // sessionStorage에서 가져오기
+//   const res = await axios.post('http://localhost:8721/api/v1/illustration/story/', { story_id });
+//   return res.data.illustration;
+// };
 
-const storyParagraphResponse = async (): Promise<storyParagraphDTO[]> => {
-  const story_id = '2257';
-  const res = await axios.post('http://localhost:8721/api/v1/storyParagraph/story/', { story_id });
-  return res.data.storyParagraph;
-};
+// const storyParagraphResponse = async (): Promise<storyParagraphDTO[]> => {
+//   const story_id = sessionStorage.getItem('selectedStoryId') || '2241'; // sessionStorage에서 가져오기
+//   const res = await axios.post('http://localhost:8721/api/v1/storyParagraph/story/', { story_id });
+//   return res.data.storyParagraph;
+// };
 
-const storyResponse = async (): Promise<storyDTO[]> => {
-  const story_id = '2257';
-  const res = await axios.post('http://localhost:8721/api/v1/main/story/', { story_id });
-  return res.data.story;
-};
+// const storyResponse = async (): Promise<storyDTO[]> => {
+//   const story_id = sessionStorage.getItem('selectedStoryId') || '2241'; // sessionStorage에서 가져오기
+//   const res = await axios.post('http://localhost:8721/api/v1/main/story/', { story_id });
+//   return res.data.story;
+// };
 
 const DynamicFlipBook: React.FC = () => {
   const flipBook = useRef<HTMLDivElement>(null);
@@ -38,15 +38,21 @@ const DynamicFlipBook: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-      // API 호출하여 데이터 가져오기
+    // API 호출하여 데이터 가져오기
     const fetchdata = async () => {
       try {
-        const illustration = await illustrationResponse();
-        const storyParagraph = await storyParagraphResponse();
-        // const story = await storyResponse();
-        // setStoryResponse(story);
-        setIllustration(illustration);
-        setStoryParagraph(storyParagraph);
+        // sessionStorage에서 story_id 가져오기 (클라이언트에서만 가능)
+        const story_id = sessionStorage.getItem('selectedStoryId') || '2257';
+        console.log('Selected story_id:', story_id);
+        
+        // API 호출시 story_id 사용
+        const [illustrationRes, storyParagraphRes] = await Promise.all([
+          axios.post('http://localhost:8721/api/v1/illustration/story/', { story_id }),
+          axios.post('http://localhost:8721/api/v1/storyParagraph/story/', { story_id })
+        ]);
+        
+        setIllustration(illustrationRes.data.illustration);
+        setStoryParagraph(storyParagraphRes.data.storyParagraph);
       } catch (error) {
         console.error("데이터를 가져오는 중 오류 발생:", error);
       } finally {
