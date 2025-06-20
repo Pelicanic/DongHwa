@@ -6,9 +6,7 @@ import HTMLFlipBook from 'react-pageflip';
 import '@/styles/book.css'; // CSS 스타일 파일
 import { illustrationDTO } from '@/lib/type/illustration';
 import { storyParagraphDTO } from '@/lib/type/storyParagraph';
-import { storyDTO } from '@/lib/type/story';
 import Image from "next/image";
-import Loading from '@/(components)/Loading/loading';
 
 type FlipEvent = { data: number };
 
@@ -24,27 +22,19 @@ const storyParagraphResponse = async (): Promise<storyParagraphDTO[]> => {
   return res.data.storyParagraph;
 };
 
-const storyResponse = async (): Promise<storyDTO[]> => {
-  const story_id = '2257';
-  const res = await axios.post('http://localhost:8721/api/v1/main/story/', { story_id });
-  return res.data.story;
-};
-
 const DynamicFlipBook: React.FC = () => {
   const flipBook = useRef<HTMLDivElement>(null);
   const [illustration, setIllustration] = useState<illustrationDTO[]>([]);
   const [storyParagraph, setStoryParagraph] = useState<storyParagraphDTO[]>([]);
-  // const [story, setStoryResponse] = useState<storyDTO[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
       // API 호출하여 데이터 가져오기
     const fetchdata = async () => {
-      try {
+    try {
+
         const illustration = await illustrationResponse();
         const storyParagraph = await storyParagraphResponse();
-        // const story = await storyResponse();
-        // setStoryResponse(story);
         setIllustration(illustration);
         setStoryParagraph(storyParagraph);
       } catch (error) {
@@ -67,26 +57,21 @@ const DynamicFlipBook: React.FC = () => {
   return (
     <>  
       {loading ? (
-        <Loading/>
+        <div className="loading">
+          <div className="loading-spinner"></div>
+          <div className="loading-text">Loading...</div>
+        </div>
       ) : (
       <div className="flipbook-wrapper">
-        <div style={{
-          padding: '60px',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          width: '100%',
-          height: '100%'
-        }}>
         <HTMLFlipBook
           ref={flipBook}
-          width={384}
-          height={480}
+          width={400}
+          height={600}
           size="stretch"
-          minWidth={300}
-          maxWidth={500}
-          minHeight={400}
-          maxHeight={600}
+          minWidth={315}
+          maxWidth={1000}
+          minHeight={420}
+          maxHeight={1350}
           maxShadowOpacity={0.5}
           showCover={true}
           autoSize={true}
@@ -109,22 +94,19 @@ const DynamicFlipBook: React.FC = () => {
           {/* 표지 */}
           <div className="bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white p-8">
             <div className="text-center">
-              <h2 className="text-4xl font-bold mb-4">숲 속의 작은 이야기</h2>
+              <h2 className="text-4xl font-bold mb-4">숲속 토끼 이야기</h2>
               <p className="text-lg">재미있는 동화의 시작</p>
             </div>
           </div>
 
           {storyParagraph && storyParagraph.flatMap((storypage, index) => {
           const illust = illustration[index];
-          console.log('storypage', storypage);
-          console.log('illust', illust);
           return [
             <div key={`image-${index}`} className="pageflip-page right-page">
               <div className="page-content">
                 {illust ? (
                   <Image
-                    src={illust.image_url ? `/images/${illust.image_url}` : '/images/soyee-secret.png'}
-
+                    src={`/images/${illust.image_url ?? "soyee-secret.png"}`}
                     className="w-full h-auto object-cover"
                     alt=""
                     width={384} // 원하는 값
@@ -158,8 +140,30 @@ const DynamicFlipBook: React.FC = () => {
               <p className="text-lg">재미있게 읽으셨나요?</p>
             </div>
           </div>
-          </HTMLFlipBook>
+        </HTMLFlipBook>
+        
+        {/* 페이지 정보 및 컨트롤 */}
+        {/* <div className="flipbook-controls">
+          <div className="page-info">
+            페이지 {currentPage + 1} / {pages.length}
           </div>
+          
+          <div className="control-buttons">
+            <button 
+              onClick={() => flipBook.current?.pageFlip().flipPrev()}
+              disabled={currentPage === 0}
+            >
+              ← 이전
+            </button>
+            
+            <button 
+              onClick={() => flipBook.current?.pageFlip().flipNext()}
+              disabled={currentPage === pages.length - 1}
+            >
+              다음 →
+            </button>
+          </div>
+        </div> */}
       </div>
       )}
     </>

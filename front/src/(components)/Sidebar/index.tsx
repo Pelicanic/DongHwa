@@ -4,17 +4,35 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Search, Home, Book, Tag, Users, CreditCard, Settings, X } from 'lucide-react';
+import { Search, Home, Book, Tag, Users, CreditCard, Settings, X, Menu } from 'lucide-react';
 import LinkButton from '@/(components)/Button/button';
 import SidebarLink from '@/(components)/Button/sidebarlinkButton';
+import Link from 'next/link';
 
 interface SidebarProps {
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
+  isDesktopSidebarOpen?: boolean;
+  toggleDesktopSidebar?: () => void;
 }
 
-const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
+const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktopSidebarOpen = true, toggleDesktopSidebar }: SidebarProps) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showContent, setShowContent] = useState(isDesktopSidebarOpen);
+
+  // 사이드바 상태 변경 감지 및 애니메이션 제어
+  useEffect(() => {
+    if (isDesktopSidebarOpen) {
+      // 사이드바가 열릴 때: 300ms 후 콘텐츠 표시
+      const timer = setTimeout(() => {
+        setShowContent(true);
+      }, 300);
+      return () => clearTimeout(timer);
+    } else {
+      // 사이드바가 닫힐 때: 즉시 콘텐츠 숨김
+      setShowContent(false);
+    }
+  }, [isDesktopSidebarOpen]);
 
   const checkLoginStatus = async () => {
     const access = localStorage.getItem('access');
@@ -91,24 +109,43 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
   return (
     <aside
       className={`
-        fixed top-0 left-0 z-40 h-screen w-64 bg-white shadow-lg border-r
-        transition-transform duration-300 ease-in-out
+        fixed top-0 left-0 z-40 h-screen bg-white shadow-lg border-r
+        transition-all duration-300 ease-in-out
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-        lg:translate-x-0
+        ${isDesktopSidebarOpen ? 'lg:translate-x-0 lg:w-56' : 'lg:translate-x-0 lg:w-16'}
       `}
     >
       <div className="flex flex-col h-full">
         {/* 로고 */}
         <div className="p-4 border-b hidden lg:block">
-          <div className="flex items-center">
-            <div className="w-8 h-8 bg-black rounded flex items-center justify-center">
-              <X className="w-5 h-5 text-white" />
+          {isDesktopSidebarOpen && showContent ? (
+            <div className="flex items-center justify-between animate-fade-in">
+              <Link href="/" className="flex items-center cursor-pointer">
+                <div className="w-8 h-8 bg-black rounded flex items-center justify-center">
+                  <X className="w-5 h-5 text-white" />
+                </div>
+                <div className='text-right transition-all duration-300 ease-in-out' style={{marginLeft: '1.0rem', width: 'calc(100% - 3rem)'}}>
+                  <span className="font-bold" style={{fontSize: '0.99rem'}}>Pel-World.AI</span>
+                  <div className=" text-xs text-gray-500">For You</div>
+                </div>
+              </Link>
+              <button
+                onClick={toggleDesktopSidebar}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Menu className="w-5 h-5 text-gray-600" />
+              </button>
             </div>
-            <div className='text-right w-1/2 ml-6'>
-              <span className="font-bold text-lg">Pel-World.AI</span>
-              <div className=" text-xs text-gray-500">For You</div>
+          ) : (
+            <div className="flex justify-center">
+              <button
+                onClick={toggleDesktopSidebar}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Menu className="w-5 h-5 text-gray-600" />
+              </button>
             </div>
-          </div>
+          )}
         </div>
 
         {/* 닫기 버튼 */}
@@ -122,53 +159,57 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }: SidebarProps) => {
         </div>
 
         {/* 검색 */}
-        <div className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="검색"
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-            />
+        {isDesktopSidebarOpen && showContent && (
+          <div className="p-4 animate-fade-in">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="검색"
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 메뉴 */}
-        <nav className="flex-1 px-4 pb-4 overflow-y-auto">
+        <nav className={`flex-1 pb-4 overflow-y-auto ${isDesktopSidebarOpen ? 'px-4' : 'px-1'}`}>
           <div className="space-y-1">
-            <SidebarLink href="/" icon={Home} label="홈" />
-            <SidebarLink href="/overview" icon={Book} label="내 동화책" />
-            <SidebarLink href="/user/favoriteTag" icon={Tag} label="좋아하는 동화책" />
-            <SidebarLink href="/user/friends" icon={Users} label="친구" />
-            <SidebarLink href="/user/mySubscription" icon={CreditCard} label="구독" />
-            <SidebarLink href="/user/setting" icon={Settings} label="설정" />
+            <SidebarLink href="/" icon={Home} label="홈" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
+            <SidebarLink href="/overview" icon={Book} label="내 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
+            <SidebarLink href="/user/favoriteTag" icon={Tag} label="좋아하는 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
+            <SidebarLink href="/user/friends" icon={Users} label="친구" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
+            <SidebarLink href="/user/mySubscription" icon={CreditCard} label="구독" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
+            <SidebarLink href="/user/setting" icon={Settings} label="설정" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
           </div>
         </nav>
 
         {/* 로그인 / 로그아웃 버튼 */}
-        <div className="p-4 space-y-2 border-t bg-white">
-          {isLoggedIn ? (
-            <button
-              className="w-full py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium"
-              onClick={handleLogout}
-            >
-              로그아웃
-            </button>
-          ) : (
-            <>
-              <LinkButton
+        {isDesktopSidebarOpen && showContent && (
+          <div className="p-4 space-y-2 border-t bg-white animate-fade-in">
+            {isLoggedIn ? (
+              <button
                 className="w-full py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium"
-                text='로그인'
-                href="/user/login"
-              />
-              <LinkButton
-                className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm font-medium"
-                text='회원가입'
-                href="/user/signup"
-              />
-            </>
-          )}
-        </div>
+                onClick={handleLogout}
+              >
+                로그아웃
+              </button>
+            ) : (
+              <>
+                <LinkButton
+                  className="w-full py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium"
+                  text='로그인'
+                  href="/user/login"
+                />
+                <LinkButton
+                  className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm font-medium"
+                  text='회원가입'
+                  href="/user/signup"
+                />
+              </>
+            )}
+          </div>
+        )}
       </div>
     </aside>
   );

@@ -70,23 +70,15 @@ const DynamicFlipBook: React.FC = () => {
         <Loading/>
       ) : (
       <div className="flipbook-wrapper">
-        <div style={{
-          padding: '60px',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          width: '100%',
-          height: '100%'
-        }}>
         <HTMLFlipBook
           ref={flipBook}
-          width={384}
-          height={480}
+          width={400}
+          height={600}
           size="stretch"
-          minWidth={300}
-          maxWidth={500}
-          minHeight={400}
-          maxHeight={600}
+          minWidth={315}
+          maxWidth={1000}
+          minHeight={420}
+          maxHeight={1350}
           maxShadowOpacity={0.5}
           showCover={true}
           autoSize={true}
@@ -158,8 +150,7 @@ const DynamicFlipBook: React.FC = () => {
               <p className="text-lg">재미있게 읽으셨나요?</p>
             </div>
           </div>
-          </HTMLFlipBook>
-          </div>
+        </HTMLFlipBook>
       </div>
       )}
     </>

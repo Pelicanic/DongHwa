@@ -63,13 +63,12 @@ def story_paragraphQA(request):
         story_id = request.data.get("story_id")
 
         datas = Paragraphqa.objects.raw("SELECT * FROM ParagraphQA WHERE story_id = %s", [story_id])
-
         list = []
         for data in datas:
             list.append({
                 "qa_id": data.qa_id,
-                "paragraph_id": data.paragraph.paragraph_id,
-                "story_id": data.story.story_id,
+                "paragraph_id": data.paragraph_id,
+                "story_id": data.story_id,
                 "question_text": data.question_text,
                 "answer_text": data.answer_text,
                 "created_at": data.created_at.strftime("%Y-%m-%d %H:%M:%S"),
@@ -85,7 +84,7 @@ def story_paragraphQA(request):
     
 # 작성자 : 최재우
 # 기능 : story_id 를 통해 StoryParagraph테이블 데이터 호출
-# 마지막 수정일 : 2025-06-17
+# 마지막 수정일 : 2025-06-19
 @api_view(['POST'])
 def story_storyParagraph(request):
     try:
@@ -125,15 +124,18 @@ def story_storyParagraph(request):
             "storyParagraph": [],
             "isEmpty": True
         }, status=500)
+    
 # 작성자 : 최재우
 # 기능 : story_id 를 통해 Illustration테이블 데이터 호출
-# 마지막 수정일 : 2025-06-17
+# 마지막 수정일 : 2025-06-19
 @api_view(['POST'])
 def story_illustration(request):
     try:
         story_id = request.data.get("story_id")
 
         datas = Illustration.objects.raw("SELECT * FROM Illustration WHERE story_id = %s", [story_id])
+        print(f"datIllustrationas: {datas}")
+
         list = []
         for data in datas:
             list.append({
@@ -160,7 +162,7 @@ def list_story(request):
     user_id = request.data.get("user_id")
     if not user_id:
         return Response({"error": "user_id is required"}, status=400)
-
+    
     user = User.objects.get(user_id=user_id)
     stories = Story.objects.filter(author_user=user).order_by('-created_at')[:4]
 
@@ -168,7 +170,7 @@ def list_story(request):
     for story in stories:
         story_list.append({
             "story_id": story.story_id,
-            "author_user": story.author_user.user_id,
+            "author_user": story.author_user_id,
             "title": story.title,
             "summary": story.summary,
             "created_at": story.created_at,
@@ -179,6 +181,7 @@ def list_story(request):
             "cover_img": story.cover_img,
             "characters": story.characters
         })
+    
     return Response({"stories": story_list})
 
 
@@ -205,7 +208,24 @@ def chatbot_story(request):
         story_id = request.data.get("story_id")
         paragraph_id = request.data.get("paragraph_id")
         mode = request.data.get("mode", "create")
-        user_input = request.data.get("input")
+        user_input = request.data.get("user_input")
+        paragraph_no = request.data.get("paragraph_no")
+        answers = request.data.get("answers")
+
+        # 필요한 추가 처리 로직 예시 (input 구성 등)
+        if paragraph_no == "1" and answers:
+            answers = request.data.get("answers")
+            # answers에서 개별 항목 추출
+            fairy_tale = answers.get("0")
+            theme = answers.get("1")
+            mood = answers.get("2")
+            character_name = answers.get("3")
+            character_age = answers.get("4")
+            user_input = f"'{fairy_tale}'풍의 이야기, Theme: {theme}, Mood: {mood}, 주인공 이름: '{character_name}', 주인공의 나이: '{character_age}'살로 동화를 만들고싶어."
+        elif not user_input:
+            user_input = ""
+            
+
 
         user = User.objects.get(user_id=user_id)
 
@@ -230,9 +250,6 @@ def chatbot_story(request):
             "story_id": story_id,
             "age": user.age,
             "mode": mode,
-            "theme": request.data.get("theme"),
-            "mood": request.data.get("mood"),
-            "mode": mode,
         }
         if mode == "edit" and paragraph_id:
             initial_state["paragraph_id"] = paragraph_id
@@ -253,6 +270,12 @@ def chatbot_story(request):
         traceback.print_exc()
         return Response({"error": str(e)}, status=500)
 
+
+
+    
+    
+
+    
 
 
     

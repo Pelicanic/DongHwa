@@ -9,9 +9,11 @@ import MobileHeader from '@/(components)/Header/mobileHeader';
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
 
   const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
   const closeSidebar = () => setIsSidebarOpen(false);
+  const toggleDesktopSidebar = () => setIsDesktopSidebarOpen(prev => !prev);
 
   useEffect(() => {
     // Close sidebar when navigating to a new page
@@ -30,10 +32,15 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       {/* Desktop Layout Container */}
       <div className="flex">
         {/* Sidebar */}
-        <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={closeSidebar} />
+        <Sidebar 
+          isSidebarOpen={isSidebarOpen} 
+          toggleSidebar={closeSidebar}
+          isDesktopSidebarOpen={isDesktopSidebarOpen}
+          toggleDesktopSidebar={toggleDesktopSidebar}
+        />
         
         {/* Sidebar Spacer for Desktop */}
-        <div className="hidden lg:block w-64 flex-shrink-0" />
+        <div className={`hidden lg:block flex-shrink-0 transition-all duration-300 ${isDesktopSidebarOpen ? 'w-56' : 'w-16'}`} />
 
         {/* Main Content Area */}
         <main className="flex-1 min-w-0">
