@@ -65,19 +65,28 @@ const DynamicFlipBook: React.FC = () => {
   };
 
   return (
-    <>  
+    <>
       {loading ? (
-        <Loading/>
+        <Loading />
       ) : (
-      <div className="flipbook-wrapper">
-        <div style={{
-          padding: '60px',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          width: '100%',
-          height: '100%'
-        }}>
+        <div
+          className="flipbook-wrapper"
+          style={{
+            backgroundImage: "url('/images/task3-bg1.jpg')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        >
+          <div
+            style={{
+              padding: '60px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '100%',
+              height: '100%',
+            }}
+          >
         <HTMLFlipBook
           ref={flipBook}
           width={384}

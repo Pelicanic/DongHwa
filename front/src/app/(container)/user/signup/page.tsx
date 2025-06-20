@@ -106,7 +106,13 @@ const SignupForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+    <div
+      className="min-h-screen flex items-center justify-center bg-cover bg-center"
+      style={{ backgroundImage: "url('/images/signup-bg1.jpg')",
+        backgroundSize: '110%',
+        backgroundPosition: 'center'
+       }}
+    >
       <div className="flex bg-white rounded-lg shadow-lg overflow-hidden p-4 w-full md:w-3/4 lg:w-2/3 xl:w-1/2 2xl:w-1/3">
         <div className="w-full p-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">회원가입</h1>
