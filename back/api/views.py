@@ -55,6 +55,44 @@ def index(request):
 #         )
 
 # 작성자 : 최재우
+# 기능 : story_id 를 통해 Story 테이블 데이터 호출
+# 마지막 수정일 : 2025-06-21
+@api_view(['POST'])
+def story_story(request):
+    try:
+        story_id = request.data.get("story_id")
+        if not story_id:
+            return Response({"error": "story_id is required"}, status=400)
+
+        # Story 테이블에서 story_id로 데이터 조회
+        try:
+            story = Story.objects.raw("SELECT * FROM Story WHERE story_id = %s", [story_id])[0]
+        except Story.DoesNotExist:
+            return Response({"error": "Story not found"}, status=404)
+
+        # 데이터 반환
+        response_data = {
+            "story_id": story.story_id,
+            "author_user_id": story.author_user_id,
+            "title": story.title,
+            "summary": story.summary,
+            "created_at": story.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "updated_at": story.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "status": story.status,
+            "author_name": story.author_name,
+            "age": story.age,
+            "cover_img": story.cover_img,
+            "characters": story.characters
+        }
+
+        return Response({"story": response_data})
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({"error": str(e)}, status=500)
+
+# 작성자 : 최재우
 # 기능 : story_id 를 통해 StoryParagraph테이블 데이터 호출
 # 마지막 수정일 : 2025-06-17
 @api_view(['POST'])

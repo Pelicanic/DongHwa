@@ -1,3 +1,23 @@
+@font-face {
+    font-family: 'Ownglyph_ryurue-Rg';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2405-2@1.0/Ownglyph_ryurue-Rg.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.end_page_text {
+  height: 100%;
+  padding: 100px;
+  /* display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; */
+}
+
+.end_page{
+  background-color: #faf6ed ;
+}
+
 /* styles/flipbook.css */
 .flipbook-container {
   display: flex;
@@ -29,7 +49,7 @@
   line-height: var(--line-height-relaxed);
   font-weight: var(--font-weight-semibold); /* 폰트 두께 증가 */
   color: #1a1a1a; /* 명시적 색상 지정 */
-  padding: 20px;
+  padding: 30px; /* 패딩 증가 */
   box-sizing: border-box;
 }
 

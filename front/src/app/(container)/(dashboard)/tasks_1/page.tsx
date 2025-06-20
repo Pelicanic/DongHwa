@@ -23,22 +23,22 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
   slides = [
     {
       id: 1,
-      title: "어떤 이야기를 참고해서 만들까 ?",
+      title: "무슨 동화를 좋아해 ?",
       choices: ["여우와 두루미", "개미와 베짱이", "토끼와 거북이"]
     },
     {
       id: 2,
-      title: "테마는 어떻게 할까?",
+      title: "이야기 속 세상은 어떤 게 재밌을까?",
       choices: ["고전", "판타지", "현대", "로맨스", "미스터리"]
     },
     {
       id: 3,
-      title: "이야기 속의 분위기는 어때?",
+      title: "이야기 속 기분은 어땠으면 좋겠어?",
       choices: ["밝은", "따뜻한", "슬픈", "신비로운", "무서운"]
     },
     {
       id: 4,
-      title: "주인공의 이름을 정해봐!",
+      title: "주인공에게 우리만의 특별한 이름을 지어주자!",
       choices: ["마리", "제이슨", "루시", "철수", "영희"]
     },
     {
@@ -271,8 +271,8 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
       <div className="content">
         <div className="intro-section">
           <div className="intro-text">
-            <h2>질문에 답해주세요</h2>
-            <p>선택지를 클릭하거나 직접 입력하세요</p>
+            {/* <h2>질문에 답해주세요</h2>
+            <p>선택지를 클릭하거나 직접 입력하세요</p> */}
           </div>
         </div>
         

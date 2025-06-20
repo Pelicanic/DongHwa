@@ -477,7 +477,7 @@ def generate_paragraph(state: dict) -> dict:
     response = model.generate_content(contents)
     full_text = response.text.strip()
 
-    paragraph, question, choices = extract_choice(full_text)
+    paragraph, question, choices = extract_choice(full_text, paragraph_no)
 
     if debug:
         print("\n" + "="*40)

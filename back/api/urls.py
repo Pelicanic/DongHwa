@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import chatbot_story, list_story, story_illustration, story_storyParagraph
+from .views import chatbot_story, list_story, story_illustration, story_storyParagraph, story_paragraphQA, story_story
 
 urlpatterns = [
     path('', views.index, name='api_index'),
@@ -18,7 +18,9 @@ urlpatterns = [
     # 작성자 : 최재우
     # 마지막 수정일 : 2025-06-17
     path('v1/paragraphQA/story/', views.story_paragraphQA, name='api_story_paragraphQA'),
-
+    # 작성자 : 최재우
+    # 마지막 수정일 : 2025-06-21
+    path('v1/story/story/', views.story_story, name='api_story_story'),
 
 ]
 
