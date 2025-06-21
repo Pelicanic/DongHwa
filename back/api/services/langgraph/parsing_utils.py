@@ -14,18 +14,25 @@ from typing import Tuple, List
 # 작성자: 최준혁
 # 기능: Gemini의 응답을 파싱하여 문장, 질문, 선택지로 분리
 # 마지막 수정일: 2025-06-10
-def extract_choice(text: str) -> Tuple[str, str, List[str]]:
-    # 예: [문장], [질문], [행동] 기준으로 나누기
+def extract_choice(text: str, paragraph_no: int = None) -> Tuple[str, str, List[str]]:
+    # 에필로그 처리: [문장]만 있을 수 있음
+    if paragraph_no == 10:
+        # '[문장]' 태그까지 지우고 순수한 문장만 반환
+        match = re.search(r"\[문장\](.*)", text, re.DOTALL)
+        paragraph = match.group(1).strip() if match else text.strip()
+        return paragraph, "", []
+    
+    # 기본 처리
     match = re.search(r"\[문장\](.*?)\[질문\](.*?)\[행동\](.*)", text, re.DOTALL)
     if not match:
-        return text.strip(), "", []  # 실패 시 전체 반환
+        return text.strip(), "", []
     
     paragraph = match.group(1).strip()
     question = match.group(2).strip()
     actions_raw = match.group(3).strip()
-    # 줄바꿈으로 나눠서 리스트화
     choices = [line.strip("-•*●· ") for line in actions_raw.split("\n") if line.strip()]
     return paragraph, question, choices
+
 
 
 # ------------------------------------------------------------------------------------------

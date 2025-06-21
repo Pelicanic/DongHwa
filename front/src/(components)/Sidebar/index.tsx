@@ -8,6 +8,7 @@ import { Search, Home, Book, Tag, Users, CreditCard, Settings, X, Menu } from 'l
 import LinkButton from '@/(components)/Button/button';
 import SidebarLink from '@/(components)/Button/sidebarlinkButton';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -121,9 +122,13 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktopSidebarOpen = true, to
           {isDesktopSidebarOpen && showContent ? (
             <div className="flex items-center justify-between animate-fade-in">
               <Link href="/" className="flex items-center cursor-pointer">
-                <div className="w-8 h-8 bg-black rounded flex items-center justify-center">
-                  <X className="w-5 h-5 text-white" />
-                </div>
+                <Image 
+                  src="/images/pelicanic_icon.ico"
+                  alt="Pel-World Logo"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 rounded"
+                />
                 <div className='text-right transition-all duration-300 ease-in-out' style={{marginLeft: '1.0rem', width: 'calc(100% - 3rem)'}}>
                   <span className="font-bold" style={{fontSize: '0.99rem'}}>Pel-World.AI</span>
                   <div className=" text-xs text-gray-500">For You</div>
