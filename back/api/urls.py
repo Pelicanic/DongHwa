@@ -19,9 +19,9 @@ urlpatterns = [
     # 마지막 수정일 : 2025-06-17
     path('v1/paragraphQA/story/', views.story_paragraphQA, name='api_story_paragraphQA'),
     # 작성자 : 최재우
+
     # 마지막 수정일 : 2025-06-21
     path('v1/story/story/', views.story_story, name='api_story_story'),
-
 ]
 
 

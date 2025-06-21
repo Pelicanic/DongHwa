@@ -5,6 +5,7 @@
 import React from 'react'
 import Image from 'next/image';
 import {StoryDTO} from '@/lib/type/story';
+import axios from 'axios';
 
 interface MainCardProps {
   posts: StoryDTO[];
@@ -26,6 +27,7 @@ const MainCard: React.FC<MainCardProps> = ({ posts }) => {
       
     } catch (error) {
       console.error('메인 카드 클릭 오류:', error);
+
       alert('동화를 불러오는 중 오류가 발생했습니다.');
     }
   };

@@ -54,6 +54,34 @@ def index(request):
 #             status=status.HTTP_500_INTERNAL_SERVER_ERROR
 #         )
 
+@api_view(['POST'])
+def story_select(request):
+    try:
+        story_id = request.data.get("story_id")
+        if not story_id:
+            return Response({"error": "story_id is required"}, status=400)
+
+        datas = Paragraphqa.objects.raw("SELECT * FROM ParagraphQA WHERE story_id = %s", [story_id])
+        list = []
+        for data in datas:
+            list.append({
+                "qa_id": data.qa_id,
+                "paragraph_id": data.paragraph_id,
+                "story_id": data.story_id,
+                "question_text": data.question_text,
+                "answer_text": data.answer_text,
+                "created_at": data.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                "ai_question": data.ai_question,
+                "answer_choice": data.answer_choice,
+            })
+        return Response({"paragraphQA": list})
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({"error": str(e)}, status=500)
+
+
 # 작성자 : 최재우
 # 기능 : story_id 를 통해 Story 테이블 데이터 호출
 # 마지막 수정일 : 2025-06-21
