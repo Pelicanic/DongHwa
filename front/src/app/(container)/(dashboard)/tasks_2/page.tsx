@@ -2,7 +2,6 @@
 
 import axios from 'axios';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import '@/styles/tasks_2.css';
 import Loading from '@/(components)/Loading/loading';
 // import { paragraphQADTO } from '@/lib/type/paragraphQA';
@@ -36,8 +35,10 @@ export const useStoryData = () => {
   const [storyData, setStoryData] = useState(null);
   const [paragraphQA, setParagraphQA] = useState([]);
   const [storyParagraph, setStoryParagraph] = useState([]);
+  const [illustrations, setIllustrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lastParagraphIndex, setLastParagraphIndex] = useState(0);
+  const [bgMusic, setBgMusic] = useState<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -52,15 +53,18 @@ export const useStoryData = () => {
 
         const story_id = parsedData.story_id;
         
-        const [qaResponse, paragraphResponse] = await Promise.all([
+        const [qaResponse, paragraphResponse, illustrationResponse] = await Promise.all([
           axios.post('http://localhost:8721/api/v1/paragraphQA/story/', { story_id }),
-          axios.post('http://localhost:8721/api/v1/storyParagraph/story/', { story_id })
+          axios.post('http://localhost:8721/api/v1/storyParagraph/story/', { story_id }),
+          axios.post('http://localhost:8721/api/v1/illustration/story/', { story_id })
         ]);
         
         console.log("qaResponse:", qaResponse.data.paragraphQA);
         console.log("paragraphResponse:", paragraphResponse.data.storyParagraph);
+        console.log("illustrationResponse:", illustrationResponse.data);
         setParagraphQA(qaResponse.data.paragraphQA);
         setStoryParagraph(paragraphResponse.data.storyParagraph);
+        setIllustrations(illustrationResponse.data.illustration);
         
         // 마지막 paragraph_no 찾기
         const paragraphs = paragraphResponse.data.storyParagraph;
@@ -69,6 +73,38 @@ export const useStoryData = () => {
           const lastIndex = paragraphs.findIndex(p => p.paragraph_no === maxParagraphNo);
           setLastParagraphIndex(lastIndex >= 0 ? lastIndex : paragraphs.length - 1);
         }
+
+        // 배경음악 설정 - tasks_1에서 선택한 기분에 따라
+        const musicMapping = {
+          "밝은": "fairy tale(Bright).mp3",
+          "따뜻한": "fairy tale(Warm).mp3",
+          "슬픈": "fairy tale(Sad).mp3",
+          "신비로운": "fairy tale(Mythical).mp3",
+          "무서운": "fairy tale(Scary).mp3"
+        };
+
+        // tasks_1에서 저장된 storyData에서 선택한 기분 가져오기
+        const selectedMood = parsedData.answers && parsedData.answers[2]; // 3번째 질문의 답변 (기분)
+        
+        // 기본값으로 '밝은' 기분의 음악 사용 (fairy tale(Bright).mp3)
+        const musicFile = (selectedMood && musicMapping[selectedMood]) 
+          ? musicMapping[selectedMood] 
+          : musicMapping["밝은"]; // 기본값: fairy tale(Bright).mp3
+        
+        console.log('Selected mood:', selectedMood);
+        console.log('Music file to play:', musicFile);
+        
+        // 항상 음악 재생 (기본값이라도)
+        const audio = new Audio(`/bgsound/${musicFile}`);
+        audio.loop = true;
+        audio.volume = 0.3; // 볼륨 30%로 설정
+        
+        // 자동 재생 시도
+        audio.play().catch(error => {
+          console.log('자동 재생이 차단되었습니다. 사용자 상호작용 후 재생됩니다:', error);
+        });
+        
+        setBgMusic(audio);
 
       } catch (err) {
         console.error(err);
@@ -80,19 +116,20 @@ export const useStoryData = () => {
     loadData();
   }, []);
 
-  return { storyData, paragraphQA, storyParagraph, loading, lastParagraphIndex };
+  return { storyData, paragraphQA, storyParagraph, illustrations, loading, lastParagraphIndex, bgMusic };
 };
 
 
 
 
 const ImageCarousel: React.FC<ImageCarouselProps> = () => {
-  const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  // const [paragraphQA, setParagraphQA] = useState<paragraphQADTO[]>([]);
-  // const [storyParagraph, setStoryParagraph] = useState<storyParagraphDTO[]>([]);
-  const { paragraphQA, storyParagraph, loading, lastParagraphIndex } = useStoryData();
+  const [volume, setVolume] = useState<number>(0.3); // 볼륨 상태 (0.0 ~ 1.0)
+  const [isMuted, setIsMuted] = useState<boolean>(false); // 음소거 상태
+  const [previousVolume, setPreviousVolume] = useState<number>(0.3); // 음소거 전 볼륨
+  const [isControlsVisible, setIsControlsVisible] = useState<boolean>(true); // 사운드바 표시 상태
+  const { paragraphQA, storyParagraph, illustrations, loading, lastParagraphIndex, bgMusic } = useStoryData();
 
   // 마지막 paragraph 인덱스로 초기 슬라이드 설정
   useEffect(() => {
@@ -100,6 +137,63 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
       setCurrentSlide(lastParagraphIndex);
     }
   }, [loading, lastParagraphIndex, storyParagraph.length]);
+
+  // 배경음악 관리 - 컴포넌트 언마운트 시 정지
+  useEffect(() => {
+    return () => {
+      if (bgMusic) {
+        bgMusic.pause();
+        bgMusic.currentTime = 0;
+      }
+    };
+  }, [bgMusic]);
+
+  // 볼륨 변경 함수
+  const handleVolumeChange = useCallback((newVolume: number) => {
+    setVolume(newVolume);
+    if (bgMusic) {
+      bgMusic.volume = newVolume;
+    }
+    // 볼륨이 0보다 크면 음소거 해제
+    if (newVolume > 0 && isMuted) {
+      setIsMuted(false);
+    }
+    // 볼륨이 0이면 음소거 상태로
+    if (newVolume === 0) {
+      setIsMuted(true);
+    }
+  }, [bgMusic, isMuted]);
+
+  // 음소거 토글 함수
+  const toggleMute = useCallback(() => {
+    if (bgMusic) {
+      if (isMuted) {
+        // 음소거 해제: 이전 볼륨으로 복원
+        const restoreVolume = previousVolume > 0 ? previousVolume : 0.3;
+        setVolume(restoreVolume);
+        bgMusic.volume = restoreVolume;
+        setIsMuted(false);
+      } else {
+        // 음소거: 현재 볼륨 저장 후 0으로 설정
+        setPreviousVolume(volume);
+        setVolume(0);
+        bgMusic.volume = 0;
+        setIsMuted(true);
+      }
+    }
+  }, [bgMusic, isMuted, volume, previousVolume]);
+
+  // 사운드바 토글 함수
+  const toggleControls = useCallback(() => {
+    setIsControlsVisible(prev => !prev);
+  }, []);
+
+  // bgMusic이 변경될 때 볼륨 동기화
+  useEffect(() => {
+    if (bgMusic) {
+      bgMusic.volume = volume;
+    }
+  }, [bgMusic, volume]);
 
 
 
@@ -182,42 +276,16 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
     setCurrentSlide(index);
   }, []);
 
-  
-  // useEffect(() => {
-  //   // API 호출하여 데이터 가져오기
-  //   const fetchdata = async () => {
+  // 배경 이미지 URL 가져오기 함수
+  const getBackgroundImage = (slideIndex: number) => {
+    // 가장 간단한 방법: 인덱스 순서로 매칭
+    const illustration = illustrations[slideIndex];
+    console.log(`Getting background image for slide ${slideIndex}:`, illustration);
+    // 이미지가 있으면 해당 URL 사용, 없으면 기본 이미지 사용
+    const imageUrl = illustration?.image_url === 'test.png' ? '/images/signup-bg1.jpg' : `/images/${illustration?.image_url}`;
 
-  //     const parsedData = JSON.parse(sessionStorage.getItem('storyData') || '{}');
-  //     console.log("parsedData:", parsedData);
-
-  //     const story_id = parsedData.story_id;
-  //     console.log("story_id:", story_id);
-
-  //     const paragraphQA = await paragraphQAResponse(story_id);
-  //     const storyParagraph = await storyParagraphResponse(story_id);
-  //     setParagraphQA(paragraphQA);
-  //     setStoryParagraph(storyParagraph);
-  //   };
-  //   fetchdata();
-  // }
-  // , []);
-
-
-  // 키보드 이벤트 처리
-  // useEffect(() => {
-  //   const handleKeyPress = (event: KeyboardEvent) => {
-  //     if (event.key === 'ArrowLeft') {
-  //       prevSlide();
-  //     } else if (event.key === 'ArrowRight') {
-  //       nextSlide();
-  //     }
-  //   };
-
-  //   window.addEventListener('keydown', handleKeyPress);
-  //   return () => window.removeEventListener('keydown', handleKeyPress);
-  // }, [nextSlide, prevSlide]);
-
-
+    return imageUrl;
+  };
 
   // 점 표시기 렌더링 (tasks_1과 동일 - 답변 완료 상태 표시)
   const renderDots = () => {
@@ -248,7 +316,140 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
       {loading ? (
         <Loading/>
         ) : (
-        <div className="preview min-h-screen">
+        <div 
+          className="preview min-h-screen bg-no-repeat"
+          style={{
+            backgroundImage: `url('${getBackgroundImage(currentSlide)}')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        >
+          <div style={{
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px', // 12px → 8px
+            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+            backdropFilter: 'blur(10px)',
+            padding: '8px 12px', // 12px 16px → 8px 12px
+            borderRadius: '10px', // 12px → 10px
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            transition: 'all 0.3s ease'
+          }}>
+            {/* 볼륨/음소거 아이콘 (클릭 가능) */}
+            <button
+              onClick={toggleMute}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px',
+                borderRadius: '6px',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1)';
+                e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+              title={isMuted ? '음소거 해제' : '음소거'}
+            >
+              <img 
+                src={isMuted ? '/images/volume_off.png' : '/images/volume_on.png'}
+                alt={isMuted ? '음소거' : '소리 켜짐'}
+                style={{
+                  width: '20px', // 24px → 20px
+                  height: '20px' // 24px → 20px
+                }}
+              />
+            </button>
+            
+            {/* 볼륨 슬라이더 및 퍼센트 (토글 가능) */}
+            {isControlsVisible && (
+              <>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={volume}
+                  onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                  className="volume-slider"
+                  style={{
+                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${volume * 100}%, #e5e7eb ${volume * 100}%, #e5e7eb 100%)`,
+                    width: '60px', // 80px → 60px 로 줄임
+                    height: '3px' // 높이도 줄임
+                  }}
+                  title={`볼륨: ${Math.round(volume * 100)}%`}
+                />
+                
+                <span style={{
+                  fontSize: '11px', // 12px → 11px
+                  color: '#1f2937', // 진한 회색으로 변경
+                  minWidth: '28px', // 32px → 28px
+                  textAlign: 'center',
+                  fontWeight: '600' // 폰트 두께 추가
+                }}>
+                  {Math.round(volume * 100)}%
+                </span>
+              </>
+            )}
+            
+            {/* 사운드바 토글 버튼 */}
+            <button
+              onClick={toggleControls}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px',
+                borderRadius: '6px',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1)';
+                e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.2)';
+                // 이미지 색상을 흰색으로 변경
+                const img = e.currentTarget.querySelector('img');
+                if (img) {
+                  img.style.filter = 'brightness(0) saturate(100%) invert(100%)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.backgroundColor = 'transparent';
+                // 이미지 색상을 기본 진한 회색으로 복원
+                const img = e.currentTarget.querySelector('img');
+                if (img) {
+                  img.style.filter = 'brightness(0) saturate(100%) invert(15%) sepia(6%) saturate(1042%) hue-rotate(194deg) brightness(94%) contrast(91%)';
+                }
+              }}
+              title={isControlsVisible ? '사운드바 숨기기' : '사운드바 보이기'}
+            >
+              <img 
+                src={isControlsVisible ? '/images/left.png' : '/images/right.png'}
+                alt={isControlsVisible ? '사운드바 숨기기' : '사운드바 보이기'}
+                style={{
+                  width: '14px',
+                  height: '14px',
+                  filter: 'brightness(0) saturate(100%) invert(15%) sepia(6%) saturate(1042%) hue-rotate(194deg) brightness(94%) contrast(91%)', // 진한 회색 필터
+                  transition: 'filter 0.2s ease'
+                }}
+              />
+            </button>
+          </div>
           <div className="content">
             <div className="intro-section">
               {/* 공백 */}
@@ -337,42 +538,67 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                                 
                                 <div className='container_box_right_inner_box_user'>
                                   {index !== 9 && ( // 9번째 인덱스가 아니면 표시
-                                    <div className='user-interaction-grid'>
+                                    <div className={`user-interaction-grid ${
+                                      currentSlide !== lastParagraphIndex ? 'input-only' : ''
+                                    }`}>
                                       {/* 텍스트 작성 영역 */}
-                                      <div className='text-input-area'>
+                                      <div className={`text-input-area ${
+                                        currentSlide !== lastParagraphIndex ? 'expanded' : ''
+                                      }`}>
                                         <div className='selected-text-display'>
-                                          <input 
-                                            type="text" 
-                                            name={`userAnswer_${index}`}
-                                            value={selectedChoice || ''}
-                                            onChange={(e) => {
-                                              // 마지막 슬라이드에서만 입력 가능
-                                              if (index === lastParagraphIndex) {
+                                          {currentSlide !== lastParagraphIndex ? (
+                                            <textarea 
+                                              name={`userAnswer_${index}`}
+                                              value={selectedChoice || ''}
+                                              onChange={(e) => {
+                                                if (currentSlide === lastParagraphIndex) {
+                                                  handleInputChange(index, e.target.value);
+                                                }
+                                              }}
+                                              placeholder={data_QA?.answer_text || ""}
+                                              className={`answer-input expanded`}
+                                              key={`textarea-${index}`}
+                                              data-slide={index}
+                                              disabled={true}
+                                              rows={3}
+                                              style={{
+                                                backgroundColor: '#f3f4f6',
+                                                cursor: 'not-allowed',
+                                                resize: 'none'
+                                              }}
+                                            />
+                                          ) : (
+                                            <input 
+                                              type="text" 
+                                              name={`userAnswer_${index}`}
+                                              value={selectedChoice || ''}
+                                              onChange={(e) => {
                                                 handleInputChange(index, e.target.value);
-                                              }
-                                            }}
-                                            placeholder={index === lastParagraphIndex ? "이야기를 작성해 보아요!" : data_QA?.answer_text || ""}
-                                            className="answer-input"
-                                            key={`input-${index}`}
-                                            data-slide={index}
-                                            disabled={index !== lastParagraphIndex} // 마지막 슬라이드가 아니면 비활성화
-                                            style={{
-                                              backgroundColor: index !== lastParagraphIndex ? '#f3f4f6' : '#ffffff',
-                                              cursor: index !== lastParagraphIndex ? 'not-allowed' : 'text'
-                                            }}
-                                          />
+                                              }}
+                                              placeholder="이야기를 작성해 보아요!"
+                                              className="answer-input"
+                                              key={`input-${index}`}
+                                              data-slide={index}
+                                              style={{
+                                                backgroundColor: '#ffffff',
+                                                cursor: 'text'
+                                              }}
+                                            />
+                                          )}
                                         </div>
                                       </div>
 
                                       {/* 선택지 버튼들 */}
-                                      <div className="choice-buttons-grid">
+                                      <div className={`choice-buttons-grid ${
+                                        currentSlide !== lastParagraphIndex ? 'hidden' : ''
+                                      }`} style={{
+                                        display: currentSlide === lastParagraphIndex ? 'flex' : 'none'
+                                      }}>
                                         {choices.map((choice, choiceIndex) => (
                                           <button
                                             key={choiceIndex}
                                             className={`choice-btn ${
                                               selectedChoices[index] === choiceIndex ? 'choice-selected' : ''
-                                            } ${
-                                              index !== lastParagraphIndex ? 'choice-disabled' : ''
                                             }`}
                                             onClick={(e) => {
                                               e.preventDefault();
@@ -486,7 +712,6 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                                                 // 다음 슬라이드로 이동 (기존 데이터 사용)
                                                 nextSlide();
                                               }
-
                                             } catch (error) {
                                               console.error('답변 저장 오류:', error);
                                               alert('답변 저장에 실패했습니다. 다시 시도해주세요.');
