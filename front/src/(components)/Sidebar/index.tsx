@@ -4,7 +4,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Search, Home, Book, Tag, Users, CreditCard, Settings, X, Menu } from 'lucide-react';
+import { Search, PlusCircle, Play, BookOpen, Library, Palette, X, Menu, LogOut, User, ArrowRight } from 'lucide-react';
 import LinkButton from '@/(components)/Button/button';
 import SidebarLink from '@/(components)/Button/sidebarlinkButton';
 import Link from 'next/link';
@@ -180,12 +180,12 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktopSidebarOpen = true, to
         {/* 메뉴 */}
         <nav className={`flex-1 pb-4 overflow-y-auto ${isDesktopSidebarOpen ? 'px-4' : 'px-1'}`}>
           <div className="space-y-1">
-            <SidebarLink href="/" icon={Home} label="홈" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
-            <SidebarLink href="/overview" icon={Book} label="내 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
-            <SidebarLink href="/user/favoriteTag" icon={Tag} label="좋아하는 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
-            <SidebarLink href="/user/friends" icon={Users} label="친구" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
-            <SidebarLink href="/user/mySubscription" icon={CreditCard} label="구독" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
-            <SidebarLink href="/user/setting" icon={Settings} label="설정" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
+            <SidebarLink href="/" icon={PlusCircle} label="동화책 만들기" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
+            <SidebarLink href="/tasks_2" icon={ArrowRight} label="동화 이어 만들기" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
+            <SidebarLink href="/overview" icon={Play} label="시연페이지" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
+            <SidebarLink href="/user/favoriteTag" icon={BookOpen} label="나의 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
+            <SidebarLink href="/user/friends" icon={Library} label="기존 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
+            <SidebarLink href="/user/mySubscription" icon={Palette} label="창작 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
           </div>
         </nav>
 
@@ -224,13 +224,13 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktopSidebarOpen = true, to
                   onClick={handleLogout}
                   title="로그아웃"
                 >
-                  <Settings className="w-5 h-5 text-gray-600" />
+                  <LogOut className="w-5 h-5 text-gray-600" />
                 </button>
               ) : (
                 <>
                   <Link href="/user/login" title="로그인">
                     <div className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                      <Users className="w-5 h-5 text-gray-600" />
+                      <User className="w-5 h-5 text-gray-600" />
                     </div>
                   </Link>
                 </>

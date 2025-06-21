@@ -177,7 +177,10 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
         });
 
         // 생성된 스토리 ID와 함께 페이지 이동
-        sessionStorage.setItem('storyData', JSON.stringify(storyData));
+        sessionStorage.setItem('storyData', JSON.stringify({
+          ...storyData,
+          answers: userAnswers // tasks_1에서 선택한 답변들 추가
+        }));
         // router.push('/tasks_2');
         location.href = '/tasks_2';
 
@@ -287,13 +290,21 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
                   role="img"
                 >
                   <div className="slide-content">
-                    <div className='slide-content-box'>
-                      <div className='slide-content-box-question'>
+                    <div className='slide-content-box' style={{
+                      backgroundColor: '#faf6ed'
+                    }}>
+                      <div className='slide-content-box-question' style={{
+                        backgroundColor: '#faf6ed',
+                      }}>
                         <h3>{slide.title}</h3>
-                        <span className="slide-number">({index + 1}/{totalSlides})</span>
+                        <span className="slide-number" style={{
+                          backgroundColor: '#faf6ed'
+                        }}>({index + 1}/{totalSlides})</span>
                       </div>
                       
-                      <div className='slide-content-box-ai-question'>
+                      <div className='slide-content-box-ai-question' style={{
+                        backgroundColor: '#faf6ed'
+                      }}>
                       <input 
                       type="text" 
                       name={`userAnswer_${index}`}
@@ -301,13 +312,20 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
                       onChange={(e) => handleInputChange(index, e.target.value)}
                       placeholder="답변을 입력하거나 아래 선택지를 클릭하세요"
                       className="answer-input"
+                      style={{
+                        backgroundColor: '#faf6ed'
+                      }}
                         key={`input-${index}`}
                           data-slide={index}
                       />
                     </div>
                       
-                      <div className='slide-content-box-user-question'>
-                        <div className='slide-content-box-user-question-btn'>
+                      <div className='slide-content-box-user-question' style={{
+                        backgroundColor: '#faf6ed'
+                      }}>
+                        <div className='slide-content-box-user-question-btn' style={{
+                          backgroundColor: '#faf6ed'
+                        }}>
                           {slide.choices.map((choice, choiceIndex) => (
                             <div
                               key={choiceIndex}
