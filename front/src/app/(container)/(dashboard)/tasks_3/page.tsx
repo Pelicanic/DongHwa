@@ -179,9 +179,9 @@ const DynamicFlipBook: React.FC = () => {
                   color: '#1a1a1a',
                   fontSize: '1.65rem',
                   fontWeight: '700',
-                  lineHeight: '1.75',
+                  lineHeight: '1.65',
                   letterSpacing: '0.3rem', /* 글자 간격 추가 */
-                  padding: '26px',
+                  padding: '27px 54px',
                   fontFamily: 'Ownglyph_ryurue-Rg',
                 }}>
                   {storypage.content_text}

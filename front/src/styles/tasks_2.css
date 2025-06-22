@@ -408,64 +408,64 @@ textarea.answer-input::placeholder {
 } */
 
 .container_box_right_inner_box_temp_btn{
-    color: white;
-    border-radius: 12px;
-    position: relative;
-    border: 1px solid black;
-    display: flex;
-    justify-content: space-around;
-    flex-direction: row;
-    align-items: center;
-    width: 76px;
-    height: 100%;
+  color: white;
+  border-radius: 12px;
+  position: relative;
+  border: 1px solid black;
+  display: flex;
+  justify-content: space-around;
+  flex-direction: row;
+  align-items: center;
+  width: 76px;
+  height: 100%;
 }
 
 .container_box_right_inner_box_temp{
-    border: 1px solid black;
-    width: 100%;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: right;
-    color: white;
-    border-radius: 12px;
-    position: relative;
+  border: 1px solid black;
+  width: 100%;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: right;
+  color: white;
+  border-radius: 12px;
+  position: relative;
 }
 
 .container_box_right_inner_box_user {
-    background-color: rgba(255, 255, 255, 0.95);
-    border: 2px solid #e2e8f0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #1a1a1a; /* 검은색으로 변경 */
-    border-radius: 12px;
-    position: relative;
-    /* border: 1px solid black; */
-    flex-direction: column;
-    /* margin-bottom: 5%; */
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 2px solid #e2e8f0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a1a1a; /* 검은색으로 변경 */
+  border-radius: 12px;
+  position: relative;
+  /* border: 1px solid black; */
+  flex-direction: column;
+  /* margin-bottom: 5%; */
 }
 
 .container_box_right_inner_box_ai {
-    width: 100%;
-    height: 20%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #1a1a1a; /* 검은샄으로 변경 */
-    font-weight: 600;
-    font-size: 18px;
-    letter-spacing: 0.1em; /* 글자 간격 추가 */
-    border-radius: 12px;
-    position: relative;
-    background-color: rgba(255, 255, 255, 0.95);
-    border: 2px solid #e2e8f0;
-    margin-bottom: 5%;
-    padding: 2px 18px;
-    text-align: start;
-    font-family: 'Ownglyph_ryurue-Rg', sans-serif; /* 폰트 적용 */
+  width: 100%;
+  height: 20%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a1a1a; /* 검은샄으로 변경 */
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: 0.1em; /* 글자 간격 추가 */
+  border-radius: 12px;
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 2px solid #e2e8f0;
+  margin-bottom: 5%;
+  padding: 2px 18px;
+  text-align: start;
+  font-family: 'Ownglyph_ryurue-Rg', sans-serif; /* 폰트 적용 */
 }
 
 .container_box_right_inner_box_progress{
@@ -500,93 +500,105 @@ textarea.answer-input::placeholder {
 }
 
 .container_box_left_inner_text {
-    text-align: left;
-    /* border: 1px solid black; */
-    
-    /* 여러 줄 텍스트 설정 */
-    white-space: pre-wrap; /* 줄바꿈과 공백 보존 */
-    word-wrap: break-word; /* 긴 단어 줄바꿈 */
-    word-break: break-word; /* 한글 등 적절한 줄바꿈 */
-    
-    /* 레이아웃 */
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box;
-    
-    /* 중앙 왼쪽 정렬을 위한 flexbox */
-    display: flex;
-    align-items: center; /* 세로 중앙 정렬 */
-    justify-content: flex-start; /* 가로 왼쪽 정렬 */
+  text-align: left;
+  /* border: 1px solid black; */
+  
+  /* 여러 줄 텍스트 설정 */
+  white-space: pre-wrap; /* 줄바꿈과 공백 보존 */
+  word-wrap: break-word; /* 긴 단어 줄바꿈 */
+  word-break: break-word; /* 한글 등 적절한 줄바꿈 */
+  
+  /* 레이아웃 */
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  
+  /* 중앙 왼쪽 정렬을 위한 flexbox */
+  display: flex;
+  align-items: center; /* 세로 중앙 정렬 */
+  justify-content: flex-start; /* 가로 왼쪽 정렬 */
 
-    /* 스크롤 설정 */
-    overflow-y: auto; /* 세로 스크롤 허용 */
-    overflow-x: hidden; /* 가로 스크롤 숨김 */
-    
-    /* 텍스트 스타일 - CSS 변수 사용 */
-    font-family: 'Ownglyph_ryurue-Rg', sans-serif; /* 폰트 적용 */
-    font-size: 1.37rem; /* 폰트 크기 설정 */
-    line-height: 1.57; /* 줄 간격 설정 */
-    letter-spacing: 0.3rem; /* 글자 간격 설정 */
-    color: #1a1a1a;
-    font-weight: 700; /* 폰트 두께 설정 */
-    padding: 20px 26px; /* 패딩 설정 */
-    
-    /* 스크롤바 스타일링 (선택사항) */
-    scrollbar-width: thin;
-    scrollbar-color: #ccc transparent;
+  /* 스크롤 설정 */
+  overflow-y: auto; /* 세로 스크롤 허용 */
+  overflow-x: hidden; /* 가로 스크롤 숨김 */
+  
+  /* 텍스트 스타일 - CSS 변수 사용 */
+  font-family: 'Ownglyph_ryurue-Rg', sans-serif; /* 폰트 적용 */
+  font-size: 1.37rem; /* 폰트 크기 설정 */
+  line-height: 1.57; /* 줄 간격 설정 */
+  letter-spacing: 0.3rem; /* 글자 간격 설정 */
+  color: #1a1a1a;
+  font-weight: 700; /* 폰트 두께 설정 */
+  padding: 20px 26px; /* 패딩 설정 */
+  
+  /* 스크롤바 스타일링 (선택사항) */
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
 }
 
 .container_box_right_inner {
-    width: 90%;
-    height: 90%;
-    background-color: rgba(255, 255, 255, 0.95);
-    border: 2px solid #e2e8f0;
-    position: relative;
-    padding: 7% 10% 7%;
-    box-sizing: border-box;
-    border-radius: 12px;
+  width: 90%;
+  height: 90%;
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 2px solid #e2e8f0;
+  position: relative;
+  padding: 7% 10% 7%;
+  box-sizing: border-box;
+  border-radius: 12px;
 }
 
 .container_box_left_inner {
-    width: 90%;
-    height: 90%;
-    background-color: rgba(255, 255, 255, 0.95);
-    border: 2px solid #e2e8f0;
-    position: relative;
-    padding: 10% 10% 5% 10%;
-    box-sizing: border-box;
-    overflow: hidden; /* 부모에서 overflow 제어 */
-    border-radius: 12px;
+  width: 90%;
+  height: 90%;
+  background-color: #faf6ed ;
+  border: 2px solid #e2e8f0;
+  position: relative;
+  padding: 8% 10% 5% 10%;
+  box-sizing: border-box;
+  overflow: hidden; /* 부모에서 overflow 제어 */
+  border-radius: 12px;
 }
 
-.container_box_left, .container_box_right{
-    width: 46%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    background-color: rgba(255, 255, 255, 0.9);
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
+.container_box_left {
+  width: 46%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background-color: #faf6ed ;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.container_box_right{
+  width: 46%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
 }
 
 .container_box{
-    width: 75%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: relative;
-    /* background-color: rgba(255, 255, 255, 0.9); */
-    /* border: 2px solid #e2e8f0; */
-    border-radius: 16px;
-    box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
+  width: 75%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  /* background-color: rgba(255, 255, 255, 0.9); */
+  /* border: 2px solid #e2e8f0; */
+  border-radius: 16px;
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
 
-    /* 텍스트 스타일 */
-    font-size: 16px;
-    line-height: 1.5;
+  /* 텍스트 스타일 */
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 
@@ -854,6 +866,27 @@ textarea.answer-input::placeholder {
 
 .description-2-span {
   font-family: "Inter", sans-serif;
+}
+
+/* 모달 애니메이션 키프레임 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* 반응형 디자인 */

@@ -180,9 +180,9 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktopSidebarOpen = true, to
         {/* 메뉴 */}
         <nav className={`flex-1 pb-4 overflow-y-auto ${isDesktopSidebarOpen ? 'px-4' : 'px-1'}`}>
           <div className="space-y-1">
-            <SidebarLink href="/" icon={PlusCircle} label="동화책 만들기" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
+            <SidebarLink href="/tasks_1" icon={PlusCircle} label="동화책 만들기" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
             <SidebarLink href="/tasks_2" icon={ArrowRight} label="동화 이어 만들기" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
-            <SidebarLink href="/overview" icon={Play} label="시연페이지" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
+            <SidebarLink href="/tasks_3" icon={Play} label="시연페이지" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
             <SidebarLink href="/user/favoriteTag" icon={BookOpen} label="나의 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
             <SidebarLink href="/user/friends" icon={Library} label="기존 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
             <SidebarLink href="/user/mySubscription" icon={Palette} label="창작 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
