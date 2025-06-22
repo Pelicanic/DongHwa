@@ -182,7 +182,7 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
           answers: userAnswers // tasks_1에서 선택한 답변들 추가
         }));
         // router.push('/tasks_2');
-        location.href = '/tasks_2';
+        window.location.href = '/tasks_2';
 
       } catch (error) {
         console.error('스토리 생성 오류:', error);

@@ -99,12 +99,38 @@ export const useStoryData = () => {
         audio.loop = true;
         audio.volume = 0.3; // 볼륨 30%로 설정
         
-        // 자동 재생 시도
-        audio.play().catch(error => {
-          console.log('자동 재생이 차단되었습니다. 사용자 상호작용 후 재생됩니다:', error);
-        });
-        
+        // 오디오 객체를 먼저 설정
         setBgMusic(audio);
+        
+        // 자동 재생 시도
+        const playPromise = audio.play();
+        
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              console.log('배경음악이 자동으로 재생되었습니다.');
+            })
+            .catch(error => {
+              console.log('자동 재생이 차단되었습니다. 사용자 상호작용 후 재생됩니다:', error);
+              // 자동재생이 차단된 경우를 위한 이벤트 리스너 추가
+              const handleFirstUserInteraction = () => {
+                audio.play().then(() => {
+                  console.log('사용자 상호작용 후 배경음악이 재생되었습니다.');
+                }).catch(err => {
+                  console.log('사용자 상호작용 후에도 재생 실패:', err);
+                });
+                // 이벤트 리스너 제거 (한 번만 실행)
+                document.removeEventListener('click', handleFirstUserInteraction);
+                document.removeEventListener('keydown', handleFirstUserInteraction);
+                document.removeEventListener('touchstart', handleFirstUserInteraction);
+              };
+              
+              // 다양한 사용자 상호작용 이벤트 리스너 추가
+              document.addEventListener('click', handleFirstUserInteraction, { once: true });
+              document.addEventListener('keydown', handleFirstUserInteraction, { once: true });
+              document.addEventListener('touchstart', handleFirstUserInteraction, { once: true });
+            });
+        }
 
       } catch (err) {
         console.error(err);
@@ -129,6 +155,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
   const [isMuted, setIsMuted] = useState<boolean>(false); // 음소거 상태
   const [previousVolume, setPreviousVolume] = useState<number>(0.3); // 음소거 전 볼륨
   const [isControlsVisible, setIsControlsVisible] = useState<boolean>(true); // 사운드바 표시 상태
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // 모달 상태
   const { paragraphQA, storyParagraph, illustrations, loading, lastParagraphIndex, bgMusic } = useStoryData();
 
   // 마지막 paragraph 인덱스로 초기 슬라이드 설정
@@ -153,6 +180,12 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
     setVolume(newVolume);
     if (bgMusic) {
       bgMusic.volume = newVolume;
+      // 볼륨을 변경할 때 음악이 재생되지 않았다면 재생 시도
+      if (bgMusic.paused && newVolume > 0) {
+        bgMusic.play().catch(error => {
+          console.log('볼륨 조절 시 음악 재생 실패:', error);
+        });
+      }
     }
     // 볼륨이 0보다 크면 음소거 해제
     if (newVolume > 0 && isMuted) {
@@ -173,6 +206,12 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
         setVolume(restoreVolume);
         bgMusic.volume = restoreVolume;
         setIsMuted(false);
+        // 음소거 해제 시 음악이 재생되지 않았다면 재생 시도
+        if (bgMusic.paused) {
+          bgMusic.play().catch(error => {
+            console.log('음소거 해제 시 음악 재생 실패:', error);
+          });
+        }
       } else {
         // 음소거: 현재 볼륨 저장 후 0으로 설정
         setPreviousVolume(volume);
@@ -187,6 +226,32 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
   const toggleControls = useCallback(() => {
     setIsControlsVisible(prev => !prev);
   }, []);
+
+  // 모달 열기 함수
+  const openModal = useCallback(() => {
+    setIsModalOpen(true);
+  }, []);
+
+  // 모달 닫기 함수
+  const closeModal = useCallback(() => {
+    setIsModalOpen(false);
+  }, []);
+
+  // 배경 클릭 핸들러 (사운드바와 carousel 영역 제외)
+  const handleBackgroundClick = useCallback((e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    
+    // carousel 클래스나 사운드바 영역을 클릭한 경우 모달 열지 않음
+    if (
+      target.closest('.carousel') || 
+      target.closest('[data-volume-control]')
+    ) {
+      return;
+    }
+    
+    // 그 외의 배경 영역을 클릭했을 때만 모달 열기
+    openModal();
+  }, [openModal]);
 
   // bgMusic이 변경될 때 볼륨 동기화
   useEffect(() => {
@@ -321,10 +386,11 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
           style={{
             backgroundImage: `url('${getBackgroundImage(currentSlide)}')`,
             backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            backgroundPosition: 'center'
           }}
+          onClick={handleBackgroundClick}
         >
-          <div style={{
+          <div data-volume-control style={{
             position: 'fixed',
             top: '20px',
             right: '20px',
@@ -570,15 +636,15 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                                           ) : (
                                             <input 
                                               type="text" 
-                                              name={`userAnswer_${index}`}
+                                              name={`userAnswer_${currentSlide}`}
                                               value={selectedChoice || ''}
                                               onChange={(e) => {
-                                                handleInputChange(index, e.target.value);
+                                                handleInputChange(currentSlide, e.target.value);
                                               }}
                                               placeholder="이야기를 작성해 보아요!"
                                               className="answer-input"
-                                              key={`input-${index}`}
-                                              data-slide={index}
+                                              key={`input-${currentSlide}`}
+                                              data-slide={currentSlide}
                                               style={{
                                                 backgroundColor: '#ffffff',
                                                 cursor: 'text'
@@ -667,7 +733,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                                       className="next-btn bg-green-500 hover:bg-green-600" 
                                       onClick={() => {
                                         // 메인 페이지로 이동
-                                        location.href = '/';
+                                        window.location.href = '/';
                                       }}
                                     >
                                       완료
@@ -776,6 +842,55 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                 <span className="description-2-span">®</span>
               </span>
             </div>
+          </div>
+        </div>
+      )}
+      
+      {/* 모달 */}
+      {isModalOpen && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            backdropFilter: 'blur(5px)',
+            animation: 'fadeIn 0.3s ease-out'
+          }}
+          onClick={closeModal}
+        >
+          <div 
+            style={{
+              position: 'relative',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              width: '800px',
+              height: '600px',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+              animation: 'modalSlideIn 0.4s ease-out'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            
+            {/* 배경 이미지 */}
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                backgroundImage: `url('${getBackgroundImage(currentSlide)}')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }}
+            />
           </div>
         </div>
       )}
