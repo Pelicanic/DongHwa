@@ -92,18 +92,22 @@ def build_final_audio(text, save_path, gemini_api_key, clova_client_id, clova_cl
     combined.export(all_audio_path, format="mp3")
     print(f"✅ 전체 오디오 저장: {all_audio_path}")
 
-    # 6. 문단별 오디오 병합 (매핑 기반)
-    print("🔗 문단별 오디오 생성 중...")
+    # 6. 문단별 오디오 병합 (매핑 기반, 지연 포함)
+    print("🔗 문단별 오디오 생성 중 (지연 포함)...")
     paragraph_to_idxs = defaultdict(list)
     for i, (_, p_no) in enumerate(sentence_paragraph_map):
         paragraph_to_idxs[p_no].append(i)
 
     paragraph_paths = {}
     for p_no, idxs in paragraph_to_idxs.items():
+        if not idxs:
+            continue
         para_path = os.path.join(base_dir, f"{file_prefix}_paragraph_{p_no}.mp3")
-        combined_para = AudioSegment.empty()
-        for i in idxs:
-            combined_para += AudioSegment.from_wav(segment_files[i])
+        # 첫 번째 세그먼트 로드
+        combined_para = AudioSegment.from_wav(segment_files[idxs[0]])
+        # 나머지 세그먼트 병합 (pause 추가)
+        for i in idxs[1:]:
+            combined_para += pause + AudioSegment.from_wav(segment_files[i])
         combined_para.export(para_path, format="mp3")
         paragraph_paths[p_no] = para_path
         print(f"  - 문단 {p_no} 저장: {para_path}")
