@@ -109,6 +109,7 @@ class Storyparagraph(models.Model):
     content_text = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
+    tts = models.TextField(blank=True, null=True)
 
     class Meta:
         managed = False

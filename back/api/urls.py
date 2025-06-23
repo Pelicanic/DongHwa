@@ -14,14 +14,14 @@ urlpatterns = [
      # 작성자 : 최재우
     # 마지막 수정일 : 2025-06-17
     # 기능 : 문단 값 호출
-    path('v1/storyParagraph/story/', views.story_storyParagraph, name='api_story_storyParagraph'),
+    path('v1/storyParagraph/story/', story_storyParagraph, name='api_story_storyParagraph'),
     # 작성자 : 최재우
     # 마지막 수정일 : 2025-06-17
-    path('v1/paragraphQA/story/', views.story_paragraphQA, name='api_story_paragraphQA'),
+    path('v1/paragraphQA/story/', story_paragraphQA, name='api_story_paragraphQA'),
     # 작성자 : 최재우
 
     # 마지막 수정일 : 2025-06-21
-    path('v1/story/story/', views.story_story, name='api_story_story'),
+    path('v1/story/story/', story_story, name='api_story_story'),
 ]
 
 

@@ -3,6 +3,7 @@
 import axios from 'axios';
 import React, { useState, useEffect, useCallback } from 'react';
 import '@/styles/tasks_2.css';
+import '@/styles/soundbar.css';
 import Loading from '@/(components)/Loading/loading';
 // import { paragraphQADTO } from '@/lib/type/paragraphQA';
 // import { storyParagraphDTO } from '@/lib/type/storyParagraph';
@@ -74,7 +75,33 @@ export const useStoryData = () => {
           setLastParagraphIndex(lastIndex >= 0 ? lastIndex : paragraphs.length - 1);
         }
 
-        // 배경음악 설정 - tasks_1에서 선택한 기분에 따라
+        // DB에서 Mood 값 추출 - paragraph_no가 1인 ParagraphQA의 question_text에서 추출
+        let extractedMood = '밝은'; // 기본값
+        const qaData = qaResponse.data.paragraphQA;
+        
+        if (qaData && qaData.length > 0 && paragraphs && paragraphs.length > 0) {
+          // paragraph_no가 1인 StoryParagraph 찾기
+          const firstParagraph = paragraphs.find(p => p.paragraph_no === 1);
+          if (firstParagraph) {
+            // 해당 paragraph_id를 가진 ParagraphQA 찾기
+            const firstParagraphQA = qaData.find(qa => qa.paragraph_id === firstParagraph.paragraph_id);
+            if (firstParagraphQA && firstParagraphQA.question_text) {
+              const questionText = firstParagraphQA.question_text;
+              console.log('Original question_text:', questionText);
+              
+              // 'Mood: ' 또는 '[Mood] : ' 뒤의 값을 추출
+              // 기존 형식: "Mood: 슬픈" 또는 새 형식: "[Mood] : 따뜻한"
+              const moodMatch = questionText.match(/(?:Mood:|\[Mood\]\s*:)\s*([^,]+)/i);
+                console.log('Mood match:', moodMatch);
+              if (moodMatch && moodMatch[1]) {
+                extractedMood = moodMatch[1].trim();
+                console.log('Extracted mood from DB:', extractedMood);
+              }
+            }
+          }
+        }
+
+        // 배경음악 설정 - DB에서 추출한 기분에 따라
         const musicMapping = {
           "밝은": "fairy tale(Bright).mp3",
           "따뜻한": "fairy tale(Warm).mp3",
@@ -83,15 +110,16 @@ export const useStoryData = () => {
           "무서운": "fairy tale(Scary).mp3"
         };
 
-        // tasks_1에서 저장된 storyData에서 선택한 기분 가져오기
-        const selectedMood = parsedData.answers && parsedData.answers[2]; // 3번째 질문의 답변 (기분)
+        // tasks_1에서 저장된 storyData에서 선택한 기분 가져오기 -> DB에서 추출한 기분 사용
+        // const selectedMood = parsedData.answers && parsedData.answers[2]; // 3번째 질문의 답변 (기분)
+        const selectedMood = extractedMood; // DB에서 추출한 기분 사용
         
         // 기본값으로 '밝은' 기분의 음악 사용 (fairy tale(Bright).mp3)
         const musicFile = (selectedMood && musicMapping[selectedMood]) 
           ? musicMapping[selectedMood] 
           : musicMapping["밝은"]; // 기본값: fairy tale(Bright).mp3
         
-        console.log('Selected mood:', selectedMood);
+        console.log('Selected mood from DB:', selectedMood);
         console.log('Music file to play:', musicFile);
         
         // 항상 음악 재생 (기본값이라도)
@@ -390,52 +418,16 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
           }}
           onClick={handleBackgroundClick}
         >
-          <div data-volume-control style={{
-            position: 'fixed',
-            top: '20px',
-            right: '20px',
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px', // 12px → 8px
-            backgroundColor: 'rgba(255, 255, 255, 0.3)',
-            backdropFilter: 'blur(10px)',
-            padding: '8px 12px', // 12px 16px → 8px 12px
-            borderRadius: '10px', // 12px → 10px
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-            transition: 'all 0.3s ease'
-          }}>
+          <div data-volume-control className="music-control-container">
             {/* 볼륨/음소거 아이콘 (클릭 가능) */}
             <button
               onClick={toggleMute}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '4px',
-                borderRadius: '6px',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.1)';
-                e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
+              className="mute-button"
               title={isMuted ? '음소거 해제' : '음소거'}
             >
               <img 
                 src={isMuted ? '/images/volume_off.png' : '/images/volume_on.png'}
                 alt={isMuted ? '음소거' : '소리 켜짐'}
-                style={{
-                  width: '20px', // 24px → 20px
-                  height: '20px' // 24px → 20px
-                }}
               />
             </button>
             
@@ -451,20 +443,12 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                   onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
                   className="volume-slider"
                   style={{
-                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${volume * 100}%, #e5e7eb ${volume * 100}%, #e5e7eb 100%)`,
-                    width: '60px', // 80px → 60px 로 줄임
-                    height: '3px' // 높이도 줄임
+                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${volume * 100}%, #e5e7eb ${volume * 100}%, #e5e7eb 100%)`
                   }}
                   title={`볼륨: ${Math.round(volume * 100)}%`}
                 />
                 
-                <span style={{
-                  fontSize: '11px', // 12px → 11px
-                  color: '#1f2937', // 진한 회색으로 변경
-                  minWidth: '28px', // 32px → 28px
-                  textAlign: 'center',
-                  fontWeight: '600' // 폰트 두께 추가
-                }}>
+                <span className="volume-percentage">
                   {Math.round(volume * 100)}%
                 </span>
               </>
@@ -473,46 +457,12 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
             {/* 사운드바 토글 버튼 */}
             <button
               onClick={toggleControls}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '4px',
-                borderRadius: '6px',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.1)';
-                e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.2)';
-                // 이미지 색상을 흰색으로 변경
-                const img = e.currentTarget.querySelector('img');
-                if (img) {
-                  img.style.filter = 'brightness(0) saturate(100%) invert(100%)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.backgroundColor = 'transparent';
-                // 이미지 색상을 기본 진한 회색으로 복원
-                const img = e.currentTarget.querySelector('img');
-                if (img) {
-                  img.style.filter = 'brightness(0) saturate(100%) invert(15%) sepia(6%) saturate(1042%) hue-rotate(194deg) brightness(94%) contrast(91%)';
-                }
-              }}
+              className="toggle-button"
               title={isControlsVisible ? '사운드바 숨기기' : '사운드바 보이기'}
             >
               <img 
                 src={isControlsVisible ? '/images/left.png' : '/images/right.png'}
                 alt={isControlsVisible ? '사운드바 숨기기' : '사운드바 보이기'}
-                style={{
-                  width: '14px',
-                  height: '14px',
-                  filter: 'brightness(0) saturate(100%) invert(15%) sepia(6%) saturate(1042%) hue-rotate(194deg) brightness(94%) contrast(91%)', // 진한 회색 필터
-                  transition: 'filter 0.2s ease'
-                }}
               />
             </button>
           </div>
@@ -525,6 +475,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
               <div className="slides-box">
                 {storyParagraph.map((data, index) => {
                   const data_QA = paragraphQA[index];
+                  const data_QA_next = paragraphQA[index + 1];
                   const selectedChoice = userAnswers[index]; // userAnswers 사용
                   
                   // 선택지에서 [, ], , 문자 제거 후 처리
@@ -621,7 +572,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                                                   handleInputChange(index, e.target.value);
                                                 }
                                               }}
-                                              placeholder={data_QA?.answer_text || ""}
+                                              placeholder={data_QA_next?.question_text || ""}
                                               className={`answer-input expanded`}
                                               key={`textarea-${index}`}
                                               data-slide={index}
