@@ -219,7 +219,7 @@ const ExBook: React.FC = () => {
   return (
     <div
       className="relative min-h-screen bg-cover bg-center bg-no-repeat filter contrast-100"
-      style={{ backgroundImage: "url('/images/task3-bg1.jpg')" }}
+      style={{ backgroundImage: "url('/images/bgsample2.jpg')" }}
     >
       <div className="relative z-10 flex min-h-screen bg-white/20">
         <div className="flex-1 pt-16">
