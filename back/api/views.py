@@ -252,6 +252,63 @@ def list_story(request):
     return Response({"stories": story_list})
 
 
+# 작성자 : Assistant
+# 기능 : status 조건에 따른 동화 목록 조회 (페이징 지원)
+# 마지막 수정일 : 2025-06-23
+@api_view(['POST'])
+def list_story_by_status(request):
+    try:
+        status = request.data.get("status")
+        page = request.data.get("page", 1)  # 기본값 1페이지
+        page_size = request.data.get("page_size", 10)  # 기본값 10개씩
+        
+        if not status:
+            return Response({"error": "status is required"}, status=400)
+        
+        # status 조건에 맞는 전체 동화 수 조회
+        total_count = Story.objects.filter(status=status).count()
+        
+        # 페이징 계산
+        offset = (page - 1) * page_size
+        total_pages = (total_count + page_size - 1) // page_size  # 올림 계산
+        
+        # status 조건에 맞는 동화 조회 (페이징 적용)
+        stories = Story.objects.filter(status=status).order_by('-created_at')[offset:offset + page_size]
+
+        story_list = []
+        for story in stories:
+            story_list.append({
+                "story_id": story.story_id,
+                "author_user": story.author_user_id,
+                "title": story.title,
+                "summary": story.summary,
+                "created_at": story.created_at,
+                "updated_at": story.updated_at,
+                "status": story.status,
+                "author_name": story.author_name,
+                "age": story.age,
+                "cover_img": story.cover_img,
+                "characters": story.characters
+            })
+        
+        return Response({
+            "stories": story_list,
+            "pagination": {
+                "current_page": page,
+                "page_size": page_size,
+                "total_count": total_count,
+                "total_pages": total_pages,
+                "has_next": page < total_pages,
+                "has_previous": page > 1
+            }
+        })
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({"error": str(e)}, status=500)
+
+
 # LangGraph 실행 객체 초기화
 flow = story_flow()
 
@@ -287,8 +344,8 @@ def chatbot_story(request):
             theme = answers.get("1")
             mood = answers.get("2")
             character_name = answers.get("3")
-            character_age = answers.get("4")
-            user_input = f"'{fairy_tale}'풍의 이야기, Theme: {theme}, Mood: {mood}, 주인공 이름: '{character_name}', 주인공의 나이: '{character_age}'살로 동화를 만들고싶어."
+            character_gender = answers.get("4")
+            user_input = f"'{fairy_tale}'풍의 이야기, Theme: {theme}, Mood: {mood}, 주인공 이름: '{character_name}', 주인공의 성별: '{character_gender}'로 동화를 만들고싶어."
         elif not user_input:
             user_input = ""
             
@@ -336,14 +393,3 @@ def chatbot_story(request):
         import traceback
         traceback.print_exc()
         return Response({"error": str(e)}, status=500)
-
-
-
-    
-    
-
-    
-
-
-    
-    

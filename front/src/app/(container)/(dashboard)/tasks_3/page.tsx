@@ -15,17 +15,28 @@ type FlipEvent = { data: number };
 
 const DynamicFlipBook: React.FC = () => {
   const flipBook = useRef<HTMLDivElement>(null);
+  // autoPlayTimeout을 useRef로 추가
+  const autoPlayTimeout = useRef<NodeJS.Timeout | null>(null);
+  
   const [illustration, setIllustration] = useState<illustrationDTO[]>([]);
   const [storyParagraph, setStoryParagraph] = useState<storyParagraphDTO[]>([]);
   const [story, setStory] = useState<storyDTO[]>([]);
   const [loading, setLoading] = useState(true);
   
   // 사운드바 관련 state 추가
-  const [volume, setVolume] = useState<number>(0.3); // 볼륨 상태 (0.0 ~ 1.0)
-  const [isMuted, setIsMuted] = useState<boolean>(false); // 음소거 상태
-  const [previousVolume, setPreviousVolume] = useState<number>(0.3); // 음소거 전 볼륨
+  const [bgVolume, setBgVolume] = useState<number>(0.3); // 배경음악 볼륨 상태 (0.0 ~ 1.0)
+  const [ttsVolume, setTtsVolume] = useState<number>(0.5); // TTS 볼륨 상태 (0.0 ~ 1.0)
+  const [isBgMuted, setIsBgMuted] = useState<boolean>(false); // 배경음악 음소거 상태
+  const [isTtsMuted, setIsTtsMuted] = useState<boolean>(false); // TTS 음소거 상태
+  const [previousBgVolume, setPreviousBgVolume] = useState<number>(0.3); // 배경음악 음소거 전 볼륨
+  const [previousTtsVolume, setPreviousTtsVolume] = useState<number>(0.5); // TTS 음소거 전 볼륨
   const [isControlsVisible, setIsControlsVisible] = useState<boolean>(true); // 사운드바 표시 상태
   const [bgMusic, setBgMusic] = useState<HTMLAudioElement | null>(null);
+  
+  // TTS 관련 state 추가
+  const [ttsAudio, setTtsAudio] = useState<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [storyId, setStoryId] = useState<string>('');
 
   useEffect(() => {
     // API 호출하여 데이터 가져오기
@@ -33,6 +44,7 @@ const DynamicFlipBook: React.FC = () => {
       try {
         // sessionStorage에서 story_id 가져오기 (클라이언트에서만 가능)
         const story_id = sessionStorage.getItem('selectedStoryId') || '2257';
+        setStoryId(story_id); // TTS용 story_id 저장
         console.log('tasks_3에서 받은 story_id:', story_id);
         
         // API 호출시 story_id 사용
@@ -105,7 +117,7 @@ const DynamicFlipBook: React.FC = () => {
         // 항상 음악 재생 (기본값이라도)
         const audio = new Audio(`/bgsound/${musicFile}`);
         audio.loop = true;
-        audio.volume = 0.3; // 볼륨 30%로 설정
+        audio.volume = 0.3; // 배경음악 볼륨 30%로 설정
         
         // 오디오 객체를 먼저 설정
         setBgMusic(audio);
@@ -152,19 +164,27 @@ const DynamicFlipBook: React.FC = () => {
 
   const [currentPage, setCurrentPage] = useState(0);
 
-  // 배경음악 관리 - 컴포넌트 언마운트 시 정지
+  // 배경음악 및 TTS 관리 - 컴포넌트 언마운트 시 정지
   useEffect(() => {
     return () => {
       if (bgMusic) {
         bgMusic.pause();
         bgMusic.currentTime = 0;
       }
+      if (ttsAudio) {
+        ttsAudio.pause();
+        ttsAudio.currentTime = 0;
+      }
+      // autoPlayTimeout 정리
+      if (autoPlayTimeout.current) {
+        clearTimeout(autoPlayTimeout.current);
+      }
     };
-  }, [bgMusic]);
+  }, [bgMusic, ttsAudio]);
 
-  // 볼륨 변경 함수
-  const handleVolumeChange = useCallback((newVolume: number) => {
-    setVolume(newVolume);
+  // 배경음악 볼륨 변경 함수
+  const handleBgVolumeChange = useCallback((newVolume: number) => {
+    setBgVolume(newVolume);
     if (bgMusic) {
       bgMusic.volume = newVolume;
       // 볼륨을 변경할 때 음악이 재생되지 않았다면 재생 시도
@@ -175,24 +195,40 @@ const DynamicFlipBook: React.FC = () => {
       }
     }
     // 볼륨이 0보다 크면 음소거 해제
-    if (newVolume > 0 && isMuted) {
-      setIsMuted(false);
+    if (newVolume > 0 && isBgMuted) {
+      setIsBgMuted(false);
     }
     // 볼륨이 0이면 음소거 상태로
     if (newVolume === 0) {
-      setIsMuted(true);
+      setIsBgMuted(true);
     }
-  }, [bgMusic, isMuted]);
+  }, [bgMusic, isBgMuted]);
 
-  // 음소거 토글 함수
-  const toggleMute = useCallback(() => {
+  // TTS 볼륨 변경 함수
+  const handleTtsVolumeChange = useCallback((newVolume: number) => {
+    setTtsVolume(newVolume);
+    if (ttsAudio) {
+      ttsAudio.volume = newVolume;
+    }
+    // 볼륨이 0보다 크면 음소거 해제
+    if (newVolume > 0 && isTtsMuted) {
+      setIsTtsMuted(false);
+    }
+    // 볼륨이 0이면 음소거 상태로
+    if (newVolume === 0) {
+      setIsTtsMuted(true);
+    }
+  }, [ttsAudio, isTtsMuted]);
+
+  // 배경음악 음소거 토글 함수
+  const toggleBgMute = useCallback(() => {
     if (bgMusic) {
-      if (isMuted) {
+      if (isBgMuted) {
         // 음소거 해제: 이전 볼륨으로 복원
-        const restoreVolume = previousVolume > 0 ? previousVolume : 0.3;
-        setVolume(restoreVolume);
+        const restoreVolume = previousBgVolume > 0 ? previousBgVolume : 0.3;
+        setBgVolume(restoreVolume);
         bgMusic.volume = restoreVolume;
-        setIsMuted(false);
+        setIsBgMuted(false);
         // 음소거 해제 시 음악이 재생되지 않았다면 재생 시도
         if (bgMusic.paused) {
           bgMusic.play().catch(error => {
@@ -201,29 +237,201 @@ const DynamicFlipBook: React.FC = () => {
         }
       } else {
         // 음소거: 현재 볼륨 저장 후 0으로 설정
-        setPreviousVolume(volume);
-        setVolume(0);
+        setPreviousBgVolume(bgVolume);
+        setBgVolume(0);
         bgMusic.volume = 0;
-        setIsMuted(true);
+        setIsBgMuted(true);
       }
     }
-  }, [bgMusic, isMuted, volume, previousVolume]);
+  }, [bgMusic, isBgMuted, bgVolume, previousBgVolume]);
+
+  // TTS 음소거 토글 함수
+  const toggleTtsMute = useCallback(() => {
+    if (ttsAudio) {
+      if (isTtsMuted) {
+        // 음소거 해제: 이전 볼륨으로 복원
+        const restoreVolume = previousTtsVolume > 0 ? previousTtsVolume : 0.5;
+        setTtsVolume(restoreVolume);
+        ttsAudio.volume = restoreVolume;
+        setIsTtsMuted(false);
+      } else {
+        // 음소거: 현재 볼륨 저장 후 0으로 설정
+        setPreviousTtsVolume(ttsVolume);
+        setTtsVolume(0);
+        ttsAudio.volume = 0;
+        setIsTtsMuted(true);
+      }
+    }
+  }, [ttsAudio, isTtsMuted, ttsVolume, previousTtsVolume]);
 
   // 사운드바 토글 함수
   const toggleControls = useCallback(() => {
     setIsControlsVisible(prev => !prev);
   }, []);
 
-  // bgMusic이 변경될 때 볼륨 동기화
+  // TTS 재생 함수
+  const playTTS = useCallback(() => {
+    if (!storyId || !storyParagraph.length) {
+      console.log('story_id 또는 단락 데이터가 없습니다.');
+      return;
+    }
+
+    // 표지(0)나 마지막 페이지에서는 TTS 재생 안함
+    if (currentPage === 0 || currentPage >= (storyParagraph.length * 2) + 1) {
+      console.log('표지 또는 뒤표지에서는 TTS를 재생할 수 없습니다.');
+      return;
+    }
+
+    // 현재 페이지에 해당하는 단락 찾기
+    // currentPage가 1,2는 첫번째 단락, 3,4는 두번째 단락...
+    const paragraphIndex = Math.floor((currentPage - 1) / 2);
+    
+    if (paragraphIndex < 0 || paragraphIndex >= storyParagraph.length) {
+      console.log('유효하지 않은 단락 인덱스:', paragraphIndex);
+      return;
+    }
+
+    const currentParagraph = storyParagraph[paragraphIndex];
+    const ttsFileName = currentParagraph.tts;
+    
+    console.log('Current paragraph:', currentParagraph);
+    console.log('TTS filename:', ttsFileName);
+    console.log('Full TTS path:', `/tts/${storyId}/${ttsFileName}`);
+    
+    if (!ttsFileName) {
+      console.log('해당 단락에 TTS 파일이 없습니다.');
+      return;
+    }
+
+    // 기존 TTS 오디오 정지
+    if (ttsAudio) {
+      ttsAudio.pause();
+      ttsAudio.currentTime = 0;
+    }
+
+    // 새 TTS 오디오 생성 및 재생
+    const audio = new Audio(`/tts/${storyId}/${ttsFileName}`);
+    audio.volume = ttsVolume; // TTS 볼륨으로 설정
+    
+    audio.onplay = () => setIsPlaying(true);
+    audio.onended = () => setIsPlaying(false);
+    audio.onerror = () => {
+      console.error('TTS 파일 재생 오류:', `/tts/${storyId}/${ttsFileName}`);
+      setIsPlaying(false);
+    };
+
+    setTtsAudio(audio);
+    audio.play().catch(error => {
+      console.error('TTS 재생 실패:', error);
+      setIsPlaying(false);
+    });
+  }, [storyId, storyParagraph, currentPage, ttsAudio, ttsVolume]);
+
+  // TTS 일시정지/재개 함수
+  const pauseTTS = useCallback(() => {
+    if (ttsAudio) {
+      if (isPlaying) {
+        ttsAudio.pause();
+        setIsPlaying(false);
+      } else {
+        ttsAudio.play().catch(error => {
+          console.error('TTS 재개 실패:', error);
+          setIsPlaying(false);
+        });
+      }
+    }
+  }, [ttsAudio, isPlaying]);
+
+  // TTS 완전 정지 함수 (페이지 변경 시에만 사용)
+  const stopTTS = useCallback(() => {
+    if (ttsAudio) {
+      ttsAudio.pause();
+      ttsAudio.currentTime = 0;
+      setIsPlaying(false);
+    }
+  }, [ttsAudio]);
+
+  // 특정 페이지에 대한 TTS 재생 함수
+  const playTTSForPage = useCallback((pageNumber: number) => {
+    if (!storyId || !storyParagraph.length) {
+      return;
+    }
+
+    // 표지나 마지막 페이지에서는 TTS 재생 안함
+    if (pageNumber === 0 || pageNumber >= (storyParagraph.length * 2) + 1) {
+      return;
+    }
+
+    const paragraphIndex = Math.floor((pageNumber - 1) / 2);
+    
+    if (paragraphIndex < 0 || paragraphIndex >= storyParagraph.length) {
+      return;
+    }
+
+    const currentParagraph = storyParagraph[paragraphIndex];
+    const ttsFileName = currentParagraph.tts;
+    
+    if (!ttsFileName) {
+      return;
+    }
+
+    // 기존 TTS 오디오 정지
+    if (ttsAudio) {
+      ttsAudio.pause();
+      ttsAudio.currentTime = 0;
+    }
+
+    // 새 TTS 오디오 생성 및 재생
+    const audio = new Audio(`/tts/${storyId}/${ttsFileName}`);
+    audio.volume = ttsVolume;
+    
+    audio.onplay = () => setIsPlaying(true);
+    audio.onended = () => setIsPlaying(false);
+    audio.onerror = () => {
+      console.error('TTS 파일 재생 오류:', `/tts/${storyId}/${ttsFileName}`);
+      setIsPlaying(false);
+    };
+
+    setTtsAudio(audio);
+    audio.play().catch(error => {
+      console.error('TTS 재생 실패:', error);
+      setIsPlaying(false);
+    });
+  }, [storyId, storyParagraph, ttsAudio, ttsVolume]);
+
+  // bgMusic과 ttsAudio가 변경될 때 볼륨 동기화
   useEffect(() => {
     if (bgMusic) {
-      bgMusic.volume = volume;
+      bgMusic.volume = bgVolume;
     }
-  }, [bgMusic, volume]);
+  }, [bgMusic, bgVolume]);
+
+  useEffect(() => {
+    if (ttsAudio) {
+      ttsAudio.volume = ttsVolume;
+    }
+  }, [ttsAudio, ttsVolume]);
 
   // 페이지 변경 이벤트 핸들러
   const onFlip = (e: FlipEvent) => {
     setCurrentPage(e.data);
+    
+    // 기존 TTS 정지 및 타이머 제거
+    if (ttsAudio && isPlaying) {
+      stopTTS();
+    }
+    if (autoPlayTimeout.current) {
+      clearTimeout(autoPlayTimeout.current);
+      autoPlayTimeout.current = null;
+    }
+    
+    // 1초 후 자동 재생 (표지나 뒤표지가 아닌 경우만)
+    const newPage = e.data;
+    if (newPage > 0 && newPage < (storyParagraph.length * 2) + 1) {
+      autoPlayTimeout.current = setTimeout(() => {
+        playTTSForPage(newPage);
+      }, 1500);
+    }
   };
 
   return (
@@ -241,40 +449,147 @@ const DynamicFlipBook: React.FC = () => {
         >
           {/* 사운드바 */}
           <div data-volume-control className="music-control-container">
-            {/* 볼륨/음소거 아이콘 (클릭 가능) */}
+            {/* TTS 재생/일시정지 버튼 */}
             <button
-              onClick={toggleMute}
-              className="mute-button"
-              title={isMuted ? '음소거 해제' : '음소거'}
+              onClick={currentPage === 0 || currentPage >= (storyParagraph.length * 2) + 1 ? undefined : (ttsAudio && (isPlaying || ttsAudio.currentTime > 0) ? pauseTTS : playTTS)}
+              className="tts-button"
+              title={
+                currentPage === 0 || currentPage >= (storyParagraph.length * 2) + 1 
+                  ? 'TTS 사용 불가' 
+                  : ttsAudio && ttsAudio.currentTime > 0 
+                    ? (isPlaying ? 'TTS 일시정지' : 'TTS 재개')
+                    : 'TTS 재생'
+              }
+              disabled={currentPage === 0 || currentPage >= (storyParagraph.length * 2) + 1}
+              style={{
+                marginRight: '10px',
+                padding: '8px 12px',
+                backgroundColor: 
+                  currentPage === 0 || currentPage >= (storyParagraph.length * 2) + 1 
+                    ? '#6b7280' 
+                    : isPlaying 
+                      ? '#f59e0b' 
+                      : '#3b82f6',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: (currentPage === 0 || currentPage >= (storyParagraph.length * 2) + 1) ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                minWidth: '80px',
+                opacity: (currentPage === 0 || currentPage >= (storyParagraph.length * 2) + 1) ? 0.5 : 1
+              }}
             >
-              <img 
-                src={isMuted ? '/images/volume_off.png' : '/images/volume_on.png'}
-                alt={isMuted ? '음소거' : '소리 켜짐'}
-              />
+              {currentPage === 0 || currentPage >= (storyParagraph.length * 2) + 1 
+                ? '🚫 사용불가'
+                : ttsAudio && ttsAudio.currentTime > 0 
+                  ? (isPlaying ? '⏸️ 일시정지' : '▶️ 재개')
+                  : '▶️ 재생'
+              }
             </button>
             
-            {/* 볼륨 슬라이더 및 퍼센트 (토글 가능) */}
-            {isControlsVisible && (
-              <>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={volume}
-                  onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                  className="volume-slider"
-                  style={{
-                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${volume * 100}%, #e5e7eb ${volume * 100}%, #e5e7eb 100%)`
-                  }}
-                  title={`볼륨: ${Math.round(volume * 100)}%`}
+            {/* 배경음악 컨트롤 */}
+            <div style={{ display: 'flex', alignItems: 'center', marginRight: '15px' }}>
+              <span style={{ 
+                fontSize: '12px', 
+                fontWeight: 'bold', 
+                color: '#374151', 
+                marginRight: '8px',
+                minWidth: '50px'
+              }}>배경음악</span>
+              
+              {/* 배경음악 음소거 버튼 */}
+              <button
+                onClick={toggleBgMute}
+                className="mute-button"
+                title={isBgMuted ? '배경음악 음소거 해제' : '배경음악 음소거'}
+                style={{ marginRight: '8px' }}
+              >
+                <img 
+                  src={isBgMuted ? '/images/volume_off.png' : '/images/volume_on.png'}
+                  alt={isBgMuted ? '음소거' : '소리 켜짐'}
+                  style={{ width: '20px', height: '20px' }}
                 />
-                
-                <span className="volume-percentage">
-                  {Math.round(volume * 100)}%
-                </span>
-              </>
-            )}
+              </button>
+              
+              {/* 배경음악 볼륨 슬라이더 */}
+              {isControlsVisible && (
+                <>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={bgVolume}
+                    onChange={(e) => handleBgVolumeChange(parseFloat(e.target.value))}
+                    className="volume-slider"
+                    style={{
+                      background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${bgVolume * 100}%, #e5e7eb ${bgVolume * 100}%, #e5e7eb 100%)`,
+                      width: '80px',
+                      marginRight: '8px'
+                    }}
+                    title={`배경음악 볼륨: ${Math.round(bgVolume * 100)}%`}
+                  />
+                  
+                  <span className="volume-percentage" style={{ fontSize: '12px', minWidth: '35px' }}>
+                    {Math.round(bgVolume * 100)}%
+                  </span>
+                </>
+              )}
+            </div>
+            
+            {/* TTS 컨트롤 */}
+            <div style={{ display: 'flex', alignItems: 'center', marginRight: '15px' }}>
+              <span style={{ 
+                fontSize: '12px', 
+                fontWeight: 'bold', 
+                color: '#374151', 
+                marginRight: '8px',
+                minWidth: '30px'
+              }}>TTS</span>
+              
+              {/* TTS 음소거 버튼 */}
+              <button
+                onClick={toggleTtsMute}
+                className="mute-button"
+                title={isTtsMuted ? 'TTS 음소거 해제' : 'TTS 음소거'}
+                style={{ marginRight: '8px' }}
+              >
+                <img 
+                  src={isTtsMuted ? '/images/volume_off.png' : '/images/volume_on.png'}
+                  alt={isTtsMuted ? '음소거' : '소리 켜짐'}
+                  style={{ width: '20px', height: '20px' }}
+                />
+              </button>
+              
+              {/* TTS 볼륨 슬라이더 */}
+              {isControlsVisible && (
+                <>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={ttsVolume}
+                    onChange={(e) => handleTtsVolumeChange(parseFloat(e.target.value))}
+                    className="volume-slider"
+                    style={{
+                      background: `linear-gradient(to right, #10b981 0%, #10b981 ${ttsVolume * 100}%, #e5e7eb ${ttsVolume * 100}%, #e5e7eb 100%)`,
+                      width: '80px',
+                      marginRight: '8px'
+                    }}
+                    title={`TTS 볼륨: ${Math.round(ttsVolume * 100)}%`}
+                  />
+                  
+                  <span className="volume-percentage" style={{ fontSize: '12px', minWidth: '35px' }}>
+                    {Math.round(ttsVolume * 100)}%
+                  </span>
+                </>
+              )}
+            </div>
             
             {/* 사운드바 토글 버튼 */}
             <button
@@ -327,11 +642,12 @@ const DynamicFlipBook: React.FC = () => {
           className="flipbook"
         >
           {/* 표지 */}
-          <div className="bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white p-8">
+          <div className="bg-[#faf6ed] flex items-center justify-center text-white p-8">
             <div className="text-center"style={{
                   height: '100%',
                   padding: '100px 30px',
                   fontFamily: 'Ownglyph_ryurue-Rg',
+                  color: 'black',
                 }}>
               <h2 className="text-4xl font-bold mb-4">{story.title}</h2>
               <p className="text-lg">이야기 속으로 들어가보아요!</p>
@@ -404,6 +720,7 @@ const DynamicFlipBook: React.FC = () => {
                   height: '100%',
                   padding: '100px',
                   fontFamily: 'Ownglyph_ryurue-Rg',
+                  color: 'black',
                 }}>
               <h2 className="text-3xl font-bold mb-4">끝</h2>
               <p className="text-lg">재미있게 읽으셨나요?</p>

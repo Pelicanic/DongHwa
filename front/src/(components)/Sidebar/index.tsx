@@ -183,9 +183,9 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktopSidebarOpen = true, to
             <SidebarLink href="/tasks_1" icon={PlusCircle} label="동화책 만들기" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
             <SidebarLink href="/tasks_2" icon={ArrowRight} label="동화 이어 만들기" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
             <SidebarLink href="/tasks_3" icon={Play} label="시연페이지" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
-            <SidebarLink href="/user/favoriteTag" icon={BookOpen} label="나의 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
-            <SidebarLink href="/user/friends" icon={Library} label="기존 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
-            <SidebarLink href="/user/mySubscription" icon={Palette} label="창작 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
+            <SidebarLink href="/user/mybook" icon={BookOpen} label="나의 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
+            <SidebarLink href="/user/exbook" icon={Library} label="기존 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
+            <SidebarLink href="/user/libbook" icon={Palette} label="창작 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
           </div>
         </nav>
 
