@@ -436,7 +436,7 @@ textarea.answer-input::placeholder {
   background-color: #faf6ed ;
   border: 2px solid #e2e8f0;
   position: relative;
-  padding: 8% 10% 5% 10%;
+  padding: 8% 8% 5% 8%;
   box-sizing: border-box;
   overflow: hidden; /* 부모에서 overflow 제어 */
   border-radius: 12px;
