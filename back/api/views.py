@@ -287,8 +287,8 @@ def chatbot_story(request):
             theme = answers.get("1")
             mood = answers.get("2")
             character_name = answers.get("3")
-            character_age = answers.get("4")
-            user_input = f"'{fairy_tale}'풍의 이야기, Theme: {theme}, Mood: {mood}, 주인공 이름: '{character_name}', 주인공의 나이: '{character_age}'살로 동화를 만들고싶어."
+            character_gender = answers.get("4")
+            user_input = f"'{fairy_tale}'풍의 이야기, Theme: {theme}, Mood: {mood}, 주인공 이름: '{character_name}', 주인공의 성별: '{character_gender}'로 동화를 만들고싶어."
         elif not user_input:
             user_input = ""
             
