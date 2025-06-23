@@ -43,7 +43,7 @@ const DynamicFlipBook: React.FC = () => {
     const fetchdata = async () => {
       try {
         // sessionStorage에서 story_id 가져오기 (클라이언트에서만 가능)
-        const story_id = sessionStorage.getItem('selectedStoryId') || '2257';
+        const story_id = sessionStorage.getItem('selectedStoryId') || '2241';
         setStoryId(story_id); // TTS용 story_id 저장
         console.log('tasks_3에서 받은 story_id:', story_id);
         
