@@ -39,34 +39,46 @@ def generate_story_audio(request):
         return Response({"error": "문단 1~10을 찾을 수 없습니다."}, status=400)
 
     text_blocks = [p.content_text for p in paragraphs]
-    paragraph_numbers = [p.paragraph_no for p in paragraphs]
 
     gemini_api_key = config('GEMINI_TTS_API_KEY')
     clova_id = config('CSS_API_CLIENT_ID')
     clova_secret = config('CSS_API_CLIENT_SECRET')
 
+    # 파일 저장 디렉터리
     save_dir = os.path.join(settings.MEDIA_ROOT, "tts", f"tts_user{user.user_id}_story{story.story_id}")
     os.makedirs(save_dir, exist_ok=True)
 
+    # 실제 오디오 생성
     full_audio_path, paragraph_paths = build_final_audio(
         text="\n".join(text_blocks),
-        save_path = os.path.join(save_dir, f"tts_user{user.user_id}_story{story.story_id}_all.mp3"),
+        save_path=os.path.join(
+            save_dir,
+            f"tts_user{user.user_id}_story{story.story_id}_all.mp3"
+        ),
         gemini_api_key=gemini_api_key,
         clova_client_id=clova_id,
         clova_client_secret=clova_secret,
         character_list=story.characters
     )
 
+    # URL 생성 — 파일명과 일치하도록 basename 사용
+    folder = f"tts_user{user.user_id}_story{story.story_id}"
+    full_filename = os.path.basename(full_audio_path)   # e.g. "tts_user768_story2202_all.mp3"
+    paragraph_filenames = {
+        p_no: os.path.basename(p_path)
+        for p_no, p_path in paragraph_paths.items()
+    }
+
     return Response({
         "message": "TTS 생성 완료",
         "full_audio": request.build_absolute_uri(
-            os.path.join(settings.MEDIA_URL, "tts", f"tts_user{user.user_id}_story{story.story_id}", "all.mp3")
+            f"{settings.MEDIA_URL}tts/{folder}/{full_filename}"
         ),
         "paragraphs": {
             str(p_no): request.build_absolute_uri(
-                os.path.join(settings.MEDIA_URL, "tts", f"tts_user{user.user_id}_story{story.story_id}", f"paragraph_{p_no}.mp3")
+                f"{settings.MEDIA_URL}tts/{folder}/{filename}"
             )
-            for p_no in paragraph_paths
+            for p_no, filename in paragraph_filenames.items()
         }
     })
 
@@ -76,9 +88,6 @@ def generate_story_audio(request):
 @authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def stream_qa_audio(request, qa_id):
-    """
-    ParagraphQA의 ai_question을 Clova TTS를 통해 스트리밍 방식으로 전송합니다.
-    """
     try:
         qa_instance = Paragraphqa.objects.get(qa_id=qa_id)
 
@@ -106,14 +115,12 @@ def stream_qa_audio(request, qa_id):
         response_from_clova = requests.post(url, headers=headers, data=data, stream=True)
 
         if response_from_clova.status_code == 200:
-            response = StreamingHttpResponse(
+            return StreamingHttpResponse(
                 response_from_clova.iter_content(chunk_size=4096),
                 content_type=response_from_clova.headers['Content-Type']
             )
-            return response
         else:
-            error_text = response_from_clova.text
-            print(f"❌ Clova API Error: {response_from_clova.status_code} - {error_text}")
+            print(f"❌ Clova API Error: {response_from_clova.status_code} - {response_from_clova.text}")
             return Response({"error": "음성 합성 서버에서 오류가 발생했습니다."}, status=502)
 
     except Paragraphqa.DoesNotExist:
