@@ -166,6 +166,7 @@ def story_storyParagraph(request):
                 "content_text": data.content_text,
                 "created_at": data.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                 "updated_at": data.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
+                "tts": data.tts,
             })
         
         # 빈 데이터 처리

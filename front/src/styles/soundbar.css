@@ -1,0 +1,147 @@
+/* 사운드바 관련 스타일 */
+.music-control-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  padding: 8px 12px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.music-control-container:hover {
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* 음소거 버튼 스타일 */
+.mute-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mute-button:hover {
+  transform: scale(1.1);
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.mute-button img {
+  width: 20px;
+  height: 20px;
+  transition: all 0.2s ease;
+}
+
+/* 토글 버튼 스타일 */
+.toggle-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-button:hover {
+  transform: scale(1.1);
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.toggle-button:hover img {
+  filter: brightness(0) saturate(100%) invert(100%) !important;
+}
+
+.toggle-button img {
+  width: 14px;
+  height: 14px;
+  filter: brightness(0) saturate(100%) invert(15%) sepia(6%) saturate(1042%) hue-rotate(194deg) brightness(94%) contrast(91%);
+  transition: filter 0.2s ease;
+}
+
+.volume-slider {
+  width: 60px;
+  height: 3px;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  transition: all 0.2s ease;
+}
+
+/* 웹킷 기반 브라우저 (Chrome, Safari) */
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: #2563eb;
+}
+
+/* Firefox */
+.volume-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.volume-slider::-moz-range-thumb:hover {
+  transform: scale(1.2);
+  background: #2563eb;
+}
+
+.volume-percentage {
+  font-size: 11px;
+  color: #1f2937;
+  min-width: 28px;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* 모바일 대응 */
+@media (max-width: 768px) {
+  .music-control-container {
+    top: 10px;
+    right: 10px;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  
+  .volume-slider {
+    width: 50px;
+  }
+  
+  .volume-percentage {
+    font-size: 10px;
+    min-width: 24px;
+  }
+}
