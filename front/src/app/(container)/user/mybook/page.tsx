@@ -95,7 +95,7 @@ const MyBook: React.FC = () => {
   return (
     <div
       className="relative min-h-screen bg-cover bg-center bg-no-repeat filter contrast-100"
-      style={{ backgroundImage: "url('/images/task3-bg1.jpg')" }}
+      style={{ backgroundImage: "url('/images/bgsample1.jpg')" }}
     >
       {/* 콘텐츠 */}
       <div className="relative z-10 flex min-h-screen bg-white/20">
