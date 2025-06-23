@@ -43,7 +43,7 @@ const Main: React.FC = () => {
       }
     };
     fetchStories();
-  }, []);
+  }, [loading]);
 
   return (
     <>
