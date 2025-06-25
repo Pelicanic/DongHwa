@@ -17,7 +17,7 @@
 ## 🔖 목차
 1. [서비스 소개](#1-서비스-소개)
 2. [서비스 제작 기간](#2-서비스-제작-기간)
-3. [멤버 및 역할](#3-멤버-및-역할)
+3. [멤버 및 역할](#3멤버-및-역할)
 4. [Tech Stack](#4-tech-stack)
 5. [Pipeline](#5-pipeline)
 6. [LangGraph 구조](#6-langgraph-구조)
@@ -214,8 +214,11 @@ Pel-World는 자녀 정보와 입력 값 기반으로 AI가 동화를 생성하�
 ![](https://i.imgur.com/2vlc4Yz.png)
 
 
+<br>
+
 
 선택지 및 직접 입력으로 이야기 전개가 가능합니다.
+
 ![](https://i.imgur.com/6JFOR5E.png)
 
 <br>
@@ -236,6 +239,7 @@ Pel-World는 자녀 정보와 입력 값 기반으로 AI가 동화를 생성하�
 <br>
 6. 기존 동화책
 * 기존의 생성된 동화책을 열람할 수 있습니다.
+
 ![](https://i.imgur.com/qrngZkM.jpeg)
 
 
