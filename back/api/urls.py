@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import chatbot_story, list_story, story_illustration, story_storyParagraph, story_paragraphQA, story_story, list_story_by_status, search_stories, get_user_in_progress_story
+from .views import chatbot_story, list_story, story_illustration, story_storyParagraph, story_paragraphQA, story_story, list_story_by_status, search_stories, get_user_in_progress_story, get_random_published_titles
 
 urlpatterns = [
     path('', views.index, name='api_index'),
@@ -35,6 +35,10 @@ urlpatterns = [
     # 마지막 수정일 : 2025-06-25
     # 기능 : 사용자의 진행 중인 동화 조회
     path('v1/user/in-progress-story/', get_user_in_progress_story, name='api_get_user_in_progress_story'),
+    # 작성자 : Assistant
+    # 마지막 수정일 : 2025-06-25
+    # 기능 : published 상태의 동화 제목 랜덤 3개 조회
+    path('v1/random/published-titles/', get_random_published_titles, name='api_get_random_published_titles'),
 ]
 
 

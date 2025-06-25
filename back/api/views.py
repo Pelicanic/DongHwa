@@ -83,6 +83,42 @@ def story_select(request):
 
 
 # 작성자 : Assistant
+# 기능 : published 상태의 동화 제목 랜덤 3개 조회
+# 마지막 수정일 : 2025-06-25
+@api_view(['GET'])
+def get_random_published_titles(request):
+    try:
+        # published 상태의 동화들 중에서 제목이 있는 것들 조회
+        published_stories = Story.objects.filter(
+            status='published',
+            title__isnull=False
+        ).exclude(
+            title=''
+        ).values_list('title', flat=True)
+        
+        if len(published_stories) < 3:
+            # 데이터가 3개 미만일 때 기본값 반환
+            return Response({
+                "success": True,
+                "titles": ["여우와 두루미", "개미와 베짱이", "토끼와 거북이"]
+            })
+        
+        # 랜덤으로 3개 선택
+        import random
+        random_titles = random.sample(list(published_stories), min(3, len(published_stories)))
+        
+        return Response({
+            "success": True,
+            "titles": random_titles
+        })
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({"error": str(e)}, status=500)
+
+
+# 작성자 : Assistant
 # 기능 : 사용자의 가장 최신 동화가 in_progress인지 확인
 # 마지막 수정일 : 2025-06-25
 @api_view(['POST'])
