@@ -135,6 +135,7 @@ export const useStoryData = () => {
                 icon: 'info',
                 confirmButtonText: '확인'
               });
+              window.location.href = '/';
             } else if (reason === 'latest_not_in_progress') {
               // 가장 최신 동화가 completed이거나 다른 상태인 경우
               if (latestStatus === 'completed') {
