@@ -90,6 +90,7 @@ export const API_ROUTES = {
   STORY_MAIN: '/api/v1/main/story/',
   STORY_BY_ID: '/api/v1/story/story/',
   USER_IN_PROGRESS_STORY: '/api/v1/user/in-progress-story/',
+  RANDOM_PUBLISHED_TITLES: '/api/v1/random/published-titles/',
   
   // 단락 관련
   PARAGRAPH_QA: '/api/v1/paragraphQA/story/',

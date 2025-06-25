@@ -44,13 +44,60 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
     },
     {
       id: 5,
-      title: "짠! 마법의 주인공 뽑기 시간이야! 어떤 주인공이 더 재밌는 이야기를 만들어줄 것 같아?",
+      title: "어떤 주인공이 더 재밌는 이야기를 만들어줄 것 같아?",
       choices: ["남자", "여자", "무관"]
     }
   ],
 }) => {
+  // 슬라이드 데이터를 상태로 관리 (랜덤 기능을 위해)
+  const [slidesData, setSlidesData] = useState<SlideData[]>(slides);
+  
   // Tasks_1 페이지 전용 디버거
   const debug = createPageDebugger('TASKS_1');
+  
+  // 랜덤 제목 가져오기 함수
+  const fetchRandomTitles = useCallback(async () => {
+    try {
+      debug.api('랜덤 제목 요청', {});
+      const response = await apiClient.get(API_ROUTES.RANDOM_PUBLISHED_TITLES);
+      
+      if (response.data.success && response.data.titles) {
+        const randomTitles = response.data.titles;
+        debug.story('랜덤 제목 수신', {
+          'Random Titles': randomTitles
+        });
+        
+        // 첫 번째 슬라이드의 선택지를 업데이트
+        setSlidesData(prev => {
+          const updated = prev.map((slide, index) => 
+            index === 0 ? { ...slide, choices: [...randomTitles] } : slide
+          );
+          console.log('업데이트된 슬라이드 데이터:', updated); // 디버깅
+          return updated;
+        });
+        
+        // 첫 번째 슬라이드의 선택된 답변과 선택지 초기화
+        setUserAnswers(prev => {
+          const newAnswers = { ...prev };
+          delete newAnswers[0];
+          return newAnswers;
+        });
+        setSelectedChoices(prev => ({
+          ...prev,
+          0: null
+        }));
+        
+        console.log('랜덤 제목으로 업데이트 완료:', randomTitles); // 디버깅
+        
+      } else {
+        debug.error('랜덤 제목 요청 실패', response.data);
+        console.log('API 응답이 예상과 다름:', response.data); // 디버깅
+      }
+    } catch (error) {
+      debug.error('랜덤 제목 API 오류', error);
+      console.error('API 호출 오류:', error); // 디버깅
+    }
+  }, []);
   
   // 로그인 확인
   useEffect(() => {
@@ -65,7 +112,7 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
   // 현재 선택된 선택지를 저장하는 state (시각적 표시용)
   const [selectedChoices, setSelectedChoices] = useState<{[key: number]: number | null}>({});
   // 전체 슬라이드 수
-  const totalSlides = slides.length;
+  const totalSlides = slidesData.length;
   // 선택지 클릭 핸들러
   const handleChoiceClick = useCallback((slideIndex: number, choiceIndex: number, choiceText: string) => {
     debug.user('선택지 클릭', {
@@ -243,7 +290,7 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
 
   // 점 표시기 렌더링
   const renderDots = () => {
-    return slides.map((_, index) => (
+    return slidesData.map((_, index) => (
       <div
         key={index}
         className={`dot-indicator ${index === currentSlide ? 'dot-active' : 'dot-inactive'} ${
@@ -287,7 +334,7 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
         <div className="main-content-wrapper">
           <div className="carousel">
             <div className="slides-box">
-              {slides.map((slide, index) => (
+              {slidesData.map((slide, index) => (
                 <div
                   key={slide.id}
                   className={`slide ${index === currentSlide ? 'active' : ''}`}
@@ -301,9 +348,50 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
                         backgroundColor: '#faf6ed',
                       }}>
                         <h3>{slide.title}</h3>
-                        <span className="slide-number" style={{
-                          backgroundColor: '#faf6ed'
-                        }}>({index + 1}/{totalSlides})</span>
+                        
+                        {index === 0 && (
+                          <div style={{ marginTop: '10px' }}>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                fetchRandomTitles();
+                              }}
+                              className="random-button"
+                              type="button"
+                              style={{
+                                padding: '10px 20px',
+                                backgroundColor: '#ff6b6b',
+                                color: 'white',
+                                border: '2px solid #ff6b6b',
+                                borderRadius: '25px',
+                                fontSize: '14px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                boxShadow: '0 4px 8px rgba(255, 107, 107, 0.3)',
+                                zIndex: 99999,
+                                position: 'relative',
+                                pointerEvents: 'auto',
+                                display: 'block',
+                                width: 'auto'
+                              }}
+                              onMouseOver={(e) => {
+                                console.log('버튼 호버!');
+                                e.currentTarget.style.backgroundColor = '#ff5252';
+                                e.currentTarget.style.transform = 'scale(1.05)';
+                                e.currentTarget.style.boxShadow = '0 6px 12px rgba(255, 82, 82, 0.4)';
+                              }}
+                              onMouseOut={(e) => {
+                                e.currentTarget.style.backgroundColor = '#ff6b6b';
+                                e.currentTarget.style.transform = 'scale(1)';
+                                e.currentTarget.style.boxShadow = '0 4px 8px rgba(255, 107, 107, 0.3)';
+                              }}
+                            >
+                              🎲 랜덤 동화 제목
+                            </button>
+                          </div>
+                        )}
                       </div>
                       
                       <div className='slide-content-box-ai-question' style={{
@@ -418,7 +506,7 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
             </div>
             
             <div className="summary-grid">
-              {slides.map((slide, index) => (
+              {slidesData.map((slide, index) => (
                 <div 
                   key={index} 
                   className={`summary-item ${userAnswers[index] ? 'completed' : 'pending'}`}
