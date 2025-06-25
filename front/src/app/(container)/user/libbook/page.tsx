@@ -5,6 +5,7 @@ import { apiClient, API_ROUTES } from '@/lib/api';
 import MainCard from '@/(components)/Card/Cardbox';
 import { storyDTO } from '@/lib/type/story';
 import Loading from '@/(components)/Loading/loading';
+import { requireLogin } from '@/lib/utils/auth';
 
 interface PaginationInfo {
   current_page: number;
@@ -52,6 +53,11 @@ const LibBook: React.FC = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // 로그인 확인
+  useEffect(() => {
+    requireLogin();
+  }, []);
 
   const fetchCompletedStories = async (page: number = 1) => {
     try {

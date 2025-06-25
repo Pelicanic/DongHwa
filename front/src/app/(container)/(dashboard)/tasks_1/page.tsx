@@ -3,10 +3,10 @@
 import React from 'react';
 import { apiClient, API_ROUTES } from '@/lib/api';
 import { createPageDebugger } from '@/lib/logger';
-
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import '@/styles/tasks_1.css';
 import Swal from 'sweetalert2'
+import { requireLogin } from '@/lib/utils/auth';
 
 interface SlideData {
   id: number;
@@ -51,6 +51,11 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
 }) => {
   // Tasks_1 페이지 전용 디버거
   const debug = createPageDebugger('TASKS_1');
+  
+  // 로그인 확인
+  useEffect(() => {
+    requireLogin();
+  }, []);
   
   // useRouter 훅 추가
   // 현재 슬라이드 인덱스를 저장하는 state

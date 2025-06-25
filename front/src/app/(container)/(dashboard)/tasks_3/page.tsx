@@ -38,6 +38,26 @@ const DynamicFlipBook: React.FC = () => {
   const [ttsAudio, setTtsAudio] = useState<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [storyId, setStoryId] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(0);
+
+  // TTS 파일 존재 여부 확인 함수
+  const hasTTSForCurrentPage = useCallback(() => {
+    if (!storyParagraph.length || currentPage === 0 || currentPage >= (storyParagraph.length * 2) + 1) {
+      return false;
+    }
+    
+    const paragraphIndex = Math.floor((currentPage - 1) / 2);
+    if (paragraphIndex < 0 || paragraphIndex >= storyParagraph.length) {
+      return false;
+    }
+    
+    const currentParagraph = storyParagraph[paragraphIndex];
+    const ttsFileName = currentParagraph.tts;
+    
+    return ttsFileName && ttsFileName.trim() !== '' && ttsFileName !== 'null' && ttsFileName !== 'undefined';
+  }, [storyParagraph, currentPage]);
+
+
 
   useEffect(() => {
     // API 호출하여 데이터 가져오기
@@ -45,6 +65,7 @@ const DynamicFlipBook: React.FC = () => {
       try {
         // sessionStorage에서 story_id 가져오기 (클라이언트에서만 가능)
         const story_id = sessionStorage.getItem('selectedStoryId') || '2241';
+        
         setStoryId(story_id); // TTS용 story_id 저장
         debugLog.story('Tasks_3에서 Story ID 받음', {
           'Story ID': story_id
@@ -83,14 +104,14 @@ const DynamicFlipBook: React.FC = () => {
             const firstParagraphQA = qaData.find(qa => qa.paragraph_id === firstParagraph.paragraph_id);
             if (firstParagraphQA && firstParagraphQA.question_text) {
               const questionText = firstParagraphQA.question_text;
-              log.debug('Original question_text:', questionText);
+              // 기분 대체 로그 제거
               
               // 'Mood: ' 또는 '[Mood] : ' 뒤의 값을 추출
               // 기존 형식: "Mood: 슬픈" 또는 새 형식: "[Mood] : 따뜻한"
               const moodMatch = questionText.match(/(?:Mood:|\[Mood\]\s*:)\s*([^,]+)/i);
               if (moodMatch && moodMatch[1]) {
                 extractedMood = moodMatch[1].trim();
-                log.storyProgress('Extracted mood from DB:', extractedMood);
+                // 기분 추출 로그 제거
               }
             }
           }
@@ -116,8 +137,7 @@ const DynamicFlipBook: React.FC = () => {
           ? musicMapping[selectedMood] 
           : musicMapping["밝은"]; // 기본값: fairy tale(Bright).mp3
         
-        log.storyProgress('Selected mood from DB:', selectedMood);
-        log.audioEvent('Music file to play:', musicFile);
+        // 배경음악 설정 로그 제거
         
         // 항상 음악 재생 (기본값이라도)
         const audio = new Audio(`/bgsound/${musicFile}`);
@@ -133,10 +153,10 @@ const DynamicFlipBook: React.FC = () => {
         if (playPromise !== undefined) {
           playPromise
             .then(() => {
-              log.audioEvent('배경음악이 자동으로 재생되었습니다.');
+              // 자동 재생 로그 제거
             })
             .catch(error => {
-              log.audioEvent('자동 재생이 차단되었습니다. 사용자 상호작용 후 재생됩니다:', error);
+              // 자동 재생 차단 로그 제거
               // 자동재생이 차단된 경우를 위한 이벤트 리스너 추가
               const handleFirstUserInteraction = () => {
                 audio.play().then(() => {
@@ -160,7 +180,7 @@ const DynamicFlipBook: React.FC = () => {
       } catch (error) {
         debugLog.error('데이터를 가져오는 중 오류 발생', error, {
           'Function': 'fetchdata',
-          'Story ID': story_id || 'N/A'
+          'Story ID': storyId || 'N/A'
         });
       } finally {
         setLoading(false);
@@ -168,9 +188,7 @@ const DynamicFlipBook: React.FC = () => {
     };
     fetchdata();
   }, []);
-  
 
-  const [currentPage, setCurrentPage] = useState(0);
 
   // 배경음악 및 TTS 관리 - 컴포넌트 언마운트 시 정지
   useEffect(() => {
@@ -304,12 +322,14 @@ const DynamicFlipBook: React.FC = () => {
     
     console.log('Current paragraph:', currentParagraph);
     console.log('TTS filename:', ttsFileName);
-    console.log('Full TTS path:', `/tts/${storyId}/${ttsFileName}`);
     
-    if (!ttsFileName) {
+    // TTS 파일이 없으면 재생하지 않음
+    if (!ttsFileName || ttsFileName.trim() === '' || ttsFileName === 'null' || ttsFileName === 'undefined') {
       console.log('해당 단락에 TTS 파일이 없습니다.');
       return;
     }
+    
+    console.log('Full TTS path:', `/tts/${storyId}/${ttsFileName}`);
 
     // 기존 TTS 오디오 정지
     if (ttsAudio) {
@@ -333,7 +353,7 @@ const DynamicFlipBook: React.FC = () => {
       console.error('TTS 재생 실패:', error);
       setIsPlaying(false);
     });
-  }, [storyId, storyParagraph, currentPage, ttsAudio, ttsVolume]);
+  }, [storyId, storyParagraph, ttsAudio, ttsVolume]);
 
   // TTS 일시정지/재개 함수
   const pauseTTS = useCallback(() => {
@@ -379,7 +399,8 @@ const DynamicFlipBook: React.FC = () => {
     const currentParagraph = storyParagraph[paragraphIndex];
     const ttsFileName = currentParagraph.tts;
     
-    if (!ttsFileName) {
+    // TTS 파일이 없으면 재생하지 않음
+    if (!ttsFileName || ttsFileName.trim() === '' || ttsFileName === 'null' || ttsFileName === 'undefined') {
       return;
     }
 
@@ -407,7 +428,7 @@ const DynamicFlipBook: React.FC = () => {
     });
   }, [storyId, storyParagraph, ttsAudio, ttsVolume]);
 
-  // bgMusic과 ttsAudio가 변경될 때 볼륨 동기화
+  // 볼륨 동기화
   useEffect(() => {
     if (bgMusic) {
       bgMusic.volume = bgVolume;
@@ -424,7 +445,6 @@ const DynamicFlipBook: React.FC = () => {
   const onFlip = (e: FlipEvent) => {
     setCurrentPage(e.data);
     
-    // 기존 TTS 정지 및 타이머 제거
     if (ttsAudio && isPlaying) {
       stopTTS();
     }
@@ -433,12 +453,24 @@ const DynamicFlipBook: React.FC = () => {
       autoPlayTimeout.current = null;
     }
     
-    // 1초 후 자동 재생 (표지나 뒤표지가 아닌 경우만)
     const newPage = e.data;
+    // TTS 볼륨이 0이면 자동 재생하지 않음
+    if (ttsVolume === 0) {
+      return;
+    }
+    
     if (newPage > 0 && newPage < (storyParagraph.length * 2) + 1) {
-      autoPlayTimeout.current = setTimeout(() => {
-        playTTSForPage(newPage);
-      }, 1500);
+      const paragraphIndex = Math.floor((newPage - 1) / 2);
+      if (paragraphIndex >= 0 && paragraphIndex < storyParagraph.length) {
+        const currentParagraph = storyParagraph[paragraphIndex];
+        const ttsFileName = currentParagraph?.tts;
+        
+        if (ttsFileName && ttsFileName.trim() !== '' && ttsFileName !== 'null' && ttsFileName !== 'undefined') {
+          autoPlayTimeout.current = setTimeout(() => {
+            playTTSForPage(newPage);
+          }, 1500);
+        }
+      }
     }
   };
 
@@ -459,28 +491,28 @@ const DynamicFlipBook: React.FC = () => {
           <div data-volume-control className="music-control-container">
             {/* TTS 재생/일시정지 버튼 */}
             <button
-              onClick={currentPage === 0 || currentPage >= (storyParagraph.length * 2) + 1 ? undefined : (ttsAudio && (isPlaying || ttsAudio.currentTime > 0) ? pauseTTS : playTTS)}
+              onClick={hasTTSForCurrentPage() ? (ttsAudio && (isPlaying || ttsAudio.currentTime > 0) ? pauseTTS : playTTS) : undefined}
               className="tts-button"
               title={
-                currentPage === 0 || currentPage >= (storyParagraph.length * 2) + 1 
-                  ? 'TTS 사용 불가' 
+                !hasTTSForCurrentPage()
+                  ? 'TTS 파일 없음' 
                   : ttsAudio && ttsAudio.currentTime > 0 
                     ? (isPlaying ? 'TTS 일시정지' : 'TTS 재개')
                     : 'TTS 재생'
               }
-              disabled={currentPage === 0 || currentPage >= (storyParagraph.length * 2) + 1}
+              disabled={!hasTTSForCurrentPage()}
               style={{
                 marginRight: '10px',
                 padding: '8px 12px',
                 backgroundColor: 
-                  currentPage === 0 || currentPage >= (storyParagraph.length * 2) + 1 
+                  !hasTTSForCurrentPage()
                     ? '#6b7280' 
                     : isPlaying 
                       ? '#f59e0b' 
                       : '#3b82f6',
                 border: 'none',
                 borderRadius: '5px',
-                cursor: (currentPage === 0 || currentPage >= (storyParagraph.length * 2) + 1) ? 'not-allowed' : 'pointer',
+                cursor: !hasTTSForCurrentPage() ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -488,11 +520,11 @@ const DynamicFlipBook: React.FC = () => {
                 fontSize: '14px',
                 fontWeight: 'bold',
                 minWidth: '80px',
-                opacity: (currentPage === 0 || currentPage >= (storyParagraph.length * 2) + 1) ? 0.5 : 1
+                opacity: !hasTTSForCurrentPage() ? 0.5 : 1
               }}
             >
-              {currentPage === 0 || currentPage >= (storyParagraph.length * 2) + 1 
-                ? '🚫 사용불가'
+              {!hasTTSForCurrentPage()
+                ? '🚫 TTS없음'
                 : ttsAudio && ttsAudio.currentTime > 0 
                   ? (isPlaying ? '⏸️ 일시정지' : '▶️ 재개')
                   : '▶️ 재생'
@@ -509,7 +541,6 @@ const DynamicFlipBook: React.FC = () => {
                 minWidth: '50px'
               }}>배경음악</span>
               
-              {/* 배경음악 음소거 버튼 */}
               <button
                 onClick={toggleBgMute}
                 className="mute-button"
@@ -523,7 +554,6 @@ const DynamicFlipBook: React.FC = () => {
                 />
               </button>
               
-              {/* 배경음악 볼륨 슬라이더 */}
               {isControlsVisible && (
                 <>
                   <input
@@ -559,7 +589,6 @@ const DynamicFlipBook: React.FC = () => {
                 minWidth: '30px'
               }}>TTS</span>
               
-              {/* TTS 음소거 버튼 */}
               <button
                 onClick={toggleTtsMute}
                 className="mute-button"
@@ -573,7 +602,6 @@ const DynamicFlipBook: React.FC = () => {
                 />
               </button>
               
-              {/* TTS 볼륨 슬라이더 */}
               {isControlsVisible && (
                 <>
                   <input
@@ -611,6 +639,7 @@ const DynamicFlipBook: React.FC = () => {
               />
             </button>
           </div>
+          
           <div
             style={{
               padding: '60px',
@@ -621,122 +650,116 @@ const DynamicFlipBook: React.FC = () => {
               height: '100%',
             }}
           >
-        <HTMLFlipBook
-          ref={flipBook}
-          width={384}
-          height={480}
-          size="stretch"
-          minWidth={300}
-          maxWidth={500}
-          minHeight={400}
-          maxHeight={600}
-          maxShadowOpacity={0.5}
-          showCover={true}
-          autoSize={true}
-          useMouseEvents={true}
-          mobileScrollSupport={false}
-          // swipeDistance={30}
-          clickEventForward={true}
-          usePortrait={true}
-          startPage={0}
-          drawShadow={true}
-          flippingTime={800}
-          showPageCorners={true}
-          disableFlipByClick={false}
-          style={{ margin: '0 auto' }}
-          onFlip={onFlip}
-          // onChangeOrientation={(orientation) => console.log(orientation)}
-          // onChangeState={(state) => console.log(state)}
-          className="flipbook"
-        >
-          {/* 표지 */}
-          <div className="bg-[#faf6ed] flex items-center justify-center text-white p-8">
-            <div className="text-center"style={{
+            <HTMLFlipBook
+              ref={flipBook}
+              width={384}
+              height={480}
+              size="stretch"
+              minWidth={300}
+              maxWidth={500}
+              minHeight={400}
+              maxHeight={600}
+              maxShadowOpacity={0.5}
+              showCover={true}
+              autoSize={true}
+              useMouseEvents={true}
+              mobileScrollSupport={false}
+              clickEventForward={true}
+              usePortrait={true}
+              startPage={0}
+              drawShadow={true}
+              flippingTime={800}
+              showPageCorners={true}
+              disableFlipByClick={false}
+              style={{ margin: '0 auto' }}
+              onFlip={onFlip}
+              className="flipbook"
+            >
+              {/* 표지 */}
+              <div className="bg-[#faf6ed] flex items-center justify-center text-white p-8">
+                <div className="text-center" style={{
                   height: '100%',
                   padding: '100px 30px',
                   fontFamily: 'Ownglyph_ryurue-Rg',
                   color: 'black',
                 }}>
-              <h2 className="text-4xl font-bold mb-4">{story.title}</h2>
-              <p className="text-lg">이야기 속으로 들어가보아요!</p>
-            </div>
-          </div>
+                  <h2 className="text-4xl font-bold mb-4">{story.title}</h2>
+                  <p className="text-lg">이야기 속으로 들어가보아요!</p>
+                </div>
+              </div>
 
-          {storyParagraph && storyParagraph.flatMap((storypage, index) => {
-          const illust = illustration[index];
-          console.log('storypage', storypage);
-          console.log('illust', illust);
-          return [
-            <div key={`image-${index}`} className="pageflip-page right-page" style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.3)' /* 흰색 배경, 30% 투명도 */
-            }}>
-              <div className="page-content">
-                {illust ? (
-                  <Image
-                    src={illust.image_url ? `/images/${illust.image_url}` : '/images/soyee-secret.png'}
-
-                    className="w-full h-full object-cover"
-                    alt=""
-                    width={384} // 원하는 값
-                    height={320} // 원하는 값
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-500" style={{
-                    fontFamily: 'Ownglyph_ryurue-Rg',
+              {storyParagraph && storyParagraph.flatMap((storypage, index) => {
+                const illust = illustration[index];
+                return [
+                  <div key={`image-${index}`} className="pageflip-page right-page" style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.3)'
                   }}>
-                    이미지 없음
+                    <div className="page-content">
+                      {illust ? (
+                        <Image
+                          src={illust.image_url ? `/images/${illust.image_url}` : '/images/soyee-secret.png'}
+                          className="w-full h-full object-cover"
+                          alt=""
+                          width={384}
+                          height={320}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-500" style={{
+                          fontFamily: 'Ownglyph_ryurue-Rg',
+                        }}>
+                          이미지 없음
+                        </div>
+                      )}
+                    </div>
+                  </div>,
+
+                  <div key={`text-${index}`} className="pageflip-page left-page">
+                    <div style={{
+                      backgroundColor: '#faf6ed',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between'
+                    }}>
+                      <div className="page-content" style={{
+                        color: '#1a1a1a',
+                        fontSize: '1.65rem',
+                        fontWeight: '700',
+                        lineHeight: '1.65',
+                        letterSpacing: '0.3rem',
+                        padding: '27px 54px',
+                        fontFamily: 'Ownglyph_ryurue-Rg',
+                      }}>
+                        {storypage.content_text}
+                      </div>
+                      <div className="page-number right-number" style={{
+                        color: '#4b5563',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        fontFamily: 'Ownglyph_ryurue-Rg',
+                      }}>
+                        {index + 1}
+                      </div>
+                    </div>
                   </div>
-                )}
-              </div>
-            </div>,
+                ];
+              })}
 
-            <div key={`text-${index}`} className="pageflip-page left-page">
-              <div style={{
-                backgroundColor: '#faf6ed', /* 배경색 더욱 연하게 수정 */
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between'
-              }}>
-                <div className="page-content" style={{
-                  color: '#1a1a1a',
-                  fontSize: '1.65rem',
-                  fontWeight: '700',
-                  lineHeight: '1.65',
-                  letterSpacing: '0.3rem', /* 글자 간격 추가 */
-                  padding: '27px 54px',
-                  fontFamily: 'Ownglyph_ryurue-Rg',
-                }}>
-                  {storypage.content_text}
-                </div>
-                <div className="page-number right-number" style={{
-                  color: '#4b5563',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  fontFamily: 'Ownglyph_ryurue-Rg',
-                }}>
-                  {index + 1}
-                </div>
-              </div>
-            </div>
-            ];
-          })}
-
-          {/* 뒷표지 */}
-          <div className="end_page flex items-center justify-center text-white p-8">
-            <div className="end_page_text text-center" style={{
+              {/* 뒷표지 */}
+              <div className="end_page flex items-center justify-center text-white p-8">
+                <div className="end_page_text text-center" style={{
                   height: '100%',
                   padding: '100px',
                   fontFamily: 'Ownglyph_ryurue-Rg',
                   color: 'black',
                 }}>
-              <h2 className="text-3xl font-bold mb-4">끝</h2>
-              <p className="text-lg">재미있게 읽으셨나요?</p>
-            </div>
+                  <h2 className="text-3xl font-bold mb-4">끝</h2>
+                  <p className="text-lg">재미있게 읽으셨나요?</p>
+                </div>
+              </div>
+            </HTMLFlipBook>
           </div>
-          </HTMLFlipBook>
-          </div>
-      </div>
+        </div>
       )}
     </>
   );

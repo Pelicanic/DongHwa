@@ -217,3 +217,51 @@ class LoginStatusView(APIView):
             "user_id": user.user_id,
             "nickname": user.nickname
         })
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class TestLoginView(APIView):
+    """
+    개발/테스트용 로그인 API
+    user_id 774로 자동 로그인
+    """
+    def post(self, request):
+        try:
+            # user_id 774인 사용자 조회
+            user = User.objects.get(user_id=774)
+            
+            # 토큰 생성
+            tokens = get_tokens_for_user(user)
+            
+            # last_login 업데이트
+            user.last_login = timezone.now()
+            user.save(update_fields=["last_login"])
+            
+            print(f"테스트 로그인 성공: {user.login_id} (ID: {user.user_id})")
+            print(f"발급된 토큰: {tokens['access']}")
+            
+            return Response({
+                "success": True,
+                "message": "테스트 로그인 성공!",
+                "data": {
+                    "access": tokens["access"],
+                    "refresh": tokens["refresh"],
+                    "user_id": user.user_id,
+                    "login_id": user.login_id,
+                    "nickname": user.nickname
+                }
+            })
+            
+        except User.DoesNotExist:
+            return Response({
+                "success": False,
+                "message": "테스트 사용자(ID: 774)를 찾을 수 없습니다.",
+                "data": None
+            }, status=404)
+            
+        except Exception as e:
+            return Response({
+                "success": False,
+                "message": f"서버 오류: {str(e)}",
+                "data": None
+            }, status=500)

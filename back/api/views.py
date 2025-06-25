@@ -82,6 +82,153 @@ def story_select(request):
         return Response({"error": str(e)}, status=500)
 
 
+# 작성자 : Assistant
+# 기능 : 사용자의 가장 최신 동화가 in_progress인지 확인
+# 마지막 수정일 : 2025-06-25
+@api_view(['POST'])
+def get_user_in_progress_story(request):
+    try:
+        user_id = request.data.get("user_id")
+        
+        if not user_id:
+            return Response({"error": "user_id is required"}, status=400)
+        
+        # 사용자의 모든 동화 중 가장 최신 것 조회 (status 무관)
+        latest_story = Story.objects.filter(
+            author_user_id=user_id
+        ).order_by('-updated_at').first()
+        
+        if not latest_story:
+            # 아예 동화가 없는 경우
+            return Response({
+                "success": False,
+                "message": "동화가 없습니다.",
+                "story": None,
+                "reason": "no_stories"
+            })
+        
+        # 가장 최신 동화의 상태 확인
+        if latest_story.status == 'in_progress':
+            # 가장 최신 동화가 진행 중인 경우
+            story_data = {
+                "story_id": latest_story.story_id,
+                "author_user": latest_story.author_user_id,
+                "title": latest_story.title,
+                "summary": latest_story.summary,
+                "summary_4step": latest_story.summary_4step,
+                "created_at": latest_story.created_at,
+                "updated_at": latest_story.updated_at,
+                "status": latest_story.status,
+                "author_name": latest_story.author_name,
+                "age": latest_story.age,
+                "cover_img": latest_story.cover_img,
+                "characters": latest_story.characters
+            }
+            
+            return Response({
+                "success": True,
+                "message": "진행 중인 동화를 찾았습니다.",
+                "story": story_data
+            })
+        else:
+            # 가장 최신 동화가 completed이거나 다른 상태인 경우
+            return Response({
+                "success": False,
+                "message": f"가장 최신 동화의 상태가 '{latest_story.status}' 입니다.",
+                "story": None,
+                "reason": "latest_not_in_progress",
+                "latest_status": latest_story.status
+            })
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({"error": str(e)}, status=500)
+
+
+# 작성자 : 최재우
+# 기능 : 제목 또는 유저 닉네임으로 동화 검색 (exbook과 libbook 대상)
+# 마지막 수정일 : 2025-06-25
+@api_view(['POST'])
+def search_stories(request):
+    try:
+        query = request.data.get("query", "").strip()
+        page = request.data.get("page", 1)
+        page_size = request.data.get("page_size", 10)
+        
+        if not query:
+            return Response({"error": "검색어가 필요합니다."}, status=400)
+        
+        # exbook (status='published')과 libbook (status='completed') 데이터 검색
+        # 제목 또는 작성자 닉네임으로 검색
+        with connection.cursor() as cursor:
+            # 전체 검색 결과 수 조회
+            count_sql = """
+                SELECT COUNT(*) 
+                FROM Story s 
+                JOIN User u ON s.author_user_id = u.user_id 
+                WHERE (s.status = 'published' OR s.status = 'completed') 
+                AND (s.title LIKE %s OR u.nickname LIKE %s)
+            """
+            cursor.execute(count_sql, [f'%{query}%', f'%{query}%'])
+            total_count = cursor.fetchone()[0]
+            
+            # 페이징 계산
+            offset = (page - 1) * page_size
+            total_pages = (total_count + page_size - 1) // page_size
+            
+            # 검색 결과 조회 (페이징 적용)
+            search_sql = """
+                SELECT s.*, u.nickname as author_nickname
+                FROM Story s 
+                JOIN User u ON s.author_user_id = u.user_id 
+                WHERE (s.status = 'published' OR s.status = 'completed') 
+                AND (s.title LIKE %s OR u.nickname LIKE %s)
+                ORDER BY s.updated_at DESC
+                LIMIT %s OFFSET %s
+            """
+            cursor.execute(search_sql, [f'%{query}%', f'%{query}%', page_size, offset])
+            
+            stories_data = cursor.fetchall()
+            
+            # 결과 포맷팅
+            story_list = []
+            for row in stories_data:
+                story_list.append({
+                    "story_id": row[0],
+                    "author_user": row[1],
+                    "title": row[2],
+                    "summary": row[3],
+                    "summary_4step": row[4],
+                    "created_at": row[5],
+                    "updated_at": row[6],
+                    "status": row[7],
+                    "author_name": row[8],
+                    "age": row[9],
+                    "cover_img": row[10],
+                    "characters": row[11],
+                    "author_nickname": row[12]
+                })
+        
+        return Response({
+            "stories": story_list,
+            "pagination": {
+                "current_page": page,
+                "page_size": page_size,
+                "total_count": total_count,
+                "total_pages": total_pages,
+                "has_next": page < total_pages,
+                "has_previous": page > 1
+            },
+            "search_query": query
+        })
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({"error": str(e)}, status=500)
+
+
 # 작성자 : 최재우
 # 기능 : story_id 를 통해 Story 테이블 데이터 호출
 # 마지막 수정일 : 2025-06-21
@@ -252,7 +399,7 @@ def list_story(request):
     return Response({"stories": story_list})
 
 
-# 작성자 : Assistant
+# 작성자 : 최재우
 # 기능 : status 조건에 따른 동화 목록 조회 (페이징 지원)
 # 마지막 수정일 : 2025-06-23
 @api_view(['POST'])
