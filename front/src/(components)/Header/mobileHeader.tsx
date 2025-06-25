@@ -3,7 +3,8 @@
 // 마지막 수정 내용 : 모바일 헤더 컴포넌트 작성
 
 import React from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu } from 'lucide-react';
+import Image from 'next/image';
 
 interface MobileHeaderProps {
   isSidebarOpen: boolean;
@@ -23,7 +24,13 @@ const MobileHeader = ({ toggleSidebar }: MobileHeaderProps) => {
         </button>
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-black rounded flex items-center justify-center">
-            <X className="w-5 h-5 text-white" />
+            <Image 
+              src="/images/pelicanic_icon.ico" 
+              alt="Pelicanic Icon" 
+              width={20} 
+              height={20} 
+              className="w-5 h-5"
+            />
           </div>
           <span className="font-bold text-lg">Pel-World.AI</span>
         </div>

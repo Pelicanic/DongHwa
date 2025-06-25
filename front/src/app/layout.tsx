@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/styles/globals.css";
 import DashboardWrapper from "./dashboardWrapper";
-import AuroraBackground from "@/(components)/background/AuroraBackground"; // 💫 배경 import
-import BackgroundSlideshow from "@/(components)/background/BackgroundSlideshow";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

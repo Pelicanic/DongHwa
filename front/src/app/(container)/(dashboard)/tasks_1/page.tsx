@@ -1,7 +1,8 @@
 "use client";
 
 import React from 'react';
-import axios from 'axios';
+import { apiClient, API_ROUTES } from '@/lib/api';
+import { createPageDebugger } from '@/lib/logger';
 
 import { useState, useCallback } from 'react';
 import '@/styles/tasks_1.css';
@@ -48,6 +49,9 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
     }
   ],
 }) => {
+  // Tasks_1 페이지 전용 디버거
+  const debug = createPageDebugger('TASKS_1');
+  
   // useRouter 훅 추가
   // 현재 슬라이드 인덱스를 저장하는 state
   const [currentSlide, setCurrentSlide] = useState<number>(0);
@@ -59,7 +63,11 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
   const totalSlides = slides.length;
   // 선택지 클릭 핸들러
   const handleChoiceClick = useCallback((slideIndex: number, choiceIndex: number, choiceText: string) => {
-    console.log(`Choice clicked - Slide: ${slideIndex}, Choice: ${choiceIndex}, Text: ${choiceText}`);
+    debug.user('선택지 클릭', {
+      'Slide Index': slideIndex,
+      'Choice Index': choiceIndex,
+      'Choice Text': choiceText
+    });
     
     // 해당 슬라이드의 input에 선택한 값 설정
     setUserAnswers(prev => {
@@ -82,12 +90,18 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
       [slideIndex]: choiceIndex
     }));
     
-    console.log(`슬라이드 ${slideIndex + 1}에서 "${choiceText}" 선택됨`);
+    debug.story('사용자 선택 완료', {
+      'Slide Number': slideIndex + 1,
+      'Selected Text': choiceText
+    });
   }, []);
 
   // input 값 직접 변경 핸들러
   const handleInputChange = useCallback((slideIndex: number, value: string) => {
-    console.log(`Input change - Slide: ${slideIndex}, Value: ${value}`);
+    debug.user('입력 값 변경', {
+      'Slide Index': slideIndex,
+      'Input Value': value
+    });
     
     setUserAnswers(prev => {
       const newAnswers = { ...prev };
@@ -100,7 +114,9 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
         newAnswers[slideIndex] = value;
       }
       
-      console.log('New answers state:', newAnswers);
+      debug.log('답변 상태 업데이트', {
+        'New Answers': newAnswers
+      });
       return newAnswers;
     });
     
@@ -149,6 +165,12 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
 
     if (result.isConfirmed) {
       try {
+        debug.story('스토리 생성 시작', {
+          'User Answers': userAnswers,
+          'Total Questions': totalSlides,
+          'Completion Rate': `${answeredCount}/${totalSlides}`
+        });
+
         // 로딩 표시
         Swal.fire({
           title: '이야기를 생성하고 있습니다...',
@@ -158,9 +180,15 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
           }
         });
 
-        // 백엔드에 답변 데이터 전송
-        // axios로 백엔드에 답변 데이터 전송
-        const response = await axios.post('http://localhost:8721/api/v1/chat/story/', {
+        debug.story('스토리 생성 API 호출', {
+          'Request Data': {
+            answers: userAnswers,
+            paragraph_no: '1',
+            user_id: '774',
+            mode: 'create'
+          }
+        });
+        const response = await apiClient.post(API_ROUTES.STORY_CREATE, {
           answers: userAnswers,
           paragraph_no : '1',
           user_id: '774', // 실제 사용자 ID로 변경 필요
@@ -168,6 +196,11 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
         });
 
         const storyData = response.data;
+
+        debug.story('스토리 생성 성공', {
+          'Generated Story Data': storyData,
+          'User Answers': userAnswers
+        });
 
         // 성공 메시지 표시
         await Swal.fire({
@@ -185,7 +218,14 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
         window.location.href = '/tasks_2';
 
       } catch (error) {
-        console.error('스토리 생성 오류:', error);
+        debug.error('스토리 생성 오류', error, {
+          'User Answers': userAnswers,
+          'Request Parameters': {
+            paragraph_no: '1',
+            user_id: '774',
+            mode: 'create'
+          }
+        });
         
         Swal.fire({
           title: "오류가 발생했습니다",
@@ -195,47 +235,6 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
       }
     }
   }, [userAnswers, totalSlides]);
-
-        // Swal.fire({
-        //   title: "자 이제 이야기 속으로 떠나볼까?!",
-        //   confirmButtonText: "가자!",
-        //   icon: "success"
-        // }).then(() => {
-        //   const params = new URLSearchParams();
-        //   params.set('answers', JSON.stringify(userAnswers));
-        //   router.push(`/tasks_2?${params.toString()}`);
-          // alert("이제 이야기를 만들어볼 시간입니다!");
-          // Router.push({
-          //   pathname: '/tasks_2',
-          //   query: {
-          //     answers: JSON.stringify(userAnswers) // 사용자 답변을 쿼리 파라미터로 전달
-          //   }
-          // }); // 실제 스토리 페이지로 이동
-        // });
-  //     }
-  //   });
-  // }, [userAnswers, totalSlides, router]);
-
-  // 키보드 이벤트 처리
-  // useEffect(() => {
-  //   const handleKeyPress = (event: KeyboardEvent) => {
-  //     if (event.key === 'ArrowLeft') {
-  //       prevSlide();
-  //     } else if (event.key === 'ArrowRight') {
-  //       nextSlide();
-  //     } else if (event.key >= '1' && event.key <= '3') {
-  //       // 숫자 1,2,3 키로 선택지 선택
-  //       const choiceIndex = parseInt(event.key) - 1;
-  //       const currentSlideData = slides[currentSlide];
-  //       if (currentSlideData.choices[choiceIndex]) {
-  //         handleChoiceClick(currentSlide, choiceIndex, currentSlideData.choices[choiceIndex]);
-  //       }
-  //     }
-  //   };
-
-  //   window.addEventListener('keydown', handleKeyPress);
-  //   return () => window.removeEventListener('keydown', handleKeyPress);
-  // }, [nextSlide, prevSlide, currentSlide, slides, handleChoiceClick]);
 
   // 점 표시기 렌더링
   const renderDots = () => {
@@ -335,7 +334,11 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                console.log(`Button clicked: Slide ${index}, Choice ${choiceIndex}`);
+                                debug.user('선택지 버튼 클릭', {
+                                  'Slide Index': index,
+                                  'Choice Index': choiceIndex,
+                                  'Choice Text': choice
+                                });
                                 handleChoiceClick(index, choiceIndex, choice);
                               }}
                               role="button"

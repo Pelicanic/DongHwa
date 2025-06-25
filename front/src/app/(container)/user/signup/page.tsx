@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { apiClient, API_ROUTES } from '@/lib/api';
 
 interface FormData {
   login_id: string;
@@ -18,8 +19,6 @@ const SignupForm: React.FC = () => {
     password: '',
     password_confirm: '',
   });
-
-  const API_BASE_URL = 'http://localhost:8721';  // 💡 백엔드 주소 반영
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -44,56 +43,49 @@ const SignupForm: React.FC = () => {
 
     try {
       // 1. 비밀번호 복잡도 체크
-      const complexityRes = await fetch(`${API_BASE_URL}/member/signup/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'check_password_strength', password })
+      const complexityRes = await apiClient.post(API_ROUTES.SIGNUP, {
+        action: 'check_password_strength', 
+        password 
       });
-      const complexity = await complexityRes.json();
+      const complexity = complexityRes.data;
       if (!complexity.success) {
         alert('비밀번호가 너무 약합니다. 영문, 숫자, 특수문자를 조합해 8자 이상을 사용해주세요.');
         return;
       }
 
       // 2. ID 중복 체크
-      const idCheckRes = await fetch(`${API_BASE_URL}/member/signup/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'check_login_id', login_id })
+      const idCheckRes = await apiClient.post(API_ROUTES.SIGNUP, {
+        action: 'check_login_id', 
+        login_id 
       });
-      const idCheck = await idCheckRes.json();
+      const idCheck = idCheckRes.data;
       if (!idCheck.success) {
         alert('이미 사용 중인 아이디입니다.');
         return;
       }
 
       // 3. 닉네임 중복 체크
-      const nicknameCheckRes = await fetch(`${API_BASE_URL}/member/signup/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'check_nickname', nickname })
+      const nicknameCheckRes = await apiClient.post(API_ROUTES.SIGNUP, {
+        action: 'check_nickname', 
+        nickname 
       });
-      const nicknameCheck = await nicknameCheckRes.json();
+      const nicknameCheck = nicknameCheckRes.data;
       if (!nicknameCheck.success) {
         alert('이미 사용 중인 닉네임입니다.');
         return;
       }
 
       // 4. 최종 회원가입 요청
-      const signupRes = await fetch(`${API_BASE_URL}/member/signup/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'signup',
-          login_id,
-          nickname,
-          email,
-          password,
-          password_confirm
-        })
+      const signupRes = await apiClient.post(API_ROUTES.SIGNUP, {
+        action: 'signup',
+        login_id,
+        nickname,
+        email,
+        password,
+        password_confirm
       });
 
-      const result = await signupRes.json();
+      const result = signupRes.data;
       if (result.success) {
         alert('회원가입 성공! 이메일을 확인해주세요.');
       } else {

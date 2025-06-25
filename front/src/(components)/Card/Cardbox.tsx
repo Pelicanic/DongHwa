@@ -4,17 +4,16 @@
 
 import React from 'react'
 import Image from 'next/image';
-import {StoryDTO} from '@/lib/type/story';
-import axios from 'axios';
+import {storyDTO} from '@/lib/type/story';
 
 interface MainCardProps {
-  posts: StoryDTO[];
+  posts: storyDTO[];
 }
 
 const MainCard: React.FC<MainCardProps> = ({ posts }) => {
   
   // 카드 클릭 핸들러
-  const handleCardClick = (storyId: number) => {
+  const handleCardClick = (storyId: string | number) => {
     try {
       console.log(`메인 카드 클릭: story_id = ${storyId}`);
       

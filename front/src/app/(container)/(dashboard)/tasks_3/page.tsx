@@ -1,6 +1,7 @@
 "use client";
 
-import axios from 'axios';
+import { apiClient, API_ROUTES } from '@/lib/api';
+import { debugLog } from '@/lib/logger';
 import React, { useRef, useState , useEffect, useCallback } from 'react';
 import HTMLFlipBook from 'react-pageflip';
 import '@/styles/book.css'; // CSS 스타일 파일
@@ -45,18 +46,22 @@ const DynamicFlipBook: React.FC = () => {
         // sessionStorage에서 story_id 가져오기 (클라이언트에서만 가능)
         const story_id = sessionStorage.getItem('selectedStoryId') || '2241';
         setStoryId(story_id); // TTS용 story_id 저장
-        console.log('tasks_3에서 받은 story_id:', story_id);
+        debugLog.story('Tasks_3에서 Story ID 받음', {
+          'Story ID': story_id
+        });
         
         // API 호출시 story_id 사용
         const [illustrationRes, storyParagraphRes, storyRes] = await Promise.all([
-          axios.post('http://localhost:8721/api/v1/illustration/story/', { story_id }),
-          axios.post('http://localhost:8721/api/v1/storyParagraph/story/', { story_id }),
-          axios.post('http://localhost:8721/api/v1/story/story/', { story_id }),
+          apiClient.post(API_ROUTES.ILLUSTRATION, { story_id }),
+          apiClient.post(API_ROUTES.STORY_PARAGRAPH, { story_id }),
+          apiClient.post(API_ROUTES.STORY_BY_ID, { story_id }),
         ]);
 
-        console.log('Story 데이터:', storyRes.data.story);
-        console.log('Illustration 데이터:', illustrationRes.data.illustration);
-        console.log('Story Paragraph 데이터:', storyParagraphRes.data.storyParagraph);
+        debugLog.api('Tasks_3 API 응답 데이터', {
+          'Story Data': storyRes.data.story,
+          'Illustration Data': illustrationRes.data.illustration,
+          'Story Paragraph Data': storyParagraphRes.data.storyParagraph
+        });
         
         setIllustration(illustrationRes.data.illustration);
         setStoryParagraph(storyParagraphRes.data.storyParagraph);
@@ -66,7 +71,7 @@ const DynamicFlipBook: React.FC = () => {
         let extractedMood = '밝은'; // 기본값
         
         // ParagraphQA 데이터 가져오기
-        const qaResponse = await axios.post('http://localhost:8721/api/v1/paragraphQA/story/', { story_id });
+        const qaResponse = await apiClient.post(API_ROUTES.PARAGRAPH_QA, { story_id });
         const qaData = qaResponse.data.paragraphQA;
         const paragraphs = storyParagraphRes.data.storyParagraph;
         
@@ -78,14 +83,14 @@ const DynamicFlipBook: React.FC = () => {
             const firstParagraphQA = qaData.find(qa => qa.paragraph_id === firstParagraph.paragraph_id);
             if (firstParagraphQA && firstParagraphQA.question_text) {
               const questionText = firstParagraphQA.question_text;
-              console.log('Original question_text:', questionText);
+              log.debug('Original question_text:', questionText);
               
               // 'Mood: ' 또는 '[Mood] : ' 뒤의 값을 추출
               // 기존 형식: "Mood: 슬픈" 또는 새 형식: "[Mood] : 따뜻한"
               const moodMatch = questionText.match(/(?:Mood:|\[Mood\]\s*:)\s*([^,]+)/i);
               if (moodMatch && moodMatch[1]) {
                 extractedMood = moodMatch[1].trim();
-                console.log('Extracted mood from DB:', extractedMood);
+                log.storyProgress('Extracted mood from DB:', extractedMood);
               }
             }
           }
@@ -111,8 +116,8 @@ const DynamicFlipBook: React.FC = () => {
           ? musicMapping[selectedMood] 
           : musicMapping["밝은"]; // 기본값: fairy tale(Bright).mp3
         
-        console.log('Selected mood from DB:', selectedMood);
-        console.log('Music file to play:', musicFile);
+        log.storyProgress('Selected mood from DB:', selectedMood);
+        log.audioEvent('Music file to play:', musicFile);
         
         // 항상 음악 재생 (기본값이라도)
         const audio = new Audio(`/bgsound/${musicFile}`);
@@ -128,10 +133,10 @@ const DynamicFlipBook: React.FC = () => {
         if (playPromise !== undefined) {
           playPromise
             .then(() => {
-              console.log('배경음악이 자동으로 재생되었습니다.');
+              log.audioEvent('배경음악이 자동으로 재생되었습니다.');
             })
             .catch(error => {
-              console.log('자동 재생이 차단되었습니다. 사용자 상호작용 후 재생됩니다:', error);
+              log.audioEvent('자동 재생이 차단되었습니다. 사용자 상호작용 후 재생됩니다:', error);
               // 자동재생이 차단된 경우를 위한 이벤트 리스너 추가
               const handleFirstUserInteraction = () => {
                 audio.play().then(() => {
@@ -153,7 +158,10 @@ const DynamicFlipBook: React.FC = () => {
         }
         
       } catch (error) {
-        console.error("데이터를 가져오는 중 오류 발생:", error);
+        debugLog.error('데이터를 가져오는 중 오류 발생', error, {
+          'Function': 'fetchdata',
+          'Story ID': story_id || 'N/A'
+        });
       } finally {
         setLoading(false);
       }
