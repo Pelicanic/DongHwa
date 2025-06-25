@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure--@mgq=c22g3z-c6)tlzkfc#&)*(-y(m)#=t5j(g_ohuopzpu*l
 DEBUG = True
 
 # ALLOWED_HOSTS = ['*']
-ALLOWED_HOSTS = ['116.125.140.113', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['116.125.140.113', 'localhost', '127.0.0.1', 'donghwa.aibrain.kr']
 
 
 # Application definition
@@ -68,12 +68,12 @@ MIDDLEWARE = [
 
 #CORS 관련 추가
 # CORS_ORIGIN_WHITELIST = ['http://127.0.0.1:3000', 'http://localhost:3000', 'http://127.0.0.1:8000', 'http://116.125.140.113:8000']
-CORS_ORIGIN_WHITELIST = ['http://127.0.0.1:3000', 'http://localhost:8720', 'http://localhost:3000', 'http://116.125.140.113:8720', 'http://localhost:8721', 'http://127.0.0.1:8721']
+CORS_ORIGIN_WHITELIST = ['http://127.0.0.1:3000', 'http://localhost:8720', 'http://localhost:3000', 'http://116.125.140.113:8720', 'http://localhost:8721', 'http://127.0.0.1:8721' , 'https://donghwa.aibrain.kr']
 CORS_ALLOW_ALL_ORIGINS = True
 
 # CORS 설정 추가 (Next.js 개발 서버 허용)
 CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:3000', 'http://localhost:8720', 'http://localhost:3000', 'http://116.125.140.113:8720', 'http://localhost:8721', 'http://127.0.0.1:8721']
+    'http://127.0.0.1:3000', 'http://localhost:8720', 'http://localhost:3000', 'http://116.125.140.113:8720', 'http://localhost:8721', 'http://127.0.0.1:8721', 'https://donghwaapi.aibrain.kr']
 
 #HTTP methods 추가
 CORS_ALLOW_METHODS = (
@@ -105,7 +105,8 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000', 
     'http://116.125.140.113:8720', 
     'http://localhost:8721', 
-    'http://127.0.0.1:8721'
+    'http://127.0.0.1:8721',
+    'https://donghwaapi.aibrain.kr'
 ]
 
 REST_FRAMEWORK = {
