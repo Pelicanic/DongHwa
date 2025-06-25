@@ -6,7 +6,15 @@
 
 ## 시연 영상
 
-(링크 또는 영상 캡처 이미지 삽입 예정)
+
+동화 생성 
+https://youtu.be/bi3JqPQU3qA
+
+<br>
+
+동화 진행
+https://www.youtube.com/watch?v=xOTy739UKA8
+
 
 </div>
 
