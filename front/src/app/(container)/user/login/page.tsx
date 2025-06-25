@@ -119,7 +119,7 @@ const Login: React.FC = () => {
         </form>
         
         {/* Test Login 버튼 */}
-        <div className="mt-4">
+        {/* <div className="mt-4">
           <button
             onClick={handleTestLogin}
             disabled={testLoading || loading}
@@ -130,7 +130,7 @@ const Login: React.FC = () => {
           <p className="text-xs text-gray-500 mt-2 text-center">
             개발/테스트용 자동 로그인
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

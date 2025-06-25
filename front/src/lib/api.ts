@@ -6,12 +6,12 @@ const getBaseURL = () => {
     // 클라이언트에서는 현재 host 기반으로 판단
     return window.location.hostname === 'localhost' 
       ? 'http://localhost:8721'
-      : 'https://api.pel-world.com';  // 실제 도메인으로 대체
+      : 'https://donghwaapi.aibrain.kr';  // 실제 도메인으로 대체
   }
   
   // 서버에서는 NODE_ENV 기반으로 판단
   return process.env.NODE_ENV === 'production'
-    ? 'https://api.pel-world.com'  // 실제 도메인으로 대체
+    ? 'https://donghwaapi.aibrain.kr'  // 실제 도메인으로 대체
     : 'http://localhost:8721';
 };
 
