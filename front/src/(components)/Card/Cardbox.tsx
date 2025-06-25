@@ -44,7 +44,7 @@ const MainCard: React.FC<MainCardProps> = ({ posts }) => {
               >
                 <div className="w-full h-80 rounded-lg mb-4 overflow-hidden">
                   <Image
-                    src={post.cover_img ? `/images/${post.cover_img}` : '/images/tom-adventure.png'}
+                    src={post.cover_img ? `/images/${post.cover_img}` : '/images/aurora3.png'}
                     alt={post.title ? post.title : "제목 없음"}
                     width={400} // 실제 이미지 비율에 맞게 조정
                     height={320}

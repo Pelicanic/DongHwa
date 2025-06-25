@@ -5,6 +5,7 @@ import { apiClient, API_ROUTES } from '@/lib/api';
 import MainCard from '@/(components)/Card/Cardbox';
 import { storyDTO } from '@/lib/type/story';
 import Loading from '@/(components)/Loading/loading';
+import { requireLogin } from '@/lib/utils/auth';
 
 const getMyCompletedStories = async (): Promise<storyDTO[]> => {
   try {
@@ -40,6 +41,11 @@ const MyBook: React.FC = () => {
   const [myStories, setMyStories] = useState<storyDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // 로그인 확인
+  useEffect(() => {
+    requireLogin();
+  }, []);
 
   useEffect(() => {
     const fetchMyStories = async () => {

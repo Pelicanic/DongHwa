@@ -89,6 +89,7 @@ export const API_ROUTES = {
   STORY_LIST: '/api/v1/list/story/',
   STORY_MAIN: '/api/v1/main/story/',
   STORY_BY_ID: '/api/v1/story/story/',
+  USER_IN_PROGRESS_STORY: '/api/v1/user/in-progress-story/',
   
   // 단락 관련
   PARAGRAPH_QA: '/api/v1/paragraphQA/story/',
@@ -97,7 +98,11 @@ export const API_ROUTES = {
   // 일러스트 관련
   ILLUSTRATION: '/api/v1/illustration/story/',
   
+  // 검색 관련
+  SEARCH_STORIES: '/api/v1/search/story/',
+  
   // 회원 관련
   LOGIN: '/member/login/',
+  TEST_LOGIN: '/member/test-login/',
   SIGNUP: '/member/signup/',
 } as const;

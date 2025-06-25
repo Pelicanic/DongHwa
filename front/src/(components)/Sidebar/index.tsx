@@ -175,6 +175,14 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktopSidebarOpen = true, to
                 type="text"
                 placeholder="검색"
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    const searchTerm = (e.target as HTMLInputElement).value.trim();
+                    if (searchTerm) {
+                      window.location.href = `/user/search?q=${encodeURIComponent(searchTerm)}`;
+                    }
+                  }
+                }}
               />
             </div>
           </div>
@@ -185,7 +193,17 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktopSidebarOpen = true, to
           <div className="space-y-1">
             <SidebarLink href="/tasks_1" icon={PlusCircle} label="동화책 만들기" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
             <SidebarLink href="/tasks_2" icon={ArrowRight} label="동화 이어 만들기" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
-            <SidebarLink href="/tasks_3" icon={Play} label="시연페이지" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
+            <SidebarLink 
+              href="/tasks_3" 
+              icon={Play} 
+              label="시연페이지" 
+              isCollapsed={!isDesktopSidebarOpen} 
+              showLabel={showContent}
+              onClick={() => {
+                // 시연페이지 클릭 시 story_id를 '2241'로 설정
+                sessionStorage.setItem('selectedStoryId', '2241');
+              }}
+            />
             <SidebarLink href="/user/mybook" icon={BookOpen} label="나의 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
             <SidebarLink href="/user/exbook" icon={Library} label="기존 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />
             <SidebarLink href="/user/libbook" icon={Palette} label="창작 동화책" isCollapsed={!isDesktopSidebarOpen} showLabel={showContent} />

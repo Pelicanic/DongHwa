@@ -13,6 +13,7 @@ interface SidebarLinkProps {
     label: string;
     isCollapsed?: boolean;
     showLabel?: boolean;
+    onClick?: () => void;
 }
 
 const SidebarLink = ({
@@ -21,12 +22,17 @@ const SidebarLink = ({
     label,
     isCollapsed = false,
     showLabel = true,
+    onClick,
 }: SidebarLinkProps) => {
     const pathname = usePathname();
     const isActive =
         pathname === href || (pathname === "/" && href === "/");
 
     const handleClick = () => {
+        // onClick prop이 있으면 먼저 실행
+        if (onClick) {
+            onClick();
+        }
         window.location.href = href;
     };
 

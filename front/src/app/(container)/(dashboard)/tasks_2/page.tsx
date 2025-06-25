@@ -6,6 +6,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import '@/styles/tasks_2.css';
 import '@/styles/soundbar.css';
 import Loading from '@/(components)/Loading/loading';
+import { requireLogin } from '@/lib/utils/auth';
+import { extractMoodFromQuestionText, setupBackgroundMusic } from '@/lib/utils/music';
+import Swal from 'sweetalert2';
 // import { paragraphQADTO } from '@/lib/type/paragraphQA';
 // import { storyParagraphDTO } from '@/lib/type/storyParagraph';
 
@@ -36,136 +39,145 @@ export const useStoryData = () => {
       try {
         if (typeof window === 'undefined') return;
         
-        const savedData = sessionStorage.getItem('storyData');
-        const parsedData = JSON.parse(savedData || '{}');
-        setStoryData(parsedData);
-
-        debugLog.story('StoryData 불러오기', {
-          'Parsed Data': parsedData
-        });
-
-        const story_id = parsedData.story_id;
-        
-        const [qaResponse, paragraphResponse, illustrationResponse] = await Promise.all([
-          apiClient.post(API_ROUTES.PARAGRAPH_QA, { story_id }),
-          apiClient.post(API_ROUTES.STORY_PARAGRAPH, { story_id }),
-          apiClient.post(API_ROUTES.ILLUSTRATION, { story_id })
-        ]);
-        
-        debugLog.api('API 응답 데이터', {
-          'QA Response': qaResponse.data.paragraphQA,
-          'Paragraph Response': paragraphResponse.data.storyParagraph,
-          'Illustration Response': illustrationResponse.data
-        });
-        setParagraphQA(qaResponse.data.paragraphQA);
-        setStoryParagraph(paragraphResponse.data.storyParagraph);
-        setIllustrations(illustrationResponse.data.illustration);
-        
-        // 마지막 paragraph_no 찾기
-        const paragraphs = paragraphResponse.data.storyParagraph;
-        if (paragraphs.length > 0) {
-          const maxParagraphNo = Math.max(...paragraphs.map(p => p.paragraph_no));
-          const lastIndex = paragraphs.findIndex(p => p.paragraph_no === maxParagraphNo);
-          setLastParagraphIndex(lastIndex >= 0 ? lastIndex : paragraphs.length - 1);
+        const user_id = localStorage.getItem('user_id');
+        if (!user_id) {
+          await Swal.fire({
+            title: '로그인 필요',
+            text: '로그인이 필요합니다.',
+            icon: 'warning',
+            confirmButtonText: '확인'
+          });
+          window.location.href = '/user/login';
+          return;
         }
 
-        // DB에서 Mood 값 추출 - paragraph_no가 1인 ParagraphQA의 question_text에서 추출
-        let extractedMood = '밝은'; // 기본값
-        const qaData = qaResponse.data.paragraphQA;
-        
-        if (qaData && qaData.length > 0 && paragraphs && paragraphs.length > 0) {
-          // paragraph_no가 1인 StoryParagraph 찾기
-          const firstParagraph = paragraphs.find(p => p.paragraph_no === 1);
-          if (firstParagraph) {
-            // 해당 paragraph_id를 가진 ParagraphQA 찾기
-            const firstParagraphQA = qaData.find(qa => qa.paragraph_id === firstParagraph.paragraph_id);
-            if (firstParagraphQA && firstParagraphQA.question_text) {
-              const questionText = firstParagraphQA.question_text;
-              debugLog.log('Question Text 분석', {
-                'Original question_text': questionText
+        // 먼저 진행 중인 스토리가 있는지 확인
+        try {
+          const inProgressResponse = await apiClient.post(API_ROUTES.USER_IN_PROGRESS_STORY, {
+            user_id: user_id
+          });
+          
+          if (inProgressResponse.data.success && inProgressResponse.data.story) {
+            // 진행 중인 스토리가 있으면 그 데이터를 사용
+            const progressStory = inProgressResponse.data.story;
+            setStoryData(progressStory);
+            
+            debugLog.story('진행 중인 스토리 로드', {
+              'Story Data': progressStory
+            });
+            
+            // 진행 중인 스토리를 sessionStorage에 저장
+            sessionStorage.setItem('storyData', JSON.stringify(progressStory));
+            
+            const story_id = progressStory.story_id;
+            
+            const [qaResponse, paragraphResponse, illustrationResponse] = await Promise.all([
+              apiClient.post(API_ROUTES.PARAGRAPH_QA, { story_id }),
+              apiClient.post(API_ROUTES.STORY_PARAGRAPH, { story_id }),
+              apiClient.post(API_ROUTES.ILLUSTRATION, { story_id })
+            ]);
+            
+            debugLog.api('API 응답 데이터', {
+              'QA Response': qaResponse.data.paragraphQA,
+              'Paragraph Response': paragraphResponse.data.storyParagraph,
+              'Illustration Response': illustrationResponse.data
+            });
+            setParagraphQA(qaResponse.data.paragraphQA);
+            setStoryParagraph(paragraphResponse.data.storyParagraph);
+            setIllustrations(illustrationResponse.data.illustration);
+            
+            // 마지막 paragraph_no 찾기
+            const paragraphs = paragraphResponse.data.storyParagraph;
+            if (paragraphs.length > 0) {
+              const maxParagraphNo = Math.max(...paragraphs.map(p => p.paragraph_no));
+              const lastIndex = paragraphs.findIndex(p => p.paragraph_no === maxParagraphNo);
+              setLastParagraphIndex(lastIndex >= 0 ? lastIndex : paragraphs.length - 1);
+            }
+
+            // DB에서 기분 추출 및 배경음악 설정
+            let extractedMood = '밝은';
+            const qaData = qaResponse.data.paragraphQA;
+            
+            if (qaData && qaData.length > 0 && paragraphs && paragraphs.length > 0) {
+              const firstParagraph = paragraphs.find(p => p.paragraph_no === 1);
+              if (firstParagraph) {
+                const firstParagraphQA = qaData.find(qa => qa.paragraph_id === firstParagraph.paragraph_id);
+                if (firstParagraphQA && firstParagraphQA.question_text) {
+                  extractedMood = extractMoodFromQuestionText(firstParagraphQA.question_text);
+                  debugLog.story('DB에서 추출한 기분', {
+                    'Extracted Mood': extractedMood
+                  });
+                }
+              }
+            }
+
+            // 배경음악 설정
+            const audio = setupBackgroundMusic(
+              extractedMood,
+              0.3,
+              () => debugLog.audio('배경음악이 자동으로 재생되었습니다.'),
+              (error) => debugLog.audio('자동 재생이 차단되었습니다. 사용자 상호작용 후 재생됩니다.', { 'Error': error })
+            );
+            
+            if (audio) {
+              setBgMusic(audio);
+            }
+          } else {
+            // 가장 최신 동화가 in_progress가 아닌 경우
+            const reason = inProgressResponse.data.reason;
+            const latestStatus = inProgressResponse.data.latest_status;
+            
+            if (reason === 'no_stories') {
+              // 아예 동화가 없는 경우
+              await Swal.fire({
+                title: '동화 없음',
+                text: '새로운 동화를 시작해주세요.',
+                icon: 'info',
+                confirmButtonText: '확인'
               });
-              
-              // 'Mood: ' 또는 '[Mood] : ' 뒤의 값을 추출
-              // 기존 형식: "Mood: 슬픈" 또는 새 형식: "[Mood] : 따뜻한"
-              const moodMatch = questionText.match(/(?:Mood:|\[Mood\]\s*:)\s*([^,]+)/i);
-                debugLog.log('Mood 매칭 결과', {
-                  'Mood match': moodMatch
+            } else if (reason === 'latest_not_in_progress') {
+              // 가장 최신 동화가 completed이거나 다른 상태인 경우
+              if (latestStatus === 'completed') {
+                await Swal.fire({
+                  title: '동화 완성',
+                  text: '최근 동화가 이미 완성되었습니다.',
+                  icon: 'success',
+                  confirmButtonText: '확인'
                 });
-              if (moodMatch && moodMatch[1]) {
-                extractedMood = moodMatch[1].trim();
-                debugLog.story('DB에서 추출한 기분', {
-                  'Extracted Mood': extractedMood
+              } else {
+                await Swal.fire({
+                  title: '진행 중인 동화 없음',
+                  text: `최근 동화 상태: ${latestStatus}`,
+                  icon: 'info',
+                  confirmButtonText: '확인'
                 });
               }
             }
+            
+            window.location.href = '/';
+            return;
           }
-        }
-
-        // 배경음악 설정 - DB에서 추출한 기분에 따라
-        const musicMapping = {
-          "밝은": "fairy tale(Bright).mp3",
-          "따뜻한": "fairy tale(Warm).mp3",
-          "슬픈": "fairy tale(Sad).mp3",
-          "신비로운": "fairy tale(Mythical).mp3",
-          "무서운": "fairy tale(Scary).mp3"
-        };
-
-        // tasks_1에서 저장된 storyData에서 선택한 기분 가져오기 -> DB에서 추출한 기분 사용
-        // const selectedMood = parsedData.answers && parsedData.answers[2]; // 3번째 질문의 답변 (기분)
-        const selectedMood = extractedMood; // DB에서 추출한 기분 사용
-        
-        // 기본값으로 '밝은' 기분의 음악 사용 (fairy tale(Bright).mp3)
-        const musicFile = (selectedMood && musicMapping[selectedMood]) 
-          ? musicMapping[selectedMood] 
-          : musicMapping["밝은"]; // 기본값: fairy tale(Bright).mp3
-        
-        debugLog.audio('배경음악 설정', {
-          'Selected Mood': selectedMood,
-          'Music File': musicFile
-        });
-        
-        // 항상 음악 재생 (기본값이라도)
-        const audio = new Audio(`/bgsound/${musicFile}`);
-        audio.loop = true;
-        audio.volume = 0.3; // 볼륨 30%로 설정
-        
-        // 오디오 객체를 먼저 설정
-        setBgMusic(audio);
-        
-        // 자동 재생 시도
-        const playPromise = audio.play();
-        
-        if (playPromise !== undefined) {
-          playPromise
-            .then(() => {
-              debugLog.audio('배경음악이 자동으로 재생되었습니다.');
-            })
-            .catch(error => {
-              debugLog.audio('자동 재생이 차단되었습니다. 사용자 상호작용 후 재생됩니다.', {
-                'Error': error
-              });
-              // 자동재생이 차단된 경우를 위한 이벤트 리스너 추가
-              const handleFirstUserInteraction = () => {
-                audio.play().then(() => {
-                  debugLog.audio('사용자 상호작용 후 배경음악이 재생되었습니다.');
-                }).catch(err => {
-                  debugLog.error('사용자 상호작용 후에도 재생 실패', err);
-                });
-                // 이벤트 리스너 제거 (한 번만 실행)
-                document.removeEventListener('click', handleFirstUserInteraction);
-                document.removeEventListener('keydown', handleFirstUserInteraction);
-                document.removeEventListener('touchstart', handleFirstUserInteraction);
-              };
-              
-              // 다양한 사용자 상호작용 이벤트 리스너 추가
-              document.addEventListener('click', handleFirstUserInteraction, { once: true });
-              document.addEventListener('keydown', handleFirstUserInteraction, { once: true });
-              document.addEventListener('touchstart', handleFirstUserInteraction, { once: true });
-            });
+        } catch (apiError) {
+          console.error('진행 중인 스토리 조회 실패:', apiError);
+          await Swal.fire({
+            title: '오류 발생',
+            text: '데이터를 불러오는 중 오류가 발생했습니다.',
+            icon: 'error',
+            confirmButtonText: '확인'
+          });
+          window.location.href = '/';
+          return;
         }
 
       } catch (err) {
-        log.error("useStoryData error:", err);
+        debugLog.error("useStoryData error", err);
+        await Swal.fire({
+          title: '오류 발생',
+          text: '데이터를 불러오는 중 오류가 발생했습니다.',
+          icon: 'error',
+          confirmButtonText: '확인'
+        });
+        window.location.href = '/';
       } finally {
         setLoading(false);
       }
@@ -181,6 +193,11 @@ export const useStoryData = () => {
 
 
 const ImageCarousel: React.FC<ImageCarouselProps> = () => {
+  // 로그인 확인
+  useEffect(() => {
+    requireLogin();
+  }, []);
+
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [volume, setVolume] = useState<number>(0.3); // 볼륨 상태 (0.0 ~ 1.0)
@@ -215,7 +232,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
       // 볼륨을 변경할 때 음악이 재생되지 않았다면 재생 시도
       if (bgMusic.paused && newVolume > 0) {
         bgMusic.play().catch(error => {
-          console.log('볼륨 조절 시 음악 재생 실패:', error);
+          debugLog.audio('볼륨 조절 시 음악 재생 실패', { 'Error': error });
         });
       }
     }
@@ -241,7 +258,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
         // 음소거 해제 시 음악이 재생되지 않았다면 재생 시도
         if (bgMusic.paused) {
           bgMusic.play().catch(error => {
-            console.log('음소거 해제 시 음악 재생 실패:', error);
+            debugLog.audio('음소거 해제 시 음악 재생 실패', { 'Error': error });
           });
         }
       } else {
@@ -303,7 +320,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
 
   // 선택지 클릭 핸들러 (tasks_1과 동일)
   const handleChoiceClick = useCallback((slideIndex: number, choiceIndex: number, choiceText: string) => {
-    log.userAction(`Choice clicked - Slide: ${slideIndex}, Choice: ${choiceIndex}, Text: ${choiceText}`);
+    // 선택지 클릭 로그 제거
     
     // 해당 슬라이드의 input에 선택한 값 설정
     setUserAnswers(prev => {
@@ -326,12 +343,12 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
       [slideIndex]: choiceIndex
     }));
     
-    log.storyProgress(`슬라이드 ${slideIndex + 1}에서 "${choiceText}" 선택됨`);
+    // 선택 완료 로그 제거
   }, []);
 
   // input 값 직접 변경 핸들러 (tasks_1과 동일)
   const handleInputChange = useCallback((slideIndex: number, value: string) => {
-    log.userAction(`Input change - Slide: ${slideIndex}, Value: ${value}`);
+    // 입력 변경 로그 제거
     
     setUserAnswers(prev => {
       const newAnswers = { ...prev };
@@ -344,7 +361,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
         newAnswers[slideIndex] = value;
       }
       
-      log.debug('New answers state:', newAnswers);
+      // 상태 업데이트 로그 제거
       return newAnswers;
     });
     
@@ -377,7 +394,10 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
   const getBackgroundImage = (slideIndex: number) => {
     // 가장 간단한 방법: 인덱스 순서로 매칭
     const illustration = illustrations[slideIndex];
-    console.log(`Getting background image for slide ${slideIndex}:`, illustration);
+    debugLog.story('배경 이미지 가져오기', {
+      'Slide Index': slideIndex,
+      'Illustration': illustration
+    });
     // 이미지가 있으면 해당 URL 사용, 없으면 기본 이미지 사용
     const imageUrl = illustration?.image_url === 'test.png' ? '/images/signup-bg1.jpg' : `/images/${illustration?.image_url}`;
 
@@ -488,12 +508,16 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                   if (data_QA?.answer_choice) {
                     // [, ], , 문자 제거
                     const cleanedText = data_QA.answer_choice.replace(/[\[\],']/g, '');
-                    console.log(`Original text:`, data_QA.answer_choice);
-                    console.log(`Cleaned text:`, cleanedText);
+                  debugLog.story('선택지 처리 과정', {
+                    'Original Text': data_QA.answer_choice,
+                    'Cleaned Text': cleanedText
+                  });
                     
                     // 숫자. 패턴으로 분리
                     const splitChoices = cleanedText.split(/[123]\./);
-                    console.log(`Split choices:`, splitChoices);
+                    debugLog.story('선택지 분리 결과', {
+                      'Split Choices': splitChoices
+                    });
                     
                     // 빈 문자열 제거 및 트림
                     const filteredChoices = splitChoices.filter(choice => choice.trim() !== '').map(choice => choice.trim());
@@ -503,7 +527,10 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                     }
                   }
                   
-                  console.log(`Final choices for slide ${index}:`, choices);
+                  debugLog.story('최종 선택지 결과', {
+                    'Slide Index': index,
+                    'Final Choices': choices
+                  });
                   
                   return (
                     <div
@@ -626,7 +653,11 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                                               e.stopPropagation();
                                               // 마지막 슬라이드에서만 클릭 가능
                                               if (index === lastParagraphIndex) {
-                                                console.log(`Button clicked: Slide ${index}, Choice ${choiceIndex}`);
+                                                debugLog.story('선택지 버튼 클릭', {
+                                                  'Slide Index': index,
+                                                  'Choice Index': choiceIndex,
+                                                  'Choice Text': choice
+                                                });
                                                 handleChoiceClick(index, choiceIndex, choice);
                                               }
                                             }}
@@ -687,8 +718,19 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                                     <button 
                                       className="next-btn bg-green-500 hover:bg-green-600" 
                                       onClick={() => {
-                                        // 메인 페이지로 이동
-                                        window.location.href = '/';
+                                        // 현재 story_id를 sessionStorage에 저장
+                                        const currentStoryData = sessionStorage.getItem('storyData');
+                                        if (currentStoryData) {
+                                          const parsedData = JSON.parse(currentStoryData);
+                                          if (parsedData.story_id) {
+                                            sessionStorage.setItem('selectedStoryId', parsedData.story_id);
+                                            debugLog.story('tasks_3으로 story_id 전달', {
+                                              'Story ID': parsedData.story_id
+                                            });
+                                          }
+                                        }
+                                        // tasks_3 페이지로 이동
+                                        window.location.href = '/tasks_3';
                                       }}
                                     >
                                       완료
@@ -706,11 +748,13 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                                         onClick={async () => {
                                           if (selectedChoice && selectedChoice.trim() !== '' && !isSubmitting) {
                                             setIsSubmitting(true);
-                                            console.log(`선택된 답변: ${selectedChoice}`);
-                                            console.log(`선택된 선택지 인덱스:`, selectedChoices[index]);
-                                            console.log(`현재 슬라이드: ${index + 1}`);
-                                            console.log(`user_id: ${localStorage.getItem('user_id')}`);
-                                            console.log(`story_id: ${JSON.parse(sessionStorage.getItem('storyData') || '{}').story_id}`);
+                                            debugLog.story('다음 버튼 클릭 - 데이터 전송', {
+                                              'Selected Choice': selectedChoice,
+                                              'Selected Choice Index': selectedChoices[index],
+                                              'Current Slide': index + 1,
+                                              'User ID': localStorage.getItem('user_id'),
+                                              'Story ID': JSON.parse(sessionStorage.getItem('storyData') || '{}').story_id
+                                            });
                                             try {
                                               // 백엔드에 데이터 전송
                                               const response = await apiClient.post(API_ROUTES.STORY_CREATE, {
@@ -720,7 +764,10 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                                                 user_id: localStorage.getItem('user_id') || '774'
                                               });
                                               
-                                              console.log(`답변 저장 성공: ${selectedChoice}`);
+                                              debugLog.api('답변 저장 성공', {
+                                                'Selected Choice': selectedChoice,
+                                                'Response Data': response.data
+                                              });
                                               
                                               // 백엔드 응답에서 새로운 데이터를 받아서 세션스토리지 업데이트
                                               if (response.data) {
@@ -734,8 +781,16 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                                                 nextSlide();
                                               }
                                             } catch (error) {
-                                              console.error('답변 저장 오류:', error);
-                                              alert('답변 저장에 실패했습니다. 다시 시도해주세요.');
+                                              debugLog.error('답변 저장 오류', error, {
+                                                'Selected Choice': selectedChoice,
+                                                'Slide Index': index
+                                              });
+                                              await Swal.fire({
+                                                title: '저장 실패',
+                                                text: '답변 저장에 실패했습니다.',
+                                                icon: 'error',
+                                                confirmButtonText: '확인'
+                                              });
                                             } finally {
                                               setIsSubmitting(false);
                                             }

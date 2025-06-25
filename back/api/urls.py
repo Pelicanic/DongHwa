@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import chatbot_story, list_story, story_illustration, story_storyParagraph, story_paragraphQA, story_story, list_story_by_status
+from .views import chatbot_story, list_story, story_illustration, story_storyParagraph, story_paragraphQA, story_story, list_story_by_status, search_stories, get_user_in_progress_story
 
 urlpatterns = [
     path('', views.index, name='api_index'),
@@ -27,6 +27,14 @@ urlpatterns = [
     # 마지막 수정일 : 2025-06-23
     # 기능 : status 조건에 따른 동화 목록 조회
     path('v1/list/story/', list_story_by_status, name='api_list_story_by_status'),
+    # 작성자 : Assistant
+    # 마지막 수정일 : 2025-06-25
+    # 기능 : 동화 검색 (제목 또는 작성자 닉네임)
+    path('v1/search/story/', search_stories, name='api_search_stories'),
+    # 작성자 : Assistant
+    # 마지막 수정일 : 2025-06-25
+    # 기능 : 사용자의 진행 중인 동화 조회
+    path('v1/user/in-progress-story/', get_user_in_progress_story, name='api_get_user_in_progress_story'),
 ]
 
 
