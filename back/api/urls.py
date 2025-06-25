@@ -20,6 +20,8 @@ urlpatterns = [
     path('v1/paragraphQA/story/', story_paragraphQA, name='api_story_paragraphQA'),
     # 작성자 : 최재우
     # 마지막 수정일 : 2025-06-21
+    # 기능 : 동화 조회
+    # story_id를 통해 동화 조회
     path('v1/story/story/', story_story, name='api_story_story'),
     # 작성자 : Assistant
     # 마지막 수정일 : 2025-06-23

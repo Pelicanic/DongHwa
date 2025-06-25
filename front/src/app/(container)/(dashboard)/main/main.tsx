@@ -8,19 +8,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { apiClient, API_ROUTES } from '@/lib/api';
 import LinkButton from '@/(components)/Button/button';
 import MainCard from '@/(components)/Card/Cardbox';
 import { storyDTO } from '@/lib/type/story';
 import Loading from '@/(components)/Loading/loading';
 
-// 작성자 : 최재우
-// 마지막 수정일 : 2025-06-10
-// 기능 : story 테이블 API 호출
-
 const storyResponse = async (): Promise<storyDTO[]> => {
   const user_id = 772;
-  const res = await axios.post('http://localhost:8721/api/v1/main/story/', { user_id });
+  const res = await apiClient.post(API_ROUTES.STORY_MAIN, { user_id });
   return res.data.stories;
 };
 

@@ -1,14 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { apiClient, API_ROUTES } from '@/lib/api';
 import MainCard from '@/(components)/Card/Cardbox';
 import { storyDTO } from '@/lib/type/story';
 import Loading from '@/(components)/Loading/loading';
-
-// 작성자 : Assistant
-// 마지막 수정일 : 2025-06-23
-// 기능 : 로그인된 사용자의 완성된 동화만 불러오기 (author_user_id = 로그인된 user_id, status = 'completed')
 
 const getMyCompletedStories = async (): Promise<storyDTO[]> => {
   try {
@@ -18,7 +14,7 @@ const getMyCompletedStories = async (): Promise<storyDTO[]> => {
     console.log('로그인된 user_id:', user_id);
     
     // 기존 API 호출 - 사용자의 모든 동화 조회
-    const res = await axios.post('http://localhost:8721/api/v1/main/story/', { 
+    const res = await apiClient.post(API_ROUTES.STORY_MAIN, { 
       user_id: user_id
     });
     

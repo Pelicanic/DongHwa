@@ -1,6 +1,7 @@
 "use client";
 
-import axios from 'axios';
+import { apiClient, API_ROUTES } from '@/lib/api';
+import { debugLog } from '@/lib/logger';
 import React, { useState, useEffect, useCallback } from 'react';
 import '@/styles/tasks_2.css';
 import '@/styles/soundbar.css';
@@ -21,17 +22,6 @@ interface ImageCarouselProps {
   description?: string;
 }
 
-
-// const paragraphQAResponse = async (story_id : string): Promise<paragraphQADTO[]> => {
-//   const res = await axios.post('http://localhost:8721/api/v1/paragraphQA/story/', { story_id });
-//   return res.data.paragraphQA;
-// };
-
-// const storyParagraphResponse = async (story_id : string): Promise<storyParagraphDTO[]> => {
-//   const res = await axios.post('http://localhost:8721/api/v1/storyParagraph/story/', { story_id });
-//   return res.data.storyParagraph;
-// };
-
 export const useStoryData = () => {
   const [storyData, setStoryData] = useState(null);
   const [paragraphQA, setParagraphQA] = useState([]);
@@ -50,19 +40,23 @@ export const useStoryData = () => {
         const parsedData = JSON.parse(savedData || '{}');
         setStoryData(parsedData);
 
-        console.log("parsedData:", parsedData);
+        debugLog.story('StoryData 불러오기', {
+          'Parsed Data': parsedData
+        });
 
         const story_id = parsedData.story_id;
         
         const [qaResponse, paragraphResponse, illustrationResponse] = await Promise.all([
-          axios.post('http://localhost:8721/api/v1/paragraphQA/story/', { story_id }),
-          axios.post('http://localhost:8721/api/v1/storyParagraph/story/', { story_id }),
-          axios.post('http://localhost:8721/api/v1/illustration/story/', { story_id })
+          apiClient.post(API_ROUTES.PARAGRAPH_QA, { story_id }),
+          apiClient.post(API_ROUTES.STORY_PARAGRAPH, { story_id }),
+          apiClient.post(API_ROUTES.ILLUSTRATION, { story_id })
         ]);
         
-        console.log("qaResponse:", qaResponse.data.paragraphQA);
-        console.log("paragraphResponse:", paragraphResponse.data.storyParagraph);
-        console.log("illustrationResponse:", illustrationResponse.data);
+        debugLog.api('API 응답 데이터', {
+          'QA Response': qaResponse.data.paragraphQA,
+          'Paragraph Response': paragraphResponse.data.storyParagraph,
+          'Illustration Response': illustrationResponse.data
+        });
         setParagraphQA(qaResponse.data.paragraphQA);
         setStoryParagraph(paragraphResponse.data.storyParagraph);
         setIllustrations(illustrationResponse.data.illustration);
@@ -87,15 +81,21 @@ export const useStoryData = () => {
             const firstParagraphQA = qaData.find(qa => qa.paragraph_id === firstParagraph.paragraph_id);
             if (firstParagraphQA && firstParagraphQA.question_text) {
               const questionText = firstParagraphQA.question_text;
-              console.log('Original question_text:', questionText);
+              debugLog.log('Question Text 분석', {
+                'Original question_text': questionText
+              });
               
               // 'Mood: ' 또는 '[Mood] : ' 뒤의 값을 추출
               // 기존 형식: "Mood: 슬픈" 또는 새 형식: "[Mood] : 따뜻한"
               const moodMatch = questionText.match(/(?:Mood:|\[Mood\]\s*:)\s*([^,]+)/i);
-                console.log('Mood match:', moodMatch);
+                debugLog.log('Mood 매칭 결과', {
+                  'Mood match': moodMatch
+                });
               if (moodMatch && moodMatch[1]) {
                 extractedMood = moodMatch[1].trim();
-                console.log('Extracted mood from DB:', extractedMood);
+                debugLog.story('DB에서 추출한 기분', {
+                  'Extracted Mood': extractedMood
+                });
               }
             }
           }
@@ -119,8 +119,10 @@ export const useStoryData = () => {
           ? musicMapping[selectedMood] 
           : musicMapping["밝은"]; // 기본값: fairy tale(Bright).mp3
         
-        console.log('Selected mood from DB:', selectedMood);
-        console.log('Music file to play:', musicFile);
+        debugLog.audio('배경음악 설정', {
+          'Selected Mood': selectedMood,
+          'Music File': musicFile
+        });
         
         // 항상 음악 재생 (기본값이라도)
         const audio = new Audio(`/bgsound/${musicFile}`);
@@ -136,16 +138,18 @@ export const useStoryData = () => {
         if (playPromise !== undefined) {
           playPromise
             .then(() => {
-              console.log('배경음악이 자동으로 재생되었습니다.');
+              debugLog.audio('배경음악이 자동으로 재생되었습니다.');
             })
             .catch(error => {
-              console.log('자동 재생이 차단되었습니다. 사용자 상호작용 후 재생됩니다:', error);
+              debugLog.audio('자동 재생이 차단되었습니다. 사용자 상호작용 후 재생됩니다.', {
+                'Error': error
+              });
               // 자동재생이 차단된 경우를 위한 이벤트 리스너 추가
               const handleFirstUserInteraction = () => {
                 audio.play().then(() => {
-                  console.log('사용자 상호작용 후 배경음악이 재생되었습니다.');
+                  debugLog.audio('사용자 상호작용 후 배경음악이 재생되었습니다.');
                 }).catch(err => {
-                  console.log('사용자 상호작용 후에도 재생 실패:', err);
+                  debugLog.error('사용자 상호작용 후에도 재생 실패', err);
                 });
                 // 이벤트 리스너 제거 (한 번만 실행)
                 document.removeEventListener('click', handleFirstUserInteraction);
@@ -161,7 +165,7 @@ export const useStoryData = () => {
         }
 
       } catch (err) {
-        console.error(err);
+        log.error("useStoryData error:", err);
       } finally {
         setLoading(false);
       }
@@ -299,7 +303,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
 
   // 선택지 클릭 핸들러 (tasks_1과 동일)
   const handleChoiceClick = useCallback((slideIndex: number, choiceIndex: number, choiceText: string) => {
-    console.log(`Choice clicked - Slide: ${slideIndex}, Choice: ${choiceIndex}, Text: ${choiceText}`);
+    log.userAction(`Choice clicked - Slide: ${slideIndex}, Choice: ${choiceIndex}, Text: ${choiceText}`);
     
     // 해당 슬라이드의 input에 선택한 값 설정
     setUserAnswers(prev => {
@@ -322,12 +326,12 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
       [slideIndex]: choiceIndex
     }));
     
-    console.log(`슬라이드 ${slideIndex + 1}에서 "${choiceText}" 선택됨`);
+    log.storyProgress(`슬라이드 ${slideIndex + 1}에서 "${choiceText}" 선택됨`);
   }, []);
 
   // input 값 직접 변경 핸들러 (tasks_1과 동일)
   const handleInputChange = useCallback((slideIndex: number, value: string) => {
-    console.log(`Input change - Slide: ${slideIndex}, Value: ${value}`);
+    log.userAction(`Input change - Slide: ${slideIndex}, Value: ${value}`);
     
     setUserAnswers(prev => {
       const newAnswers = { ...prev };
@@ -340,7 +344,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
         newAnswers[slideIndex] = value;
       }
       
-      console.log('New answers state:', newAnswers);
+      log.debug('New answers state:', newAnswers);
       return newAnswers;
     });
     
@@ -709,7 +713,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                                             console.log(`story_id: ${JSON.parse(sessionStorage.getItem('storyData') || '{}').story_id}`);
                                             try {
                                               // 백엔드에 데이터 전송
-                                              const response = await axios.post('http://localhost:8721/api/v1/chat/story/', {
+                                              const response = await apiClient.post(API_ROUTES.STORY_CREATE, {
                                                 // paragraph_no: index + 1,
                                                 user_input: selectedChoice,
                                                 story_id: JSON.parse(sessionStorage.getItem('storyData') || '{}').story_id,

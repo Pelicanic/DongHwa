@@ -17,6 +17,8 @@ interface SidebarProps {
   toggleDesktopSidebar?: () => void;
 }
 
+const API_BASE_URL = 'http://localhost:8721';
+
 const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktopSidebarOpen = true, toggleDesktopSidebar }: SidebarProps) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showContent, setShowContent] = useState(isDesktopSidebarOpen);
@@ -39,10 +41,11 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktopSidebarOpen = true, to
     const access = localStorage.getItem('access');
     const refresh = localStorage.getItem('refresh');
 
-    if (!access) return setIsLoggedIn(false);
+    if (!access) 
+      return setIsLoggedIn(false);
 
     try {
-      const res = await fetch('http://localhost:8721/member/status/', {
+      const res = await fetch(`${API_BASE_URL}/member/status/`, {
         method: 'GET',
         headers: { Authorization: `Bearer ${access}` }
       });
@@ -50,7 +53,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktopSidebarOpen = true, to
       if (res.ok) {
         setIsLoggedIn(true);
       } else if (refresh) {
-        const refreshRes = await fetch('http://localhost:8721/member/token/refresh/', {
+        const refreshRes = await fetch(`${API_BASE_URL}/member/token/refresh/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refresh })
@@ -87,7 +90,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktopSidebarOpen = true, to
 
     if (refresh) {
       try {
-        await fetch("http://localhost:8721/member/token/refresh/", {
+        await fetch(`${API_BASE_URL}/member/token/refresh/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ refresh }),

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { apiClient, API_ROUTES } from '@/lib/api';
 import MainCard from '@/(components)/Card/Cardbox';
 import { storyDTO } from '@/lib/type/story';
 import Loading from '@/(components)/Loading/loading';
@@ -17,7 +17,7 @@ interface PaginationInfo {
 
 const getPublishedStories = async (page: number = 1): Promise<{stories: storyDTO[], pagination: PaginationInfo}> => {
   try {
-    const res = await axios.post('http://localhost:8721/api/v1/list/story/', {
+    const res = await apiClient.post(API_ROUTES.STORY_LIST, {
       status: 'published',
       page: page,
       page_size: 10

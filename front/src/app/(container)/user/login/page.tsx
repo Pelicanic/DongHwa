@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiClient, API_ROUTES } from '@/lib/api';
 
 const Login: React.FC = () => {
   const router = useRouter();
@@ -14,13 +15,12 @@ const Login: React.FC = () => {
     setError('');
 
     try {
-      const res = await fetch('http://localhost:8721/member/login/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ login_id: loginId, password: password })
+      const res = await apiClient.post(API_ROUTES.LOGIN, {
+        login_id: loginId, 
+        password: password 
       });
 
-      const data = await res.json();
+      const data = res.data;
 
       if (data.success) {
         localStorage.setItem('user_id', data.data.user_id.toString());
