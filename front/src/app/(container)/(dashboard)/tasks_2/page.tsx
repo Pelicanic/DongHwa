@@ -756,38 +756,132 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                                               'Story ID': JSON.parse(sessionStorage.getItem('storyData') || '{}').story_id
                                             });
                                             try {
+                                              // 필수 데이터 검증
+                                              const user_id = localStorage.getItem('user_id');
+                                              const storyDataStr = sessionStorage.getItem('storyData');
+                                              
+                                              if (!user_id) {
+                                                await Swal.fire({
+                                                  title: '로그인 필요',
+                                                  text: '로그인이 필요합니다.',
+                                                  icon: 'warning',
+                                                  confirmButtonText: '확인'
+                                                });
+                                                window.location.href = '/user/login';
+                                                return;
+                                              }
+                                              
+                                              if (!storyDataStr) {
+                                                await Swal.fire({
+                                                  title: '스토리 데이터 없음',
+                                                  text: '스토리 데이터를 찾을 수 없습니다.',
+                                                  icon: 'error',
+                                                  confirmButtonText: '확인'
+                                                });
+                                                window.location.href = '/';
+                                                return;
+                                              }
+                                              
+                                              let storyData;
+                                              try {
+                                                storyData = JSON.parse(storyDataStr);
+                                              } catch (parseError) {
+                                                debugLog.error('스토리 데이터 파싱 오류', parseError);
+                                                await Swal.fire({
+                                                  title: '데이터 오류',
+                                                  text: '스토리 데이터가 손상되었습니다.',
+                                                  icon: 'error',
+                                                  confirmButtonText: '확인'
+                                                });
+                                                window.location.href = '/';
+                                                return;
+                                              }
+                                              
+                                              if (!storyData.story_id) {
+                                                await Swal.fire({
+                                                  title: '스토리 ID 없음',
+                                                  text: '스토리 ID를 찾을 수 없습니다.',
+                                                  icon: 'error',
+                                                  confirmButtonText: '확인'
+                                                });
+                                                window.location.href = '/';
+                                                return;
+                                              }
+                                              
                                               // 백엔드에 데이터 전송
-                                              const response = await apiClient.post(API_ROUTES.STORY_CREATE, {
-                                                // paragraph_no: index + 1,
+                                              const requestData = {
                                                 user_input: selectedChoice,
-                                                story_id: JSON.parse(sessionStorage.getItem('storyData') || '{}').story_id,
-                                                user_id: localStorage.getItem('user_id') || '774'
-                                              });
+                                                story_id: storyData.story_id,
+                                                user_id: user_id
+                                              };
+                                              
+                                              debugLog.api('API 요청 데이터', requestData);
+                                              console.log('=== STORY_CREATE API 요청 ===');
+                                              console.log('Request Data:', requestData);
+                                              console.log('API URL:', API_ROUTES.STORY_CREATE);
+                                              console.log('Base URL:', apiClient.defaults.baseURL);
+                                              console.log('Full URL:', `${apiClient.defaults.baseURL}${API_ROUTES.STORY_CREATE}`);
+                                              console.log('User Agent:', navigator.userAgent);
+                                              console.log('Current Time:', new Date().toISOString());
+                                              
+                                              const response = await apiClient.post(API_ROUTES.STORY_CREATE, requestData);
                                               
                                               debugLog.api('답변 저장 성공', {
                                                 'Selected Choice': selectedChoice,
                                                 'Response Data': response.data
                                               });
                                               
-                                              // 백엔드 응답에서 새로운 데이터를 받아서 세션스토리지 업데이트
-                                              if (response.data) {
+                                              // 백엔드 응답 검증
+                                              if (response.data && response.data.success !== false) {
                                                 // 새로운 스토리 데이터를 세션스토리지에 저장
                                                 sessionStorage.setItem('storyData', JSON.stringify(response.data));
                                                 
                                                 // 현재 페이지 새로고침으로 새로운 데이터 로드
                                                 window.location.reload();
                                               } else {
-                                                // 다음 슬라이드로 이동 (기존 데이터 사용)
-                                                nextSlide();
+                                                // 응답에 오류가 있는 경우
+                                                const errorMessage = response.data?.message || '알 수 없는 오류가 발생했습니다.';
+                                                await Swal.fire({
+                                                  title: '저장 실패',
+                                                  text: errorMessage,
+                                                  icon: 'error',
+                                                  confirmButtonText: '확인'
+                                                });
                                               }
-                                            } catch (error) {
+                                            } catch (error: any) {
                                               debugLog.error('답변 저장 오류', error, {
                                                 'Selected Choice': selectedChoice,
-                                                'Slide Index': index
+                                                'Slide Index': index,
+                                                'Error Status': error.response?.status,
+                                                'Error Data': error.response?.data
                                               });
+                                              
+                                              let errorMessage = '답변 저장에 실패했습니다.';
+                                              
+                                              if (error.response) {
+                                                // 서버에서 응답한 오류
+                                                if (error.response.status === 401) {
+                                                  errorMessage = '로그인이 만료되었습니다. 다시 로그인해주세요.';
+                                                } else if (error.response.status === 403) {
+                                                  errorMessage = '권한이 없습니다.';
+                                                } else if (error.response.status === 404) {
+                                                  errorMessage = 'API 경로를 찾을 수 없습니다.';
+                                                } else if (error.response.status === 500) {
+                                                  errorMessage = '서버 내부 오류가 발생했습니다.';
+                                                } else if (error.response.data?.message) {
+                                                  errorMessage = error.response.data.message;
+                                                }
+                                              } else if (error.request) {
+                                                // 네트워크 오류
+                                                errorMessage = '네트워크 연결을 확인해주세요.';
+                                              } else {
+                                                // 기타 오류
+                                                errorMessage = error.message || '알 수 없는 오류가 발생했습니다.';
+                                              }
+                                              
                                               await Swal.fire({
                                                 title: '저장 실패',
-                                                text: '답변 저장에 실패했습니다.',
+                                                text: errorMessage,
                                                 icon: 'error',
                                                 confirmButtonText: '확인'
                                               });

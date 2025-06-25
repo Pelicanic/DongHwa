@@ -17,7 +17,7 @@ const getBaseURL = () => {
 
 export const apiClient = axios.create({
   baseURL: getBaseURL(),
-  timeout: 10000,
+  timeout: 30000,  // 30초로 증가
   headers: {
     'Content-Type': 'application/json',
   },
