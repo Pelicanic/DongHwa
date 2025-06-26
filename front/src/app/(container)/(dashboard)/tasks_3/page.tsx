@@ -7,7 +7,7 @@ import HTMLFlipBook from 'react-pageflip';
 import '@/styles/book.css'; // CSS 스타일 파일
 import '@/styles/soundbar.css'; // 사운드바 CSS 파일
 import { illustrationDTO } from '@/lib/type/illustration';
-import { storyParagraphDTO } from '@/lib/type/storyParagraph';
+import { storyParagraphDTO } from '@/lib/type/StoryParagraph';
 import { storyDTO } from '@/lib/type/story';
 import Image from "next/image";
 import Loading from '@/(components)/Loading/loading';

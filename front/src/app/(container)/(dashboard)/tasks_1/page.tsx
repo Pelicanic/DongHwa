@@ -222,6 +222,7 @@ const InteractiveCarousel: React.FC = () => {
         Swal.fire({
           title: '이야기를 생성하고 있습니다...',
           allowOutsideClick: false,
+          showConfirmButton: false,
           didOpen: () => {
             Swal.showLoading();
           }
