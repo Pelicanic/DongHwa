@@ -12,7 +12,9 @@ import { storyDTO } from '@/lib/type/story';
 import Image from "next/image";
 import Loading from '@/(components)/Loading/loading';
 
-type FlipEvent = { data: number };
+interface FlipEvent {
+  data: number;
+}
 
 const DynamicFlipBook: React.FC = () => {
   const flipBook = useRef<HTMLDivElement>(null);
@@ -21,7 +23,7 @@ const DynamicFlipBook: React.FC = () => {
   
   const [illustration, setIllustration] = useState<illustrationDTO[]>([]);
   const [storyParagraph, setStoryParagraph] = useState<storyParagraphDTO[]>([]);
-  const [story, setStory] = useState<storyDTO[]>([]);
+  const [story, setStory] = useState<storyDTO | null>(null);
   const [loading, setLoading] = useState(true);
   
   // 사운드바 관련 state 추가
@@ -86,7 +88,7 @@ const DynamicFlipBook: React.FC = () => {
         
         setIllustration(illustrationRes.data.illustration);
         setStoryParagraph(storyParagraphRes.data.storyParagraph);
-        setStory(storyRes.data.story);
+        setStory(storyRes.data.story); // 배열의 첫 번째 요소를 가져와서 단일 객체로 설정
         
         // DB에서 Mood 값 추출 - paragraph_no가 1인 ParagraphQA의 question_text에서 추출
         let extractedMood = '밝은'; // 기본값
@@ -98,10 +100,10 @@ const DynamicFlipBook: React.FC = () => {
         
         if (qaData && qaData.length > 0 && paragraphs && paragraphs.length > 0) {
           // paragraph_no가 1인 StoryParagraph 찾기
-          const firstParagraph = paragraphs.find(p => p.paragraph_no === 1);
+          const firstParagraph = paragraphs.find((p: storyParagraphDTO) => p.paragraph_no === 1);
           if (firstParagraph) {
             // 해당 paragraph_id를 가진 ParagraphQA 찾기
-            const firstParagraphQA = qaData.find(qa => qa.paragraph_id === firstParagraph.paragraph_id);
+            const firstParagraphQA = qaData.find((qa: { paragraph_id?: number; question_text?: string }) => qa.paragraph_id === firstParagraph.paragraph_id);
             if (firstParagraphQA && firstParagraphQA.question_text) {
               const questionText = firstParagraphQA.question_text;
               // 기분 대체 로그 제거
@@ -118,7 +120,7 @@ const DynamicFlipBook: React.FC = () => {
         }
         
         // 배경음악 설정 - DB에서 추출한 기분에 따라
-        const musicMapping = {
+        const musicMapping: Record<string, string> = {
           "밝은": "fairy tale(Bright).mp3",
           "따뜻한": "fairy tale(Warm).mp3",
           "슬픈": "fairy tale(Sad).mp3",
@@ -130,10 +132,10 @@ const DynamicFlipBook: React.FC = () => {
         // const savedData = sessionStorage.getItem('storyData');
         // const parsedData = savedData ? JSON.parse(savedData) : {};
         // const selectedMood = parsedData.answers && parsedData.answers[2]; // 3번째 질문의 답변 (기분)
-        const selectedMood = extractedMood; // DB에서 추출한 기분 사용
+        const selectedMood: string = extractedMood; // DB에서 추출한 기분 사용
         
         // 기본값으로 '밝은' 기분의 음악 사용 (fairy tale(Bright).mp3)
-        const musicFile = (selectedMood && musicMapping[selectedMood]) 
+        const musicFile: string = (selectedMood && musicMapping[selectedMood]) 
           ? musicMapping[selectedMood] 
           : musicMapping["밝은"]; // 기본값: fairy tale(Bright).mp3
         
@@ -155,7 +157,7 @@ const DynamicFlipBook: React.FC = () => {
             .then(() => {
               // 자동 재생 로그 제거
             })
-            .catch(error => {
+            .catch(() => {
               // 자동 재생 차단 로그 제거
               // 자동재생이 차단된 경우를 위한 이벤트 리스너 추가
               const handleFirstUserInteraction = () => {
@@ -187,7 +189,7 @@ const DynamicFlipBook: React.FC = () => {
       }
     };
     fetchdata();
-  }, []);
+  }, [storyId]);
 
 
   // 배경음악 및 TTS 관리 - 컴포넌트 언마운트 시 정지
@@ -353,7 +355,7 @@ const DynamicFlipBook: React.FC = () => {
       console.error('TTS 재생 실패:', error);
       setIsPlaying(false);
     });
-  }, [storyId, storyParagraph, ttsAudio, ttsVolume]);
+  }, [storyId, storyParagraph, ttsAudio, ttsVolume, currentPage]);
 
   // TTS 일시정지/재개 함수
   const pauseTTS = useCallback(() => {
@@ -547,10 +549,11 @@ const DynamicFlipBook: React.FC = () => {
                 title={isBgMuted ? '배경음악 음소거 해제' : '배경음악 음소거'}
                 style={{ marginRight: '8px' }}
               >
-                <img 
+                <Image 
                   src={isBgMuted ? '/images/volume_off.png' : '/images/volume_on.png'}
                   alt={isBgMuted ? '음소거' : '소리 켜짐'}
-                  style={{ width: '20px', height: '20px' }}
+                  width={20}
+                  height={20}
                 />
               </button>
               
@@ -595,10 +598,11 @@ const DynamicFlipBook: React.FC = () => {
                 title={isTtsMuted ? 'TTS 음소거 해제' : 'TTS 음소거'}
                 style={{ marginRight: '8px' }}
               >
-                <img 
+                <Image 
                   src={isTtsMuted ? '/images/volume_off.png' : '/images/volume_on.png'}
                   alt={isTtsMuted ? '음소거' : '소리 켜짐'}
-                  style={{ width: '20px', height: '20px' }}
+                  width={20}
+                  height={20}
                 />
               </button>
               
@@ -633,9 +637,11 @@ const DynamicFlipBook: React.FC = () => {
               className="toggle-button"
               title={isControlsVisible ? '사운드바 숨기기' : '사운드바 보이기'}
             >
-              <img 
+              <Image 
                 src={isControlsVisible ? '/images/left.png' : '/images/right.png'}
                 alt={isControlsVisible ? '사운드바 숨기기' : '사운드바 보이기'}
+                width={24}
+                height={24}
               />
             </button>
           </div>
@@ -671,6 +677,8 @@ const DynamicFlipBook: React.FC = () => {
               flippingTime={800}
               showPageCorners={true}
               disableFlipByClick={false}
+              startZIndex={0}
+              swipeDistance={30}
               style={{ margin: '0 auto' }}
               onFlip={onFlip}
               className="flipbook"
@@ -683,7 +691,7 @@ const DynamicFlipBook: React.FC = () => {
                   fontFamily: 'Ownglyph_ryurue-Rg',
                   color: 'black',
                 }}>
-                  <h2 className="text-4xl font-bold mb-4">{story.title}</h2>
+                  <h2 className="text-4xl font-bold mb-4">{story?.title || '제목 없음'}</h2>
                   <p className="text-lg">이야기 속으로 들어가보아요!</p>
                 </div>
               </div>

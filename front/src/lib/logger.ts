@@ -47,7 +47,7 @@ export const createPageDebugger = (pageName: string) => {
   
   return {
     // 기본 디버그 출력
-    log: (title: string, data?: Record<string, any>) => {
+    log: (title: string, data?: Record<string, unknown>) => {
       if (isPageDebugEnabled()) {
         console.log("\n" + "-".repeat(50));
         console.log(`[${pageName.toUpperCase()}] ${title}`);
@@ -63,7 +63,7 @@ export const createPageDebugger = (pageName: string) => {
     },
     
     // API 관련 디버그
-    api: (title: string, data?: Record<string, any>) => {
+    api: (title: string, data?: Record<string, unknown>) => {
       if (isPageDebugEnabled()) {
         console.log("\n" + "=".repeat(60));
         console.log(`[${pageName.toUpperCase()}-API] ${title}`);
@@ -79,7 +79,7 @@ export const createPageDebugger = (pageName: string) => {
     },
     
     // 스토리 관련 디버그
-    story: (title: string, data?: Record<string, any>) => {
+    story: (title: string, data?: Record<string, unknown>) => {
       if (isPageDebugEnabled()) {
         console.log("\n" + "*".repeat(60));
         console.log(`[${pageName.toUpperCase()}-STORY] ${title}`);
@@ -95,7 +95,7 @@ export const createPageDebugger = (pageName: string) => {
     },
     
     // 사용자 액션 디버그
-    user: (title: string, data?: Record<string, any>) => {
+    user: (title: string, data?: Record<string, unknown>) => {
       if (isPageDebugEnabled()) {
         console.log("\n" + "#".repeat(50));
         console.log(`[${pageName.toUpperCase()}-USER] ${title}`);
@@ -111,7 +111,7 @@ export const createPageDebugger = (pageName: string) => {
     },
     
     // 오디오 관련 디버그
-    audio: (title: string, data?: Record<string, any>) => {
+    audio: (title: string, data?: Record<string, unknown>) => {
       if (isPageDebugEnabled()) {
         console.log("\n" + "~".repeat(50));
         console.log(`[${pageName.toUpperCase()}-AUDIO] ${title}`);
@@ -127,7 +127,7 @@ export const createPageDebugger = (pageName: string) => {
     },
     
     // 에러 디버그
-    error: (title: string, error?: any, data?: Record<string, any>) => {
+    error: (title: string, error?: unknown, data?: Record<string, unknown>) => {
       if (isPageDebugEnabled()) {
         console.log("\n" + "!".repeat(60));
         console.log(`[${pageName.toUpperCase()}-ERROR] ${title}`);
@@ -153,36 +153,49 @@ export const debugLog = createPageDebugger('GLOBAL');
 
 // 개발자 도구에서 쉽게 접근할 수 있도록 전역 객체에 추가
 if (typeof window !== 'undefined' && DEBUG) {
-  (window as any).setPageDebug = setPageDebug;
-  (window as any).setGlobalDebug = setGlobalDebug;
-  (window as any).createPageDebugger = createPageDebugger;
+  interface DebugWindow {
+    setPageDebug: typeof setPageDebug;
+    setGlobalDebug: typeof setGlobalDebug;
+    createPageDebugger: typeof createPageDebugger;
+    getDebugSettings: () => void;
+    debugOnly: (pageName: string) => void;
+    debugAll: () => void;
+    debugOff: () => void;
+    debugHelp: () => void;
+  }
+  
+  const debugWindow = window as unknown as Window & DebugWindow;
+  
+  debugWindow.setPageDebug = setPageDebug;
+  debugWindow.setGlobalDebug = setGlobalDebug;
+  debugWindow.createPageDebugger = createPageDebugger;
   
   // 현재 설정 확인 함수
-  (window as any).getDebugSettings = () => {
+  debugWindow.getDebugSettings = () => {
     console.log('%c=== DEBUG SETTINGS ===', 'color: blue; font-weight: bold;');
     console.log('Global Debug:', localStorage.getItem('debug'));
     console.log('Page Debug Settings:', JSON.parse(localStorage.getItem('pageDebug') || '{}'));
   };
   
   // 빠른 설정 함수들
-  (window as any).debugOnly = (pageName: string) => {
+  debugWindow.debugOnly = (pageName: string) => {
     setGlobalDebug(false);
     setPageDebug(pageName, true);
     console.log(`%c[DEBUG] Only ${pageName} page enabled`, 'color: green; font-weight: bold;');
   };
   
-  (window as any).debugAll = () => {
+  debugWindow.debugAll = () => {
     setGlobalDebug(true);
     console.log('%c[DEBUG] All pages enabled', 'color: green; font-weight: bold;');
   };
   
-  (window as any).debugOff = () => {
+  debugWindow.debugOff = () => {
     setGlobalDebug(false);
     console.log('%c[DEBUG] All pages disabled', 'color: red; font-weight: bold;');
   };
   
   // 사용 가능한 명령어 도움말
-  (window as any).debugHelp = () => {
+  debugWindow.debugHelp = () => {
     console.log(`%c
 === PAGE DEBUG SYSTEM HELP ===
 

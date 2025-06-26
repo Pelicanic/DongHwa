@@ -9,29 +9,110 @@ import Loading from '@/(components)/Loading/loading';
 import { requireLogin } from '@/lib/utils/auth';
 import { extractMoodFromQuestionText, setupBackgroundMusic } from '@/lib/utils/music';
 import Swal from 'sweetalert2';
+import Image from 'next/image';
 // import { paragraphQADTO } from '@/lib/type/paragraphQA';
 // import { storyParagraphDTO } from '@/lib/type/storyParagraph';
 
-
-interface SlideData {
-  id: number;
+// API 응답 타입 정의
+interface StoryData {
+  story_id: number;
+  author_user_id: number;
   title: string;
-  background: string;
+  summary: string;
+  summary_4step: string;
+  created_at: string;
+  updated_at: string;
+  status: string;
+  author_name: string;
+  age: number;
+  cover_img: string;
+  characters: string;
 }
 
-interface ImageCarouselProps {
-  slides?: SlideData[];
-  title?: string;
-  description?: string;
+interface ParagraphQA {
+  qa_id: number;
+  paragraph_id: number;
+  story_id: number;
+  question_text: string;
+  answer_text: string;
+  created_at: string;
+  ai_question: string;
+  answer_choice: string;
 }
 
-export const useStoryData = () => {
-  const [storyData, setStoryData] = useState(null);
-  const [paragraphQA, setParagraphQA] = useState([]);
-  const [storyParagraph, setStoryParagraph] = useState([]);
-  const [illustrations, setIllustrations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [lastParagraphIndex, setLastParagraphIndex] = useState(0);
+interface StoryParagraph {
+  paragraph_id: number;
+  story_id: number;
+  paragraph_no: number;
+  content_text: string;
+  created_at: string;
+  updated_at: string;
+  tts: string;
+}
+
+interface Illustration {
+  illustration_id: number;
+  paragraph_id: number;
+  story_id: number;
+  image_url: string;
+  caption_text: string;
+  labels: string;
+  created_at: string;
+}
+
+// API 응답 인터페이스
+interface InProgressStoryResponse {
+  success: boolean;
+  message?: string;
+  story?: StoryData;
+  reason?: string;
+  latest_status?: string;
+}
+
+interface StoryCreateResponse {
+  success?: boolean;
+  message?: string;
+  [key: string]: unknown;
+}
+interface AxiosError {
+  response?: {
+    status: number;
+    data?: {
+      message?: string;
+      [key: string]: unknown;
+    };
+  };
+  request?: unknown;
+  message: string;
+}
+
+// 타입 가드 함수
+function isAxiosError(error: unknown): error is AxiosError {
+  return (
+    error !== null &&
+    typeof error === 'object' &&
+    'message' in error &&
+    typeof (error as AxiosError).message === 'string'
+  );
+}
+
+function hasResponse(error: AxiosError): error is AxiosError & { response: NonNullable<AxiosError['response']> } {
+  return error.response !== undefined;
+}
+
+function hasRequest(error: AxiosError): error is AxiosError & { request: NonNullable<AxiosError['request']> } {
+  return error.request !== undefined;
+}
+
+
+// useStoryData 훅을 페이지 컴포넌트 내부로 이동 (export 제거)
+const useStoryData = () => {
+  const [storyData, setStoryData] = useState<StoryData | null>(null);
+  const [paragraphQA, setParagraphQA] = useState<ParagraphQA[]>([]);
+  const [storyParagraph, setStoryParagraph] = useState<StoryParagraph[]>([]);
+  const [illustrations, setIllustrations] = useState<Illustration[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [lastParagraphIndex, setLastParagraphIndex] = useState<number>(0);
   const [bgMusic, setBgMusic] = useState<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -53,7 +134,7 @@ export const useStoryData = () => {
 
         // 먼저 진행 중인 스토리가 있는지 확인
         try {
-          const inProgressResponse = await apiClient.post(API_ROUTES.USER_IN_PROGRESS_STORY, {
+          const inProgressResponse = await apiClient.post<InProgressStoryResponse>(API_ROUTES.USER_IN_PROGRESS_STORY, {
             user_id: user_id
           });
           
@@ -72,9 +153,9 @@ export const useStoryData = () => {
             const story_id = progressStory.story_id;
             
             const [qaResponse, paragraphResponse, illustrationResponse] = await Promise.all([
-              apiClient.post(API_ROUTES.PARAGRAPH_QA, { story_id }),
-              apiClient.post(API_ROUTES.STORY_PARAGRAPH, { story_id }),
-              apiClient.post(API_ROUTES.ILLUSTRATION, { story_id })
+              apiClient.post<{ paragraphQA: ParagraphQA[] }>(API_ROUTES.PARAGRAPH_QA, { story_id }),
+              apiClient.post<{ storyParagraph: StoryParagraph[] }>(API_ROUTES.STORY_PARAGRAPH, { story_id }),
+              apiClient.post<{ illustration: Illustration[] }>(API_ROUTES.ILLUSTRATION, { story_id })
             ]);
             
             debugLog.api('API 응답 데이터', {
@@ -193,7 +274,7 @@ export const useStoryData = () => {
 
 
 
-const ImageCarousel: React.FC<ImageCarouselProps> = () => {
+const ImageCarousel: React.FC = () => {
   // 로그인 확인
   useEffect(() => {
     requireLogin();
@@ -450,9 +531,11 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
               className="mute-button"
               title={isMuted ? '음소거 해제' : '음소거'}
             >
-              <img 
+              <Image 
                 src={isMuted ? '/images/volume_off.png' : '/images/volume_on.png'}
                 alt={isMuted ? '음소거' : '소리 켜짐'}
+                width={24}
+                height={24}
               />
             </button>
             
@@ -485,9 +568,11 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
               className="toggle-button"
               title={isControlsVisible ? '사운드바 숨기기' : '사운드바 보이기'}
             >
-              <img 
+              <Image 
                 src={isControlsVisible ? '/images/left.png' : '/images/right.png'}
                 alt={isControlsVisible ? '사운드바 숨기기' : '사운드바 보이기'}
+                width={24}
+                height={24}
               />
             </button>
           </div>
@@ -825,7 +910,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                                               console.log('User Agent:', navigator.userAgent);
                                               console.log('Current Time:', new Date().toISOString());
                                               
-                                              const response = await apiClient.post(API_ROUTES.STORY_CREATE, requestData);
+                                              const response = await apiClient.post<StoryCreateResponse>(API_ROUTES.STORY_CREATE, requestData);
                                               
                                               debugLog.api('답변 저장 성공', {
                                                 'Selected Choice': selectedChoice,
@@ -849,35 +934,47 @@ const ImageCarousel: React.FC<ImageCarouselProps> = () => {
                                                   confirmButtonText: '확인'
                                                 });
                                               }
-                                            } catch (error: any) {
-                                              debugLog.error('답변 저장 오류', error, {
-                                                'Selected Choice': selectedChoice,
-                                                'Slide Index': index,
-                                                'Error Status': error.response?.status,
-                                                'Error Data': error.response?.data
-                                              });
-                                              
+                                            } catch (error: unknown) {
                                               let errorMessage = '답변 저장에 실패했습니다.';
                                               
-                                              if (error.response) {
-                                                // 서버에서 응답한 오류
-                                                if (error.response.status === 401) {
-                                                  errorMessage = '로그인이 만료되었습니다. 다시 로그인해주세요.';
-                                                } else if (error.response.status === 403) {
-                                                  errorMessage = '권한이 없습니다.';
-                                                } else if (error.response.status === 404) {
-                                                  errorMessage = 'API 경로를 찾을 수 없습니다.';
-                                                } else if (error.response.status === 500) {
-                                                  errorMessage = '서버 내부 오류가 발생했습니다.';
-                                                } else if (error.response.data?.message) {
-                                                  errorMessage = error.response.data.message;
+                                              if (isAxiosError(error)) {
+                                                debugLog.error('답변 저장 오류', error, {
+                                                  'Selected Choice': selectedChoice,
+                                                  'Slide Index': index,
+                                                  'Error Status': hasResponse(error) ? error.response.status : undefined,
+                                                  'Error Data': hasResponse(error) ? error.response.data : undefined
+                                                });
+                                                
+                                                if (hasResponse(error)) {
+                                                  // 서버에서 응답한 오류
+                                                  if (error.response.status === 401) {
+                                                    errorMessage = '로그인이 만료되었습니다. 다시 로그인해주세요.';
+                                                  } else if (error.response.status === 403) {
+                                                    errorMessage = '권한이 없습니다.';
+                                                  } else if (error.response.status === 404) {
+                                                    errorMessage = 'API 경로를 찾을 수 없습니다.';
+                                                  } else if (error.response.status === 500) {
+                                                    errorMessage = '서버 내부 오류가 발생했습니다.';
+                                                  } else if (error.response.data?.message) {
+                                                    errorMessage = error.response.data.message;
+                                                  }
+                                                } else if (hasRequest(error)) {
+                                                  // 네트워크 오류
+                                                  errorMessage = '네트워크 연결을 확인해주세요.';
+                                                } else {
+                                                  // 기타 Axios 오류
+                                                  errorMessage = error.message || '알 수 없는 오류가 발생했습니다.';
                                                 }
-                                              } else if (error.request) {
-                                                // 네트워크 오류
-                                                errorMessage = '네트워크 연결을 확인해주세요.';
                                               } else {
-                                                // 기타 오류
-                                                errorMessage = error.message || '알 수 없는 오류가 발생했습니다.';
+                                                // Axios 오류가 아닌 경우
+                                                debugLog.error('답변 저장 오류', error, {
+                                                  'Selected Choice': selectedChoice,
+                                                  'Slide Index': index
+                                                });
+                                                
+                                                if (error instanceof Error) {
+                                                  errorMessage = error.message;
+                                                }
                                               }
                                               
                                               await Swal.fire({
