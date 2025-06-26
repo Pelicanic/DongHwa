@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { apiClient, API_ROUTES } from '@/lib/api';
 import MainCard from '@/(components)/Card/Cardbox';
@@ -44,7 +44,7 @@ const searchStories = async (query: string, page: number = 1): Promise<{stories:
   }
 };
 
-const SearchPage: React.FC = () => {
+const SearchPageContent: React.FC = () => {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
   
@@ -358,7 +358,7 @@ const SearchPage: React.FC = () => {
                   <div className="bg-white/60 rounded-lg p-8 inline-block">
                     <Search className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-600 mb-4">
-                      '<span className="font-semibold text-orange-600">{currentSearchQuery}</span>' 에 대한 검색 결과가 없습니다.
+                      &apos;<span className="font-semibold text-orange-600">{currentSearchQuery}</span>&apos; 에 대한 검색 결과가 없습니다.
                     </p>
                     <p className="text-sm text-gray-500 mb-6">다른 검색어로 시도해보세요.</p>
                     <div className="flex justify-center space-x-4">
@@ -382,7 +382,7 @@ const SearchPage: React.FC = () => {
               ) : (
                 <>
                   <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
-                    '<span className="text-orange-600">{currentSearchQuery}</span>' 검색 결과
+                    &apos;<span className="text-orange-600">{currentSearchQuery}</span>&apos; 검색 결과
                   </h2>
                   
                   <div className="mb-6 flex flex-wrap gap-2">
@@ -420,6 +420,15 @@ const SearchPage: React.FC = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+// Suspense로 감싼 메인 컴포넌트
+const SearchPage: React.FC = () => {
+  return (
+    <Suspense fallback={<Loading />}>
+      <SearchPageContent />
+    </Suspense>
   );
 };
 

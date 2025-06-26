@@ -32,54 +32,54 @@
 // 페이지별 디버거 사용 예제:
 
 // === tasks_1/page.tsx ===
-import { createPageDebugger } from '@/lib/logger';
+// import { createPageDebugger } from '@/lib/logger';
 
-const Tasks1Page = () => {
-  const debug = createPageDebugger('TASKS_1');
-  
-  const handleSubmit = () => {
-    debug.story('스토리 생성 시작', {
-      'User Answers': userAnswers,
-      'Total Questions': totalSlides
-    });
-  };
-};
+// const Tasks1Page = () => {
+//   const debug = createPageDebugger('TASKS_1');
+//   
+//   const handleSubmit = () => {
+//     debug.story('스토리 생성 시작', {
+//       'User Answers': userAnswers,
+//       'Total Questions': totalSlides
+//     });
+//   };
+// };
 
 // === tasks_2/page.tsx ===
-import { createPageDebugger } from '@/lib/logger';
+// import { createPageDebugger } from '@/lib/logger';
 
-const Tasks2Page = () => {
-  const debug = createPageDebugger('TASKS_2');
-  
-  const playAudio = () => {
-    debug.audio('배경음악 재생', {
-      'Music File': musicFile,
-      'Volume': volume
-    });
-  };
-};
+// const Tasks2Page = () => {
+//   const debug = createPageDebugger('TASKS_2');
+//   
+//   const playAudio = () => {
+//     debug.audio('배경음악 재생', {
+//       'Music File': musicFile,
+//       'Volume': volume
+//     });
+//   };
+// };
 
 // === login/page.tsx ===
-import { createPageDebugger } from '@/lib/logger';
+// import { createPageDebugger } from '@/lib/logger';
 
-const LoginPage = () => {
-  const debug = createPageDebugger('LOGIN');
-  
-  const handleLogin = async () => {
-    debug.user('로그인 시도', {
-      'Login ID': loginId
-    });
-    
-    try {
-      // API 호출...
-    } catch (error) {
-      debug.error('로그인 실패', error, {
-        'Login ID': loginId,
-        'Timestamp': new Date().toISOString()
-      });
-    }
-  };
-};
+// const LoginPage = () => {
+//   const debug = createPageDebugger('LOGIN');
+//   
+//   const handleLogin = async () => {
+//     debug.user('로그인 시도', {
+//       'Login ID': loginId
+//     });
+//     
+//     try {
+//       // API 호출...
+//     } catch (error) {
+//       debug.error('로그인 실패', error, {
+//         'Login ID': loginId,
+//         'Timestamp': new Date().toISOString()
+//       });
+//     }
+//   };
+// };
 
 // === 개발자 도구에서 실시간 제어 ===
 /*

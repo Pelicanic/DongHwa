@@ -10,4 +10,5 @@ export interface storyParagraphDTO {
     content_text?: string;
     created_at?: string;
     updated_at?: string;
+    tts?: string; // TTS 파일 이름 속성 추가
 }

@@ -24,9 +24,8 @@ const LinkButton: React.FC<ButtonProps> = ({
   size = "common", 
   hide = false, 
   onClick, 
-  id,
-  external = false,
-  target
+  id
+  // external과 target은 주석 처리된 코드에서만 사용되므로 매개변수에서 제거
 }) => {
   // size에 따른 클래스 추가 (예시)
   const sizeClasses = {

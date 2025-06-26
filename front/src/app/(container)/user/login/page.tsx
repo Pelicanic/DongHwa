@@ -10,7 +10,8 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [testLoading, setTestLoading] = useState(false);
+  // testLoading은 주석 처리된 Test Login 버튼에서만 사용되므로 주석 처리
+  // const [testLoading, setTestLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +43,8 @@ const Login: React.FC = () => {
     }
   };
 
+  // handleTestLogin 함수는 주석 처리된 Test Login 버튼에서만 사용되므로 주석 처리
+  /*
   const handleTestLogin = async () => {
     setError('');
     setTestLoading(true);
@@ -66,6 +69,7 @@ const Login: React.FC = () => {
       setTestLoading(false);
     }
   };
+  */
 
   return (
     <div

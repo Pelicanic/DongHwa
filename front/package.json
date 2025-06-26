@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev -p 8720",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 8720",
+    "serve": "pm2 start npm --name donghwa_front -- start",
     "lint": "next lint"
   },
   "dependencies": {

@@ -23,7 +23,7 @@ export const setupBackgroundMusic = (
   mood: string,
   volume: number = 0.3,
   onSuccess?: () => void,
-  onError?: (error: any) => void
+  onError?: (error: unknown) => void
 ): HTMLAudioElement | null => {
   try {
     const musicFile = getMusicFile(mood);

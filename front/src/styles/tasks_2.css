@@ -287,7 +287,7 @@ textarea.answer-input::placeholder {
 .next-btn:not(:disabled):hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-} */
+}
 
 .container_box_right_inner_box_temp_btn{
   color: white;

@@ -14,14 +14,10 @@ interface SlideData {
   choices: string[]; // 선택지 배열 추가
 }
 
-interface ImageCarouselProps {
-  slides?: SlideData[];
-  title?: string;
-  description?: string;
-}
-
-const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
-  slides = [
+// 페이지 컴포넌트로 사용할 때는 props를 받지 않도록 수정
+const InteractiveCarousel: React.FC = () => {
+  // 슬라이드 데이터를 컴포넌트 내부에서 정의
+  const slides: SlideData[] = [
     {
       id: 1,
       title: "무슨 동화를 좋아해 ?",
@@ -47,8 +43,7 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
       title: "어떤 주인공이 더 재밌는 이야기를 만들어줄 것 같아?",
       choices: ["남자", "여자", "무관"]
     }
-  ],
-}) => {
+  ];
   // 슬라이드 데이터를 상태로 관리 (랜덤 기능을 위해)
   const [slidesData, setSlidesData] = useState<SlideData[]>(slides);
   
@@ -97,7 +92,7 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
       debug.error('랜덤 제목 API 오류', error);
       console.error('API 호출 오류:', error); // 디버깅
     }
-  }, []);
+  }, [debug]);
   
   // 로그인 확인
   useEffect(() => {
@@ -108,9 +103,9 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
   // 현재 슬라이드 인덱스를 저장하는 state
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   // 각 슬라이드별 사용자 답변을 저장하는 state
-  const [userAnswers, setUserAnswers] = useState<{[key: number]: string}>({});
+  const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
   // 현재 선택된 선택지를 저장하는 state (시각적 표시용)
-  const [selectedChoices, setSelectedChoices] = useState<{[key: number]: number | null}>({});
+  const [selectedChoices, setSelectedChoices] = useState<Record<number, number | null>>({});
   // 전체 슬라이드 수
   const totalSlides = slidesData.length;
   // 선택지 클릭 핸들러
@@ -146,7 +141,7 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
       'Slide Number': slideIndex + 1,
       'Selected Text': choiceText
     });
-  }, []);
+  }, [debug]);
 
   // input 값 직접 변경 핸들러
   const handleInputChange = useCallback((slideIndex: number, value: string) => {
@@ -177,7 +172,7 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
       ...prev,
       [slideIndex]: null
     }));
-  }, []);
+  }, [debug]);
 
   // 다음 슬라이드로 이동
   const nextSlide = useCallback(() => {
@@ -286,7 +281,7 @@ const InteractiveCarousel: React.FC<ImageCarouselProps> = ({
         });
       }
     }
-  }, [userAnswers, totalSlides]);
+  }, [userAnswers, totalSlides, debug]);
 
   // 점 표시기 렌더링
   const renderDots = () => {
