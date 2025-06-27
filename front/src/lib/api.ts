@@ -104,6 +104,7 @@ export const API_ROUTES = {
   
   // 회원 관련
   LOGIN: '/member/login/',
+  LOGOUT: '/member/logout/',
   TEST_LOGIN: '/member/test-login/',
   SIGNUP: '/member/signup/',
 } as const;

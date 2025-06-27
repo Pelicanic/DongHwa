@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { apiClient, API_ROUTES } from '@/lib/api';
+import Swal from 'sweetalert2';
 
 interface FormData {
   login_id: string;
@@ -32,12 +33,22 @@ const SignupForm: React.FC = () => {
     const { login_id, nickname, email, password, password_confirm } = formData;
 
     if (!login_id || !nickname || !email || !password || !password_confirm) {
-      alert('모든 항목을 입력해주세요.');
+      await Swal.fire({
+        icon: 'warning',
+        title: '입력 오류',
+        text: '모든 항목을 입력해주세요.',
+        confirmButtonColor: '#3085d6'
+      });
       return;
     }
 
     if (password !== password_confirm) {
-      alert('비밀번호가 서로 일치하지 않습니다.');
+      await Swal.fire({
+        icon: 'error',
+        title: '비밀번호 불일치',
+        text: '비밀번호가 서로 일치하지 않습니다.',
+        confirmButtonColor: '#3085d6'
+      });
       return;
     }
 
@@ -49,7 +60,12 @@ const SignupForm: React.FC = () => {
       });
       const complexity = complexityRes.data;
       if (!complexity.success) {
-        alert('비밀번호가 너무 약합니다. 영문, 숫자, 특수문자를 조합해 8자 이상을 사용해주세요.');
+        await Swal.fire({
+          icon: 'error',
+          title: '비밀번호 보안 오류',
+          text: '비밀번호가 너무 약합니다. 영문, 숫자, 특수문자를 조합해 8자 이상을 사용해주세요.',
+          confirmButtonColor: '#3085d6'
+        });
         return;
       }
 
@@ -60,7 +76,12 @@ const SignupForm: React.FC = () => {
       });
       const idCheck = idCheckRes.data;
       if (!idCheck.success) {
-        alert('이미 사용 중인 아이디입니다.');
+        await Swal.fire({
+          icon: 'error',
+          title: '아이디 중복',
+          text: '이미 사용 중인 아이디입니다.',
+          confirmButtonColor: '#3085d6'
+        });
         return;
       }
 
@@ -71,11 +92,32 @@ const SignupForm: React.FC = () => {
       });
       const nicknameCheck = nicknameCheckRes.data;
       if (!nicknameCheck.success) {
-        alert('이미 사용 중인 닉네임입니다.');
+        await Swal.fire({
+          icon: 'error',
+          title: '닉네임 중복',
+          text: '이미 사용 중인 닉네임입니다.',
+          confirmButtonColor: '#3085d6'
+        });
         return;
       }
 
-      // 4. 최종 회원가입 요청
+      // 4. 이메일 중복 체크
+      const emailCheckRes = await apiClient.post(API_ROUTES.SIGNUP, {
+        action: 'check_email', 
+        email 
+      });
+      const emailCheck = emailCheckRes.data;
+      if (!emailCheck.success) {
+        await Swal.fire({
+          icon: 'error',
+          title: '이메일 중복',
+          text: '이미 사용 중인 이메일입니다. 다른 이메일을 사용해주세요.',
+          confirmButtonColor: '#3085d6'
+        });
+        return;
+      }
+
+      // 5. 최종 회원가입 요청
       const signupRes = await apiClient.post(API_ROUTES.SIGNUP, {
         action: 'signup',
         login_id,
@@ -87,12 +129,35 @@ const SignupForm: React.FC = () => {
 
       const result = signupRes.data;
       if (result.success) {
-        alert('회원가입 성공! 이메일을 확인해주세요.');
+        // 회원가입 성공 후 자동 로그인 상태로 설정
+        localStorage.setItem('user_id', result.data.user_id.toString());
+        // 로그인 이벤트 발생
+        window.dispatchEvent(new Event('login'));
+        
+        await Swal.fire({
+          icon: 'success',
+          title: '회원가입 성공! 🎉',
+          text: 'Pel-World에서 마음껏 동화를 만들어보세요!',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: '시작하기!'
+        });
+        // 메인 페이지로 이동
+        window.location.href = '/';
       } else {
-        alert(`회원가입 실패: ${result.message}`);
+        await Swal.fire({
+          icon: 'error',
+          title: '회원가입 실패',
+          text: result.message,
+          confirmButtonColor: '#3085d6'
+        });
       }
     } catch (error) {
-      alert('서버와 통신 중 오류가 발생했습니다.');
+      await Swal.fire({
+        icon: 'error',
+        title: '서버 오류',
+        text: '서버와 통신 중 오류가 발생했습니다.',
+        confirmButtonColor: '#3085d6'
+      });
       console.error('Signup error:', error);
     }
   };
@@ -101,7 +166,7 @@ const SignupForm: React.FC = () => {
     <div
       className="min-h-screen flex items-center justify-center bg-cover bg-center"
       style={{ backgroundImage: "url('/images/signup-bg1.jpg')",
-        backgroundSize: '110%',
+        backgroundSize: 'cover',
         backgroundPosition: 'center'
        }}
     >

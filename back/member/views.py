@@ -5,8 +5,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.contrib.auth.hashers import make_password, check_password
-from django.core.mail import send_mail
-from django.utils.crypto import get_random_string
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 from django.utils.decorators import method_decorator
@@ -19,6 +17,7 @@ from .services.signup_service import (
     check_password_complexity,
     check_login_id_duplicate,
     check_nickname_duplicate,
+    check_email_duplicate,
 )
 
 #  JWT 토큰 생성 함수 (커스텀 유저 모델 대응용)
@@ -51,6 +50,11 @@ class SignupView(APIView):
                     return Response({"success": False, "message": "이미 사용 중인 닉네임입니다.", "data": None})
                 return Response({"success": True, "message": "사용 가능한 닉네임입니다.", "data": None})
 
+            elif action == 'check_email':
+                if check_email_duplicate(email):
+                    return Response({"success": False, "message": "이미 사용 중인 이메일입니다.", "data": None})
+                return Response({"success": True, "message": "사용 가능한 이메일입니다.", "data": None})
+
             elif action == 'check_password_strength':
                 if not check_password_complexity(password):
                     return Response({"success": False, "message": "비밀번호 복잡도를 만족하지 않습니다.", "data": None})
@@ -66,6 +70,8 @@ class SignupView(APIView):
                     raise ValidationError("아이디 중복을 먼저 해결하세요.")
                 if check_nickname_duplicate(nickname):
                     raise ValidationError("닉네임 중복을 먼저 해결하세요.")
+                if check_email_duplicate(email):
+                    raise ValidationError("이메일 중복을 먼저 해결하세요.")
                 if password != password_confirm:
                     raise ValidationError("비밀번호가 일치하지 않습니다.")
                 if not check_password_complexity(password):
@@ -76,27 +82,13 @@ class SignupView(APIView):
                     password_hash=make_password(password),
                     nickname=nickname,
                     email=email,
+                    is_active=True  # 바로 활성화
                 )
                 user.save()
-
-                token = get_random_string(32)
-                user.email_verification_token = token
-                user.save()
-
-                verification_link = request.build_absolute_uri(
-                    f'/member/verify-email/?email={user.email}&token={token}'
-                )
-
-                send_mail(
-                    '회원가입 이메일 인증',
-                    f'인증 링크를 클릭해주세요: {verification_link}',
-                    'noreply@yourdomain.com',
-                    [user.email],
-                )
 
                 return Response({
                     "success": True,
-                    "message": "회원가입 완료! 이메일을 확인해주세요.",
+                    "message": "회원가입이 완료되었습니다!",
                     "data": {"user_id": user.user_id}
                 })
 
@@ -116,7 +108,9 @@ class VerifyEmailView(APIView):
         token = request.GET.get('token')
 
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.filter(email=email).first()
+            if not user:
+                return Response({"success": False, "message": "사용자를 찾을 수 없습니다.", "data": None}, status=400)
             if user.email_verification_token != token:
                 return Response({"success": False, "message": "잘못된 토큰입니다.", "data": None}, status=400)
 
@@ -159,13 +153,6 @@ class LoginView(APIView):
                 "data": None
             }, status=401)
 
-        if not user.is_active:
-            return Response({
-                "success": False,
-                "message": "이메일 인증이 완료되지 않았습니다.",
-                "data": None
-            }, status=403)
-
         tokens = get_tokens_for_user(user)
 
         # last_login 업데이트 추가
@@ -190,11 +177,31 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     def post(self, request):
-        return Response({
+        # sendBeacon에서 오는 요청도 처리
+        user = getattr(request, 'user', None)
+        if user and hasattr(user, 'user_id'):
+            print(f"로그아웃: {user.login_id} (ID: {user.user_id})")
+        
+        response = Response({
             "success": True,
-            "message": "클라이언트 측에서 토큰을 제거해 로그아웃하세요.",
+            "message": "로그아웃 되었습니다.",
             "data": None
         })
+        
+        # CORS 헤더 추가 (sendBeacon을 위해)
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type"
+        
+        return response
+    
+    def options(self, request):
+        # sendBeacon preflight 요청 처리
+        response = Response(status=204)
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type"
+        return response
 
 
 

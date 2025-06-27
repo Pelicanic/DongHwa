@@ -9,6 +9,10 @@ def check_nickname_duplicate(nickname):
     """닉네임 중복 여부 확인"""
     return User.objects.filter(nickname=nickname).exists()
 
+def check_email_duplicate(email):
+    """이메일 중복 여부 확인"""
+    return User.objects.filter(email=email).exists()
+
 def check_password_complexity(password):
     """
     비밀번호 복잡도 검사:

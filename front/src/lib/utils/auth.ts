@@ -12,18 +12,27 @@ export const checkLoginStatus = (): boolean => {
 };
 
 // 로그인 확인 및 리다이렉트 함수
-export const requireLogin = (redirectUrl: string = '/'): void => {
+export const requireLogin = async (redirectUrl: string = '/'): Promise<boolean> => {
   const isLoggedIn = checkLoginStatus();
   
   if (!isLoggedIn) {
-    Swal.fire({
+    const result = await Swal.fire({
       title: '로그인 필요',
       text: '이 페이지를 이용하려면 로그인이 필요합니다.',
-      icon: 'info',
+      icon: 'warning',
       confirmButtonText: '메인으로',
-      confirmButtonColor: '#3b82f6'
-    }).then(() => {
-      window.location.href = redirectUrl;
+      confirmButtonColor: '#3b82f6',
+      allowOutsideClick: false,
+      allowEscapeKey: false
     });
+    
+    // 사용자가 확인 버튼을 누른 후에 이동
+    if (result.isConfirmed) {
+      window.location.href = redirectUrl;
+    }
+    
+    return false;
   }
+  
+  return true;
 };
