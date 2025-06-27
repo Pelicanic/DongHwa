@@ -9,6 +9,7 @@ import LinkButton from '@/(components)/Button/button';
 import SidebarLink from '@/(components)/Button/sidebarlinkButton';
 import Link from 'next/link';
 import Image from 'next/image';
+import { logout } from '@/lib/utils/logout';
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -20,7 +21,16 @@ interface SidebarProps {
 const API_BASE_URL = 'http://localhost:8721';
 
 const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktopSidebarOpen = true, toggleDesktopSidebar }: SidebarProps) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // 초기 로그인 상태를 로컬스토리지에서 바로 읽어오기
+  const getInitialLoginState = () => {
+    if (typeof window === 'undefined') return false;
+    const access = localStorage.getItem('access');
+    const user_id = localStorage.getItem('user_id');
+    return !!(access && user_id);
+  };
+
+  const [isLoggedIn, setIsLoggedIn] = useState(getInitialLoginState);
+  const [isLoading, setIsLoading] = useState(true); // 로딩 상태 추가
   const [showContent, setShowContent] = useState(isDesktopSidebarOpen);
 
   // 사이드바 상태 변경 감지 및 애니메이션 제어
@@ -39,75 +49,62 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktopSidebarOpen = true, to
 
   const checkLoginStatus = async () => {
     const access = localStorage.getItem('access');
-    const refresh = localStorage.getItem('refresh');
+    const user_id = localStorage.getItem('user_id');
 
-    if (!access) 
-      return setIsLoggedIn(false);
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/member/status/`, {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${access}` }
-      });
-
-      if (res.ok) {
-        setIsLoggedIn(true);
-      } else if (refresh) {
-        const refreshRes = await fetch(`${API_BASE_URL}/member/token/refresh/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refresh })
-        });
-
-        const data = await refreshRes.json();
-        if (refreshRes.ok && data.access) {
-          localStorage.setItem('access', data.access);
-          setIsLoggedIn(true);
-        } else {
-          localStorage.removeItem('access');
-          localStorage.removeItem('refresh');
-          setIsLoggedIn(false);
-        }
-      }
-    } catch {
+    // 토큰과 사용자 ID가 있으면 로그인된 것으로 간주
+    if (access && user_id) {
+      setIsLoggedIn(true);
+    } else {
       setIsLoggedIn(false);
     }
+    
+    // 초기 로딩 완료
+    setIsLoading(false);
   };
 
   useEffect(() => {
     checkLoginStatus();
 
-    const handleLoginEvent = () => checkLoginStatus();
+    // 로그인/로그아웃 이벤트 리스너
+    const handleLoginEvent = () => {
+      console.log('Login event detected');
+      checkLoginStatus();
+    };
+    
+    const handleLogoutEvent = () => {
+      console.log('Logout event detected');
+      setIsLoggedIn(false);
+    };
+
+    // localStorage 변경 감지
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'access' || e.key === 'user_id') {
+        console.log('Storage change detected:', e.key, e.newValue);
+        checkLoginStatus();
+      }
+    };
+
     window.addEventListener("login", handleLoginEvent);
+    window.addEventListener("logout", handleLogoutEvent);
+    window.addEventListener("storage", handleStorageChange);
+
+    // 주기적으로 로그인 상태 확인 (선택사항)
+    const interval = setInterval(() => {
+      checkLoginStatus();
+    }, 5000); // 5초마다
 
     return () => {
       window.removeEventListener("login", handleLoginEvent);
+      window.removeEventListener("logout", handleLogoutEvent);
+      window.removeEventListener("storage", handleStorageChange);
+      clearInterval(interval);
     };
   }, []);
 
-  const handleLogout = async () => {
-    const refresh = localStorage.getItem('refresh');
-
-    if (refresh) {
-      try {
-        await fetch(`${API_BASE_URL}/member/token/refresh/`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refresh }),
-        });
-      } catch (e) {
-        console.warn("refresh 소진 실패 (무시 가능):", e);
-      }
-    }
-
-    localStorage.removeItem("access");
-    localStorage.removeItem("refresh");
-    localStorage.removeItem("user_id");
-    localStorage.removeItem("nickname");
-    localStorage.removeItem("age");
-
-    setIsLoggedIn(false);
-    window.location.reload();
+  const handleLogout = () => {
+    // 로그아웃 이벤트 발생
+    window.dispatchEvent(new Event('logout'));
+    logout('user_action');
   };
 
   return (
@@ -214,7 +211,12 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktopSidebarOpen = true, to
         <div className="p-4 space-y-2 border-t bg-white">
           {isDesktopSidebarOpen && showContent ? (
             <div className="animate-fade-in">
-              {isLoggedIn ? (
+              {isLoading ? (
+                // 로딩 중일 때 내용 숨김
+                <div className="w-full py-2 text-center text-gray-400 text-sm">
+                  로딩 중...
+                </div>
+              ) : isLoggedIn ? (
                 <button
                   className="w-full py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium"
                   onClick={handleLogout}
@@ -239,7 +241,12 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktopSidebarOpen = true, to
           ) : (
             // 축소된 상태에서는 아이콘만 표시
             <div className="flex flex-col space-y-2 items-center">
-              {isLoggedIn ? (
+              {isLoading ? (
+                // 로딩 중일 때 내용 숨김
+                <div className="p-2">
+                  <div className="w-5 h-5 text-gray-400">...</div>
+                </div>
+              ) : isLoggedIn ? (
                 <button
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                   onClick={handleLogout}

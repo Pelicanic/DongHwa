@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Sidebar from '@/(components)/Sidebar/index';
 import MobileHeader from '@/(components)/Header/mobileHeader';
+import LogoutOnCloseProvider from '@/components/LogoutOnCloseProvider';
 
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
@@ -63,7 +64,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
 const DashboardWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
+    <>
+      {/* 페이지 닫기 시 자동 로그아웃 설정 */}
+      <LogoutOnCloseProvider />
       <DashboardLayout>{children}</DashboardLayout>
+    </>
   );
 };
 

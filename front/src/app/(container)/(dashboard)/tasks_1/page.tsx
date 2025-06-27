@@ -50,6 +50,19 @@ const InteractiveCarousel: React.FC = () => {
   // Tasks_1 페이지 전용 디버거
   const debug = createPageDebugger('TASKS_1');
   
+  // 로그인 확인
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  
+  // 현재 슬라이드 인덱스를 저장하는 state
+  const [currentSlide, setCurrentSlide] = useState<number>(0);
+  // 각 슬라이드별 사용자 답변을 저장하는 state
+  const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
+  // 현재 선택된 선택지를 저장하는 state (시각적 표시용)
+  const [selectedChoices, setSelectedChoices] = useState<Record<number, number | null>>({});
+  
+  // 전체 슬라이드 수
+  const totalSlides = slidesData.length;
+  
   // 랜덤 제목 가져오기 함수
   const fetchRandomTitles = useCallback(async () => {
     try {
@@ -94,20 +107,6 @@ const InteractiveCarousel: React.FC = () => {
     }
   }, [debug]);
   
-  // 로그인 확인
-  useEffect(() => {
-    requireLogin();
-  }, []);
-  
-  // useRouter 훅 추가
-  // 현재 슬라이드 인덱스를 저장하는 state
-  const [currentSlide, setCurrentSlide] = useState<number>(0);
-  // 각 슬라이드별 사용자 답변을 저장하는 state
-  const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
-  // 현재 선택된 선택지를 저장하는 state (시각적 표시용)
-  const [selectedChoices, setSelectedChoices] = useState<Record<number, number | null>>({});
-  // 전체 슬라이드 수
-  const totalSlides = slidesData.length;
   // 선택지 클릭 핸들러
   const handleChoiceClick = useCallback((slideIndex: number, choiceIndex: number, choiceText: string) => {
     debug.user('선택지 클릭', {
@@ -308,6 +307,29 @@ const InteractiveCarousel: React.FC = () => {
       </div>
     ));
   };
+  
+  useEffect(() => {
+    const checkAuth = async () => {
+      const isLoggedIn = await requireLogin();
+      setIsAuthenticated(isLoggedIn);
+    };
+    
+    checkAuth();
+  }, []);
+  
+  // 로그인 상태 확인 중이거나 로그인되어 있지 않으면 렌더링하지 않음
+  if (isAuthenticated === null || isAuthenticated === false) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-lg text-gray-600">
+            {isAuthenticated === null ? '로그인 상태를 확인하고 있습니다...' : '로그인이 필요합니다.'}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
 
   return (
     <div
