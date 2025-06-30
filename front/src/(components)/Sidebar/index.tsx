@@ -18,8 +18,6 @@ interface SidebarProps {
   toggleDesktopSidebar?: () => void;
 }
 
-const API_BASE_URL = 'http://localhost:8721';
-
 const Sidebar = ({ isSidebarOpen, toggleSidebar, isDesktopSidebarOpen = true, toggleDesktopSidebar }: SidebarProps) => {
   // 초기 로그인 상태를 로컬스토리지에서 바로 읽어오기
   const getInitialLoginState = () => {

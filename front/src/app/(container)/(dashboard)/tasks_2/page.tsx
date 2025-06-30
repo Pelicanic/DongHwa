@@ -132,7 +132,90 @@ const useStoryData = () => {
           return;
         }
 
-        // 먼저 진행 중인 스토리가 있는지 확인
+        // 먼저 sessionStorage에서 스토리 데이터 확인 (tasks_1에서 전달된 데이터)
+        const sessionStoryData = sessionStorage.getItem('storyData');
+        
+        if (sessionStoryData) {
+          try {
+            const parsedStoryData = JSON.parse(sessionStoryData);
+            
+            // sessionStorage에 story_id가 있으면 해당 데이터를 우선 사용
+            if (parsedStoryData.story_id || parsedStoryData.story?.story_id) {
+              const story_id = parsedStoryData.story_id || parsedStoryData.story?.story_id;
+              const storyInfo = parsedStoryData.story || parsedStoryData;
+              
+              debugLog.story('sessionStorage에서 스토리 데이터 로드', {
+                'Story ID': story_id,
+                'Story Data': storyInfo
+              });
+              
+              setStoryData(storyInfo);
+              
+              // story_id를 사용해서 상세 데이터 가져오기
+              const [qaResponse, paragraphResponse, illustrationResponse] = await Promise.all([
+                apiClient.post<{ paragraphQA: ParagraphQA[] }>(API_ROUTES.PARAGRAPH_QA, { story_id }),
+                apiClient.post<{ storyParagraph: StoryParagraph[] }>(API_ROUTES.STORY_PARAGRAPH, { story_id }),
+                apiClient.post<{ illustration: Illustration[] }>(API_ROUTES.ILLUSTRATION, { story_id })
+              ]);
+              
+              debugLog.api('sessionStorage 기반 API 응답 데이터', {
+                'QA Response': qaResponse.data.paragraphQA,
+                'Paragraph Response': paragraphResponse.data.storyParagraph,
+                'Illustration Response': illustrationResponse.data
+              });
+              
+              setParagraphQA(qaResponse.data.paragraphQA);
+              setStoryParagraph(paragraphResponse.data.storyParagraph);
+              setIllustrations(illustrationResponse.data.illustration);
+              
+              // 마지막 paragraph_no 찾기
+              const paragraphs = paragraphResponse.data.storyParagraph;
+              if (paragraphs.length > 0) {
+                const maxParagraphNo = Math.max(...paragraphs.map(p => p.paragraph_no));
+                const lastIndex = paragraphs.findIndex(p => p.paragraph_no === maxParagraphNo);
+                setLastParagraphIndex(lastIndex >= 0 ? lastIndex : paragraphs.length - 1);
+              }
+
+              // DB에서 기분 추출 및 배경음악 설정
+              let extractedMood = '밝은';
+              const qaData = qaResponse.data.paragraphQA;
+              
+              if (qaData && qaData.length > 0 && paragraphs && paragraphs.length > 0) {
+                const firstParagraph = paragraphs.find(p => p.paragraph_no === 1);
+                if (firstParagraph) {
+                  const firstParagraphQA = qaData.find(qa => qa.paragraph_id === firstParagraph.paragraph_id);
+                  if (firstParagraphQA && firstParagraphQA.question_text) {
+                    extractedMood = extractMoodFromQuestionText(firstParagraphQA.question_text);
+                    debugLog.story('sessionStorage 데이터에서 추출한 기분', {
+                      'Extracted Mood': extractedMood
+                    });
+                  }
+                }
+              }
+
+              // 배경음악 설정
+              const audio = setupBackgroundMusic(
+                extractedMood,
+                0.3,
+                () => debugLog.audio('배경음악이 자동으로 재생되었습니다.'),
+                (error) => debugLog.audio('자동 재생이 차단되었습니다. 사용자 상호작용 후 재생됩니다.', { 'Error': error })
+              );
+              
+              if (audio) {
+                setBgMusic(audio);
+              }
+              
+              return; // sessionStorage 데이터 사용 완료, 추가 API 호출 불필요
+            }
+          } catch (parseError) {
+            debugLog.error('sessionStorage 데이터 파싱 오류', parseError);
+            // 파싱 실패 시 아래 로직으로 진행
+          }
+        }
+
+        // sessionStorage에 데이터가 없거나 파싱 실패 시 기존 로직 사용
+        debugLog.story('sessionStorage에 데이터가 없어 서버에서 진행 중인 스토리 조회');
+        
         try {
           const inProgressResponse = await apiClient.post<InProgressStoryResponse>(API_ROUTES.USER_IN_PROGRESS_STORY, {
             user_id: user_id
@@ -143,7 +226,7 @@ const useStoryData = () => {
             const progressStory = inProgressResponse.data.story;
             setStoryData(progressStory);
             
-            debugLog.story('진행 중인 스토리 로드', {
+            debugLog.story('서버에서 진행 중인 스토리 로드', {
               'Story Data': progressStory
             });
             
@@ -158,7 +241,7 @@ const useStoryData = () => {
               apiClient.post<{ illustration: Illustration[] }>(API_ROUTES.ILLUSTRATION, { story_id })
             ]);
             
-            debugLog.api('API 응답 데이터', {
+            debugLog.api('서버 기반 API 응답 데이터', {
               'QA Response': qaResponse.data.paragraphQA,
               'Paragraph Response': paragraphResponse.data.storyParagraph,
               'Illustration Response': illustrationResponse.data
@@ -185,7 +268,7 @@ const useStoryData = () => {
                 const firstParagraphQA = qaData.find(qa => qa.paragraph_id === firstParagraph.paragraph_id);
                 if (firstParagraphQA && firstParagraphQA.question_text) {
                   extractedMood = extractMoodFromQuestionText(firstParagraphQA.question_text);
-                  debugLog.story('DB에서 추출한 기분', {
+                  debugLog.story('서버 데이터에서 추출한 기분', {
                     'Extracted Mood': extractedMood
                   });
                 }

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Sidebar from '@/(components)/Sidebar/index';
 import MobileHeader from '@/(components)/Header/mobileHeader';
-import LogoutOnCloseProvider from '@/components/LogoutOnCloseProvider';
+import LogoutOnCloseProvider from '@/(components)/LogoutOnCloseProvider';
 
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
